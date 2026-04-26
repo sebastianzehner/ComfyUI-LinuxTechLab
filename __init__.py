@@ -1,15 +1,18 @@
 import os
+
 from . import server_routes  # side-effect import for route registration
-from .nodes.node_composition import NODE_CLASS_MAPPINGS as _MAPS_COMPOSITION
-from .nodes.node_composition import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPOSITION
 from .nodes.node_3d import NODE_CLASS_MAPPINGS as _MAPS_3D
 from .nodes.node_3d import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_3D
 from .nodes.node_compare import NODE_CLASS_MAPPINGS as _MAPS_COMPARE
 from .nodes.node_compare import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPARE
+from .nodes.node_composition import NODE_CLASS_MAPPINGS as _MAPS_COMPOSITION
+from .nodes.node_composition import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPOSITION
 from .nodes.node_crop import NODE_CLASS_MAPPINGS as _MAPS_CROP
 from .nodes.node_crop import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_CROP
 from .nodes.node_label import NODE_CLASS_MAPPINGS as _MAPS_LABEL
 from .nodes.node_label import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_LABEL
+from .nodes.node_note import NODE_CLASS_MAPPINGS as _MAPS_NOTE
+from .nodes.node_note import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_NOTE
 from .nodes.node_paint import NODE_CLASS_MAPPINGS as _MAPS_PAINT
 from .nodes.node_paint import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_PAINT
 from .nodes.node_preview import NODE_CLASS_MAPPINGS as _MAPS_PREVIEW
@@ -18,8 +21,6 @@ from .nodes.node_resolution import NODE_CLASS_MAPPINGS as _MAPS_RESOLUTION
 from .nodes.node_resolution import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_RESOLUTION
 from .nodes.node_show_text import NODE_CLASS_MAPPINGS as _MAPS_SHOW_TEXT
 from .nodes.node_show_text import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SHOW_TEXT
-from .nodes.node_note import NODE_CLASS_MAPPINGS as _MAPS_NOTE
-from .nodes.node_note import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_NOTE
 
 # development mode for loading additional refrence nodes
 dev_mode = False
@@ -67,7 +68,7 @@ __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
 
 
 # console print banner
-def display_pixaroma_banner(node_mappings, list_all_nodes=False):
+def display_linuxtechlab_banner(node_mappings, list_all_nodes=False):
     """
     Displays a styled startup banner in the terminal with version and node info.
     """
@@ -84,7 +85,7 @@ def display_pixaroma_banner(node_mappings, list_all_nodes=False):
         pass
 
     # --- 2. Define ANSI Color Constants ---
-    CLR_ORANGE = "\033[38;2;246;103;68m"
+    CLR_BLUE = "\033[38;2;137;180;250m"
     CLR_WHITE_BOLD = "\033[1;37m"
     CLR_GREY = "\033[0;37m"
     CLR_RESET = "\033[0m"
@@ -108,12 +109,12 @@ def display_pixaroma_banner(node_mappings, list_all_nodes=False):
         lines_to_print.append(current_line.rstrip(", "))
 
     # --- 4. Print the Banner ---
-    horizontal_bar = f"{CLR_ORANGE}{'━' * 120}{CLR_RESET}"
+    horizontal_bar = f"{CLR_BLUE}{'━' * 120}{CLR_RESET}"
 
     print(horizontal_bar)
     print(
-        f"  {CLR_WHITE_BOLD}Pixaroma{CLR_RESET} v{version}  |  "
-        f"{CLR_ORANGE}{len(node_mappings)} nodes{CLR_RESET} Loaded"
+        f"  {CLR_WHITE_BOLD}LinuxTechLab{CLR_RESET} v{version}  |  "
+        f"{CLR_BLUE}{len(node_mappings)} nodes{CLR_RESET} Loaded"
     )
 
     if list_all_nodes:
@@ -121,14 +122,14 @@ def display_pixaroma_banner(node_mappings, list_all_nodes=False):
             print(f"  {CLR_GREY}{line}{CLR_RESET}")
 
     print(
-        f"  {CLR_GREY}ComfyUI Tutorials: https://www.youtube.com/@pixaroma{CLR_RESET}"
+        f"  {CLR_GREY}ComfyUI Tutorials: https://www.youtube.com/@LinuxTechLab{CLR_RESET}"
     )
     print(
-        f"  {CLR_ORANGE}Some Pixaroma nodes conflict with Nodes 2.0 — "
+        f"  {CLR_BLUE}Some LinuxTechLab nodes conflict with Nodes 2.0 — "
         f"consider turning it off from ComfyUI Menu.{CLR_RESET}"
     )
     print(horizontal_bar)
 
 
 # display the banner when the module is loaded
-display_pixaroma_banner(NODE_DISPLAY_NAME_MAPPINGS)
+display_linuxtechlab_banner(NODE_DISPLAY_NAME_MAPPINGS)

@@ -1,15 +1,14 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/pixaroma/ComfyUI-Pixaroma/main/assets/pixaroma_logo.svg" width="120" alt="Pixaroma Logo">
-  <h1>ComfyUI Pixaroma</h1>
+  <img src="https://raw.githubusercontent.com/sebastianzehner/ComfyUI-LinuxTechLab/main/assets/techlab_logo.png" width="120" alt="LinuxTechLab Logo">
+  <h1>ComfyUI LinuxTechLab</h1>
   <p align="center">
     <strong>Elevate your ComfyUI workflow with professional-grade creative tools.</strong><br />
     3D scenes • Texture painting • Layered composition • Precision cropping • Rich notes • Side-by-side comparison
   </p>
 
   <p align="center">
-    <a href="https://github.com/pixaroma/ComfyUI-Pixaroma/blob/main/LICENSE"><img src="https://img.shields.io/github/license/pixaroma/ComfyUI-Pixaroma?style=flat-square&color=blue" alt="License"></a>
-    <a href="https://discord.gg/gggpkVgBf3"><img src="https://img.shields.io/badge/discord-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
-    <a href="https://www.youtube.com/@pixaroma"><img src="https://img.shields.io/badge/youtube-red?style=flat-square&logo=youtube" alt="YouTube"></a>
+    <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab/blob/main/LICENSE"><img src="https://img.shields.io/github/license/sebastianzehner/ComfyUI-LinuxTechLab?style=flat-square&color=blue" alt="License"></a>
+    <a href="https://www.youtube.com/@LinuxTechLab"><img src="https://img.shields.io/badge/youtube-red?style=flat-square&logo=youtube" alt="YouTube"></a>
   </p>
 </div>
 
@@ -17,7 +16,7 @@
 
 ## 🎨 Creative Suite
 
-Pixaroma turns ComfyUI into a powerful, easy-to-use design space. It brings professional editing right into your workflow!
+LinuxTechLab turns ComfyUI into a powerful, easy-to-use design space. It brings professional editing right into your workflow!
 
 ### 🧊 3D Builder
 A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furniture, or import your own 3D models. You get easy camera controls, realistic lighting, undo/redo, and live previews. Perfect for making reference scenes for ControlNet or depth maps!
@@ -44,24 +43,24 @@ The best way to see the difference between two images. Easily compare them side-
 ![Image Compare — Node](workflows/Image%20Compare%20Pixaroma%20Workflow.jpg)
 ![Image Compare — Editor](workflows/Image%20Compare%20Pixaroma%20Workflow%20v2.jpg)
 
-### 📝 Note Pixaroma
+### 📝 Note LinuxTechLab
 A beautiful, simple text editor to document your workflows right on the canvas. Write normally using bold, italics, lists, and headings. Add custom colored buttons, icons, or links to YouTube and Discord. You can even color-code your notes to match your style. It perfectly saves and restores exactly how you styled it.
-![Note Pixaroma — Node](workflows/Note%20Pixaroma%20Workflow.jpg)
-![Note Pixaroma — Editor](workflows/Note%20Pixaroma%20Workflow%20v2.jpg)
+![Note LinuxTechLab — Node](workflows/Note%20Pixaroma%20Workflow.jpg)
+![Note LinuxTechLab — Editor](workflows/Note%20Pixaroma%20Workflow%20v2.jpg)
 
-### 🏷️ Label Pixaroma
+### 🏷️ Label LinuxTechLab
 Keep your workflows tidy with clean, custom labels.
 
 ![Labels — Node](workflows/Labels%20Pixaroma%20Workflow.jpg)
 ![Labels — Editor](workflows/Labels%20Pixaroma%20Workflow%20v2.jpg)
 
-### 💬 Show Text Pixaroma
+### 💬 Show Text LinuxTechLab
 Easily see what text or data is flowing through your nodes.
 
-### 🖼️ Preview Image Pixaroma
+### 🖼️ Preview Image LinuxTechLab
 A handy way to preview your image right on the node, but better! It gives you two simple buttons: **Save to Disk** (choose any folder on your computer) and **Save to Output** (saves to your ComfyUI output folder). Both options safely embed your workflow into the image, so you can drag the image back in later to restore everything.
 
-### 📐 Resolution Pixaroma
+### 📐 Resolution LinuxTechLab
 A simple, one-click resolution picker. Choose from standard aspect ratios (like 1:1, 16:9, or 9:16) and instantly get the exact width and height you need, including popular sizes for AI video. Or, use Custom mode to type in your exact dimensions. It perfectly saves all your settings with your workflow!
 
 ---
@@ -80,7 +79,7 @@ If you use [ComfyUI Easy Install](https://github.com/Tavris1/ComfyUI-Easy-Instal
 #### **Method C: Manual Installation**
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/pixaroma/ComfyUI-Pixaroma.git
+git clone https://github.com/sebastianzehner/ComfyUI-LinuxTechLab.git
 ```
 
 ### 2. Optional: AI Background Removal
@@ -157,6 +156,5 @@ Master the Pixaroma suite with our video guides and workflow deep-dives:
 > [!NOTE]
 > This suite was developed with significant AI assistance. While thoroughly tested, we welcome bug reports and feedback from the community!
 
-💬 **[Join our Discord Community](https://discord.gg/gggpkVgBf3)**  
-⚖️ **Licensed under [MIT](https://github.com/pixaroma/ComfyUI-Pixaroma/blob/main/LICENSE)**
+⚖️ **Licensed under [MIT](https://github.com/sebastianzehner/ComfyUI-LinuxTechLab/blob/main/LICENSE)**
 
