@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/sebastianzehner/ComfyUI-LinuxTechLab/main/assets/techlab_logo.png" width="120" alt="LinuxTechLab Logo">
+  <img src="https://raw.githubusercontent.com/sebastianzehner/ComfyUI-LinuxTechLab/main/assets/linuxtechlab_logo.png" width="120" alt="LinuxTechLab Logo">
   <h1>ComfyUI LinuxTechLab</h1>
   <p align="center">
     <strong>Elevate your ComfyUI workflow with professional-grade creative tools.</strong><br />
