@@ -2,15 +2,15 @@ import { app } from "/scripts/app.js";
 import { BRAND, hideJsonWidget } from "../shared/index.mjs";
 
 function injectCSS() {
-  if (document.getElementById("pixaroma-resolution-css")) return;
+  if (document.getElementById("linuxtechlab-resolution-css")) return;
   const css = `
     .pix-res-root {
       width: 100%;
       box-sizing: border-box;
       padding: 8px;
-      background: #2a2a2a;
+      background: #1e1e2e;
       border-radius: 4px;
-      color: #ddd;
+      color: #cdd6f4;
       font-family: ui-sans-serif, system-ui, sans-serif;
       font-size: 11px;
       display: flex;
@@ -23,37 +23,30 @@ function injectCSS() {
       gap: 5px;
     }
     .pix-res-chip {
-      background: #1d1d1d;
-      border: 1px solid #444;
+      background: #181825;
+      border: 1px solid #45475a;
       border-radius: 4px;
       padding: 6px 0;
       text-align: center;
       font-size: 10px;
-      color: #ccc;
+      color: #bac2de;
       cursor: pointer;
       user-select: none;
       transition: background 0.08s, border-color 0.08s;
     }
-    .pix-res-chip:hover { border-color: #666; }
+    .pix-res-chip:hover { border-color: #6c7086; }
     .pix-res-chip.active {
       background: ${BRAND};
-      color: #fff;
+      color: #1e1e2e;
       border-color: ${BRAND};
     }
     .pix-res-chip.span-3 { grid-column: span 3; }
     .pix-res-list {
-      background: #1d1d1d;
-      border: 1px solid #444;
+      background: #181825;
+      border: 1px solid #45475a;
       border-radius: 4px;
-      /* x clipped (active-row orange tint stays inside rounded border);
-         y scrolls if at large browser zoom the rows still wouldn't fit
-         (node height is locked, so this is a defensive fallback only). */
       overflow-x: hidden;
       overflow-y: auto;
-      /* Preset list takes its natural size (8 fixed-height rows + borders);
-         since the widget is sized to exactly accommodate that, no extra space
-         appears in either direction. Custom panel overrides to flex:1 so its
-         preview rect can absorb the panel's vertical space. */
       flex: 0 1 auto;
       display: flex;
       flex-direction: column;
@@ -62,21 +55,15 @@ function injectCSS() {
       flex: 1;
       min-height: 160px;
     }
-    /* Slim, theme-matched scrollbar so the list doesn't get a fat default bar. */
     .pix-res-list::-webkit-scrollbar { width: 6px; }
-    .pix-res-list::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+    .pix-res-list::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
     .pix-res-list::-webkit-scrollbar-track { background: transparent; }
-    /* Subtle focus indicator: brand-tinted border (no outline ring overflow). */
     .pix-res-list:focus { outline: none; border-color: ${BRAND}; }
     .pix-res-row {
-      /* Fixed row height — must NOT grow with the node, otherwise resizing
-         taller bloats every row to a giant cell. flex-shrink: 0 + the parent
-         list's overflow-y: auto means rows stay readable and the list scrolls
-         instead when the widget is too short to fit all 8. */
       flex: 0 0 28px;
       box-sizing: border-box;
       padding: 4px 8px;
-      border-bottom: 1px solid #2f2f2f;
+      border-bottom: 1px solid #313244;
       font-size: 11px;
       text-align: center;
       cursor: pointer;
@@ -84,17 +71,17 @@ function injectCSS() {
       align-items: center;
       justify-content: center;
       font-family: ui-monospace, monospace;
-      color: #ccc;
+      color: #bac2de;
     }
     .pix-res-row:last-child { border-bottom: none; }
     .pix-res-row.active {
-      background: rgba(246,103,68,0.15);
+      background: rgba(137, 180, 250, 0.15);
       color: ${BRAND};
       font-weight: 600;
     }
     .pix-res-row.empty {
       cursor: default;
-      color: #2a2a2a;
+      color: #313244;
     }
     .pix-res-custom {
       padding: 12px 10px;
@@ -106,19 +93,19 @@ function injectCSS() {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       gap: 6px;
-      align-items: end; /* push the swap icon down so it sits next to the input boxes, not the labels */
+      align-items: end;
     }
     .pix-res-custom-field { display: flex; flex-direction: column; gap: 3px; }
     .pix-res-custom-field label {
       font-size: 9px;
-      color: #888;
+      color: #6c7086;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       text-align: center;
     }
     .pix-res-custom-field input {
-      background: #2a2a2a;
-      border: 1px solid #444;
+      background: #1e1e2e;
+      border: 1px solid #45475a;
       border-radius: 4px;
       padding: 6px 8px;
       color: ${BRAND};
@@ -133,16 +120,13 @@ function injectCSS() {
       outline: none;
       border-color: ${BRAND};
     }
-    /* Square icon button placed BETWEEN the W and H inputs (Figma/Photoshop pattern).
-       Uses CSS mask-image so the SVG inherits color via the button's color property
-       — same technique Note Pixaroma uses for toolbar mask-icons. */
     .pix-res-swap {
       width: 32px;
       height: 32px;
-      background: #2a2a2a;
-      border: 1px solid #444;
+      background: #1e1e2e;
+      border: 1px solid #45475a;
       border-radius: 4px;
-      color: #aaa;
+      color: #6c7086;
       cursor: pointer;
       padding: 0;
       position: relative;
@@ -153,26 +137,21 @@ function injectCSS() {
       position: absolute;
       inset: 0;
       background-color: currentColor;
-      -webkit-mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 16px 16px no-repeat;
-              mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 16px 16px no-repeat;
+      -webkit-mask: url("/linuxtechlab/assets/icons/ui/swap.svg") center / 16px 16px no-repeat;
+              mask: url("/linuxtechlab/assets/icons/ui/swap.svg") center / 16px 16px no-repeat;
       pointer-events: none;
     }
     .pix-res-swap:hover { color: ${BRAND}; border-color: ${BRAND}; }
     .pix-res-readout {
       display: flex;
       align-items: center;
-      /* snap-group pinned left, ratio/MP pinned right — text length changes
-         on the right side then can't push the snap chips around. */
       justify-content: space-between;
       gap: 6px;
       padding: 0 2px;
       font-size: 10px;
-      color: #777;
+      color: #6c7086;
     }
     .pix-res-readout .accent { color: ${BRAND}; }
-    /* Aspect-ratio visual preview — fills the remaining custom-panel space.
-       The inner rect is scaled to the chosen W:H ratio so the user sees the
-       shape they'll get at a glance. Label below shows the exact W × H. */
     .pix-res-preview {
       flex: 1;
       display: flex;
@@ -184,7 +163,7 @@ function injectCSS() {
       min-height: 0;
     }
     .pix-res-preview-rect {
-      background: rgba(246, 103, 68, 0.18);
+      background: rgba(137, 180, 250, 0.15);
       border: 1px solid ${BRAND};
       border-radius: 2px;
       transition: width 0.15s ease, height 0.15s ease;
@@ -192,10 +171,9 @@ function injectCSS() {
     .pix-res-preview-label {
       font-family: ui-monospace, monospace;
       font-size: 10px;
-      color: #999;
+      color: #6c7086;
     }
     .pix-res-preview-label .accent { color: ${BRAND}; }
-    /* Snap-step picker — magnet label + 4 small chip buttons (8/16/32/64). */
     .pix-res-snap-group {
       display: inline-flex;
       align-items: center;
@@ -205,9 +183,9 @@ function injectCSS() {
       display: inline-block;
       width: 11px;
       height: 11px;
-      background-color: #888;
-      -webkit-mask: url("/pixaroma/assets/icons/ui/magnet.svg") center / 11px 11px no-repeat;
-              mask: url("/pixaroma/assets/icons/ui/magnet.svg") center / 11px 11px no-repeat;
+      background-color: #6c7086;
+      -webkit-mask: url("/linuxtechlab/assets/icons/ui/magnet.svg") center / 11px 11px no-repeat;
+              mask: url("/linuxtechlab/assets/icons/ui/magnet.svg") center / 11px 11px no-repeat;
       pointer-events: none;
     }
     .pix-res-snap-btns {
@@ -215,10 +193,10 @@ function injectCSS() {
       gap: 2px;
     }
     .pix-res-snap-btn {
-      background: #1d1d1d;
-      border: 1px solid #444;
+      background: #181825;
+      border: 1px solid #45475a;
       border-radius: 3px;
-      color: #aaa;
+      color: #6c7086;
       font-size: 9px;
       padding: 2px 5px;
       min-width: 18px;
@@ -226,15 +204,15 @@ function injectCSS() {
       font-family: ui-monospace, monospace;
       line-height: 1;
     }
-    .pix-res-snap-btn:hover { color: #ddd; border-color: #666; }
+    .pix-res-snap-btn:hover { color: #cdd6f4; border-color: #6c7086; }
     .pix-res-snap-btn.active {
       background: ${BRAND};
-      color: #fff;
+      color: #1e1e2e;
       border-color: ${BRAND};
     }
   `;
   const style = document.createElement("style");
-  style.id = "pixaroma-resolution-css";
+  style.id = "linuxtechlab-resolution-css";
   style.textContent = css;
   document.head.appendChild(style);
 }
@@ -293,8 +271,11 @@ function readState(node) {
   // Primary: node.properties (current architecture).
   const v = node.properties?.[STATE_PROP];
   if (typeof v === "string" && v) {
-    try { return { ...DEFAULT_STATE, ...JSON.parse(v) }; }
-    catch { /* fall through to migration */ }
+    try {
+      return { ...DEFAULT_STATE, ...JSON.parse(v) };
+    } catch {
+      /* fall through to migration */
+    }
   }
   // Migration: workflows saved with the old widget-based architecture have
   // their state in node.widgets_values[0] as a JSON string. Detect, migrate,
@@ -309,7 +290,9 @@ function readState(node) {
             writeState(node, { ...DEFAULT_STATE, ...parsed });
             return { ...DEFAULT_STATE, ...parsed };
           }
-        } catch { /* not our JSON, keep looking */ }
+        } catch {
+          /* not our JSON, keep looking */
+        }
       }
     }
   }
@@ -323,12 +306,12 @@ function writeState(node, state) {
 
 // Chip layout — order matches design spec
 const CHIPS = [
-  { id: "1:1",    label: "1:1" },
-  { id: "16:9",   label: "16:9" },
-  { id: "9:16",   label: "9:16" },
-  { id: "2:1",    label: "2:1" },
-  { id: "3:2",    label: "3:2" },
-  { id: "2:3",    label: "2:3" },
+  { id: "1:1", label: "1:1" },
+  { id: "16:9", label: "16:9" },
+  { id: "9:16", label: "9:16" },
+  { id: "2:1", label: "2:1" },
+  { id: "3:2", label: "3:2" },
+  { id: "2:3", label: "2:3" },
   { id: "custom", label: "Custom Resolution", span3: true },
 ];
 
@@ -336,35 +319,95 @@ const CHIPS = [
 // de facto AI-video standards (Wan 2.2, CogVideoX, AnimateDiff) and aren't
 // mathematically exact for the ratio (e.g. 832×480 ≈ 1.733 vs 16:9 = 1.778).
 const SIZES = {
-  "1:1":  [[512,512],[768,768],[1024,1024],[1280,1280],[1328,1328],[1408,1408],[1536,1536],[2048,2048]],
-  "16:9": [[832,480],[1280,720],[1344,768],[1536,864],[1600,896],[1664,928],[1792,1008],[1920,1088]],
-  "9:16": [[480,832],[720,1280],[768,1344],[864,1536],[896,1600],[928,1664],[1008,1792],[1088,1920]],
-  "2:1":  [[512,256],[1024,512],[1280,640],[1536,768],[1600,800],[1792,896],[1920,960],[2048,1024]],
-  "3:2":  [[768,512],[1024,680],[1152,768],[1344,896],[1536,1024],[1632,1088],[1728,1152],[1920,1280]],
-  "2:3":  [[512,768],[680,1024],[768,1152],[896,1344],[1024,1536],[1088,1632],[1152,1728],[1280,1920]],
+  "1:1": [
+    [512, 512],
+    [768, 768],
+    [1024, 1024],
+    [1280, 1280],
+    [1328, 1328],
+    [1408, 1408],
+    [1536, 1536],
+    [2048, 2048],
+  ],
+  "16:9": [
+    [832, 480],
+    [1280, 720],
+    [1344, 768],
+    [1536, 864],
+    [1600, 896],
+    [1664, 928],
+    [1792, 1008],
+    [1920, 1088],
+  ],
+  "9:16": [
+    [480, 832],
+    [720, 1280],
+    [768, 1344],
+    [864, 1536],
+    [896, 1600],
+    [928, 1664],
+    [1008, 1792],
+    [1088, 1920],
+  ],
+  "2:1": [
+    [512, 256],
+    [1024, 512],
+    [1280, 640],
+    [1536, 768],
+    [1600, 800],
+    [1792, 896],
+    [1920, 960],
+    [2048, 1024],
+  ],
+  "3:2": [
+    [768, 512],
+    [1024, 680],
+    [1152, 768],
+    [1344, 896],
+    [1536, 1024],
+    [1632, 1088],
+    [1728, 1152],
+    [1920, 1280],
+  ],
+  "2:3": [
+    [512, 768],
+    [680, 1024],
+    [768, 1152],
+    [896, 1344],
+    [1024, 1536],
+    [1088, 1632],
+    [1152, 1728],
+    [1280, 1920],
+  ],
 };
 
 // Default size auto-selected when the user clicks a ratio chip. Picked to be
 // the most common/useful starting point per ratio — not the smallest entry.
 const DEFAULT_PER_RATIO = {
-  "1:1":  [1024, 1024],
+  "1:1": [1024, 1024],
   "16:9": [1280, 720],
   "9:16": [720, 1280],
-  "2:1":  [1280, 640],
-  "3:2":  [1152, 768],
-  "2:3":  [768, 1152],
+  "2:1": [1280, 640],
+  "3:2": [1152, 768],
+  "2:3": [768, 1152],
 };
 
 function gcd(a, b) {
-  a = Math.abs(a); b = Math.abs(b);
-  while (b) { const t = b; b = a % b; a = t; }
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) {
+    const t = b;
+    b = a % b;
+    a = t;
+  }
   return a || 1;
 }
 
 function ratioLabel(w, h) {
   const g = gcd(w, h);
-  const rw = w / g, rh = h / g;
-  const known = ["1:1","16:9","9:16","2:1","1:2","3:2","2:3"];
+  const rw = w / g,
+    rh = h / g;
+  const known = ["1:1", "16:9", "9:16", "2:1", "1:2", "3:2", "2:3"];
   const simple = `${rw}:${rh}`;
   if (known.includes(simple)) return simple;
   const r = w / h;
@@ -375,8 +418,12 @@ function megapixels(w, h) {
   return ((w * h) / 1_000_000).toFixed(2);
 }
 
-function snapTo(n, step) { return Math.round(n / step) * step; }
-function clampDim(n) { return Math.max(256, Math.min(4096, n)); }
+function snapTo(n, step) {
+  return Math.round(n / step) * step;
+}
+function clampDim(n) {
+  return Math.max(256, Math.min(4096, n));
+}
 
 function renderChipGrid(state) {
   const wrap = document.createElement("div");
@@ -469,7 +516,7 @@ function renderCustomPanel(node, state) {
   readout.className = "pix-res-readout";
 
   // Snap-step picker: magnet icon + 4 small chip buttons (8/16/32/64).
-  // Click to set; the active value is highlighted in brand orange.
+  // Click to set; the active value is highlighted in brand blue.
   const snapGroup = document.createElement("div");
   snapGroup.className = "pix-res-snap-group";
   snapGroup.title = "Snap step (also drives Up/Down arrow nudge)";
@@ -481,7 +528,8 @@ function renderCustomPanel(node, state) {
   for (const v of SNAP_OPTIONS) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
+    btn.className =
+      "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
     btn.textContent = String(v);
     btn.dataset.v = String(v);
     btn.addEventListener("click", (e) => {
@@ -540,8 +588,7 @@ function renderCustomPanel(node, state) {
   refreshPreview(state.w, state.h);
 
   function refreshReadout(w, h) {
-    ratioMP.innerHTML =
-      `<span class="accent">${ratioLabel(w, h)}</span> · ${megapixels(w, h)} MP`;
+    ratioMP.innerHTML = `<span class="accent">${ratioLabel(w, h)}</span> · ${megapixels(w, h)} MP`;
     refreshPreview(w, h);
   }
   refreshReadout(state.w, state.h);
@@ -556,22 +603,32 @@ function renderCustomPanel(node, state) {
     wInput.value = String(wNew);
     hInput.value = String(hNew);
     refreshReadout(wNew, hNew);
-    writeState(node, { ...cur, w: wNew, h: hNew, custom_w: wNew, custom_h: hNew });
+    writeState(node, {
+      ...cur,
+      w: wNew,
+      h: hNew,
+      custom_w: wNew,
+      custom_h: hNew,
+    });
   }
-
 
   function liveUpdate() {
     const wLive = parseInt(wInput.value, 10);
     const hLive = parseInt(hInput.value, 10);
-    if (Number.isFinite(wLive) && Number.isFinite(hLive)) refreshReadout(wLive, hLive);
+    if (Number.isFinite(wLive) && Number.isFinite(hLive))
+      refreshReadout(wLive, hLive);
   }
   wInput.addEventListener("input", liveUpdate);
   hInput.addEventListener("input", liveUpdate);
 
   wInput.addEventListener("blur", commit);
   hInput.addEventListener("blur", commit);
-  wInput.addEventListener("keydown", (e) => { if (e.key === "Enter") wInput.blur(); });
-  hInput.addEventListener("keydown", (e) => { if (e.key === "Enter") hInput.blur(); });
+  wInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") wInput.blur();
+  });
+  hInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") hInput.blur();
+  });
 
   for (const inp of [wInput, hInput]) {
     inp.addEventListener("keydown", (e) => e.stopPropagation());
@@ -632,10 +689,10 @@ function setupResolutionNode(node) {
   // Branded default colors. Only applied when the node has no override yet —
   // workflow-restored colors and right-click Color-menu picks both land on
   // node.color / node.bgcolor before nodeCreated fires, so the user's choice
-  // wins. Title bar matches the chip surface (#1d1d1d), body matches the root
-  // surface (#2a2a2a) so the whole node reads as one cohesive dark panel.
-  if (!node.color)   node.color   = "#1d1d1d";
-  if (!node.bgcolor) node.bgcolor = "#2a2a2a";
+  // wins. Title bar matches the chip surface (#89b4fa), body matches the root
+  // surface (#1e1e2e) so the whole node reads as one cohesive dark panel.
+  if (!node.color) node.color = "#89b4fa";
+  if (!node.bgcolor) node.bgcolor = "#1e1e2e";
 
   // Lock both dimensions. The chip grid is tuned for 240px wide, and the
   // height is sized to fit all 8 preset rows + chips with no scrollbar (see
@@ -699,7 +756,9 @@ function setupResolutionNode(node) {
       // overlay/canvas and arrows don't reach us.
       const list = root.querySelector(".pix-res-list:not(.pix-res-custom)");
       list?.focus();
-      list?.querySelector(".pix-res-row.active")?.scrollIntoView({ block: "nearest" });
+      list
+        ?.querySelector(".pix-res-row.active")
+        ?.scrollIntoView({ block: "nearest" });
     }
   };
 
@@ -719,17 +778,19 @@ function setupResolutionNode(node) {
     e.stopPropagation();
     let idx = sizes.findIndex(([w, h]) => w === cur.w && h === cur.h);
     if (idx < 0) idx = 0;
-    if (e.key === "ArrowUp")        idx = Math.max(0, idx - 1);
+    if (e.key === "ArrowUp") idx = Math.max(0, idx - 1);
     else if (e.key === "ArrowDown") idx = Math.min(sizes.length - 1, idx + 1);
-    else if (e.key === "Home")      idx = 0;
-    else if (e.key === "End")       idx = sizes.length - 1;
+    else if (e.key === "Home") idx = 0;
+    else if (e.key === "End") idx = sizes.length - 1;
     const [w, h] = sizes[idx];
     if (w === cur.w && h === cur.h) return; // no-op (already at boundary)
     writeState(node, { ...cur, w, h });
     renderUI(node);
     const newList = root.querySelector(".pix-res-list:not(.pix-res-custom)");
     newList?.focus();
-    newList?.querySelector(".pix-res-row.active")?.scrollIntoView({ block: "nearest" });
+    newList
+      ?.querySelector(".pix-res-row.active")
+      ?.scrollIntoView({ block: "nearest" });
   };
 
   // Attach to both root and the widget container so a Vue rebuild still routes events.
@@ -759,10 +820,10 @@ function setupResolutionNode(node) {
 }
 
 app.registerExtension({
-  name: "Pixaroma.Resolution",
+  name: "LinuxTechLab.Resolution",
 
   beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaResolution") return;
+    if (nodeData.name !== "LinuxTechLabResolution") return;
 
     // onConfigure fires whenever configure() is called — catches the case
     // where a user opens a different workflow into an already-constructed
@@ -789,10 +850,10 @@ app.registerExtension({
 
   // nodeCreated fires AFTER node construction including configure, so widget
   // values restored from a saved workflow are already in place. This is the
-  // proven Pixaroma pattern (see js/note/index.js) for hidden-JSON-widget
+  // proven LinuxTechLab pattern (see js/note/index.js) for hidden-JSON-widget
   // state restoration.
   nodeCreated(node) {
-    if (node.comfyClass !== "PixaromaResolution") return;
+    if (node.comfyClass !== "LinuxTechLabResolution") return;
     setupResolutionNode(node);
   },
 });
@@ -800,26 +861,29 @@ app.registerExtension({
 // Inject the per-node state into the API prompt at execution time. Python's
 // `hidden` ResolutionState input expects a STRING value but doesn't get one
 // from the workflow JSON (no widget exists). Patch app.graphToPrompt so each
-// PixaromaResolution node's prompt entry gets its `inputs.ResolutionState`
+// LinuxTechLabResolution node's prompt entry gets its `inputs.ResolutionState`
 // populated from node.properties[STATE_PROP] right before submission.
 //
 // Subgraph-safe lookup: ComfyUI's new subgraph system flattens contained nodes
 // into the API prompt with composite string IDs (e.g. "5:12"), and `app.graph`
 // only exposes top-level nodes — so the previous `parseInt(id) + getNodeById`
-// path silently missed any PixaromaResolution placed inside a subgraph and
-// the user got a TypeError at execution. Identify pixaroma entries directly
+// path silently missed any LinuxTechLabResolution placed inside a subgraph and
+// the user got a TypeError at execution. Identify linuxtechlab entries directly
 // by `class_type` in the API prompt, and resolve their state via a recursive
 // walk over every nested subgraph. Falls back to DEFAULT_STATE if a node
 // can't be found so the workflow never crashes — worst case the user sees the
 // 1024×1024 default instead of their pick.
-function buildPixaromaNodeIndex() {
+function buildLinuxTechLabNodeIndex() {
   const index = new Map(); // String(node.id) → node
   const visit = (graph) => {
     if (!graph) return;
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "PixaromaResolution" || n.type === "PixaromaResolution") {
+      if (
+        n.comfyClass === "LinuxTechLabResolution" ||
+        n.type === "LinuxTechLabResolution"
+      ) {
         index.set(String(n.id), n);
       }
       // ComfyUI subgraph instances expose their inner graph at one of these
@@ -832,7 +896,7 @@ function buildPixaromaNodeIndex() {
   return index;
 }
 
-function findPixaromaNode(index, promptId) {
+function findLinuxTechLabNode(index, promptId) {
   // Try exact match first; then strip any subgraph prefix ("5:12" → "12") so
   // we still hit the inner node when ComfyUI prefixes IDs in the API prompt.
   const sId = String(promptId);
@@ -850,10 +914,11 @@ app.graphToPrompt = async function (...args) {
     let index = null;
     for (const id in out) {
       const entry = out[id];
-      if (!entry || entry.class_type !== "PixaromaResolution") continue;
-      if (!index) index = buildPixaromaNodeIndex();
-      const node = findPixaromaNode(index, id);
-      const state = node?.properties?.[STATE_PROP] || JSON.stringify(DEFAULT_STATE);
+      if (!entry || entry.class_type !== "LinuxTechLabResolution") continue;
+      if (!index) index = buildLinuxTechLabNodeIndex();
+      const node = findLinuxTechLabNode(index, id);
+      const state =
+        node?.properties?.[STATE_PROP] || JSON.stringify(DEFAULT_STATE);
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = state;
     }

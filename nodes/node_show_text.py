@@ -1,13 +1,15 @@
-import torch
-import numpy as np
-from PIL import Image
-import os
 import json
+import os
+
 import folder_paths
+import numpy as np
+import torch
+from PIL import Image
+
 from .node_ref import any_type
 
 
-class PixaromaShowText:
+class LinuxTechLabShowText:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"source": (any_type, {})}}
@@ -15,7 +17,7 @@ class PixaromaShowText:
     RETURN_TYPES = ()
     FUNCTION = "show"
     OUTPUT_NODE = True
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
 
     def show(self, source):
         try:
@@ -39,9 +41,9 @@ class PixaromaShowText:
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaShowText": PixaromaShowText,
+    "LinuxTechLabShowText": LinuxTechLabShowText,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaShowText": "Show Text Pixaroma",
+    "LinuxTechLabShowText": "Show Text LinuxTechLab",
 }

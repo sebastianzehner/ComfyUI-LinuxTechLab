@@ -12,7 +12,11 @@ function darken(hex, amount) {
   const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex);
   if (!m) return hex;
   let s = m[1];
-  if (s.length === 3) s = s.split("").map((c) => c + c).join("");
+  if (s.length === 3)
+    s = s
+      .split("")
+      .map((c) => c + c)
+      .join("");
   const n = parseInt(s, 16);
   const r = Math.max(0, Math.round(((n >> 16) & 0xff) * (1 - amount)));
   const g = Math.max(0, Math.round(((n >> 8) & 0xff) * (1 - amount)));
@@ -25,7 +29,7 @@ export function attachEditButton(wrap, onClick) {
   btn.className = "pix-note-editbtn";
   btn.type = "button";
   const icon = document.createElement("img");
-  icon.src = "/pixaroma/assets/icons/layers/edit.svg";
+  icon.src = "/linuxtechlab/assets/icons/layers/edit.svg";
   icon.draggable = false;
   icon.className = "pix-note-editbtn-icon";
   btn.appendChild(icon);
@@ -61,14 +65,14 @@ export function renderContent(node, bodyEl) {
   const cfg = node._noteCfg || {};
   // Two independent pickers after the Btn/Ln split. Both CSS vars are
   // written up-front so on-canvas rendering matches the editor view.
-  bodyEl.style.setProperty("--pix-note-btn", cfg.buttonColor || "#f66744");
-  bodyEl.style.setProperty("--pix-note-line", cfg.lineColor || "#f66744");
+  bodyEl.style.setProperty("--pix-note-btn", cfg.buttonColor || "#89b4fa");
+  bodyEl.style.setProperty("--pix-note-line", cfg.lineColor || "#89b4fa");
 
   // Bg picker drives the node's visual background. Three-state logic
-  // designed to (a) give fresh notes our dark #111111 default instead
-  // of the lighter LiteGraph theme gray, and (b) not clobber
-  // ComfyUI's native right-click Colors menu every time the user
-  // saves text edits:
+  // designed to (a) give fresh notes our Catppuccin Mocha Base #1e1e2e
+  // default instead of the lighter LiteGraph theme gray, and (b) not
+  // clobber ComfyUI's native right-click Colors menu every time the
+  // user saves text edits:
   //
   //   - hex string              → user picked a color in OUR Bg picker.
   //     node.bgcolor = hex (body), node.color = darken(hex, 0.3)
@@ -76,14 +80,15 @@ export function renderContent(node, bodyEl) {
   //     Colors-menu produces so the title strip always reads against
   //     the body.
   //   - null OR "transparent"   → user clicked Clear in OUR Bg picker.
-  //     Reset to our #111111 default (flat, no darken — the default is
-  //     already almost black, darkening further would be invisible).
+  //     Reset to Catppuccin Mocha defaults: bgcolor = Base (#1e1e2e),
+  //     color = Blue (#89b4fa) — flat, no darken needed since the
+  //     title is set to an accent color directly.
   //   - undefined / key missing → fresh note OR user has never touched
   //     OUR Bg picker. If node.bgcolor is still null (LiteGraph default,
-  //     brand-new node), apply our #111111 default so fresh notes are
-  //     dark-gray like the editor interior. If node.bgcolor has a value,
-  //     leave it alone — that means ComfyUI's native Colors menu set
-  //     it, and our override would clobber the user's pick on every
+  //     brand-new node), apply our #1e1e2e default so fresh notes match
+  //     the Catppuccin Mocha editor interior. If node.bgcolor has a
+  //     value, leave it alone — that means ComfyUI's native Colors menu
+  //     set it, and our override would clobber the user's pick on every
   //     save (this was the bug that made us rework the pattern).
   //
   // node.setDirtyCanvas(true, true) forces LiteGraph to repaint the
@@ -94,20 +99,20 @@ export function renderContent(node, bodyEl) {
     node.color = darken(bg, 0.3);
     node.bgcolor = bg;
   } else if (bg === null || bg === "transparent") {
-    node.color = "#111111";
-    node.bgcolor = "#111111";
+    node.color = "#89b4fa";
+    node.bgcolor = "#1e1e2e";
   } else if (!node.bgcolor && !cfg.content) {
     // Brand-new empty note (cfg undefined, no content typed, node
-    // has never had a bgcolor set). Apply our dark default so the
-    // fresh-placement experience matches the editor interior.
+    // has never had a bgcolor set). Apply Catppuccin Mocha Base so
+    // the fresh-placement experience matches the editor interior.
     //
     // The !cfg.content guard is load-bearing: if the note has
     // content but node.bgcolor is null, the user has explicitly
     // picked "no color / default" via ComfyUI's native right-click
     // Colors menu. Saving text edits must NOT reset that back to
-    // #111111 — canvas should stay at LiteGraph's theme default.
-    node.color = "#111111";
-    node.bgcolor = "#111111";
+    // #1e1e2e — canvas should stay at LiteGraph's theme default.
+    node.color = "#89b4fa";
+    node.bgcolor = "#1e1e2e";
   }
   // else (cfg undefined AND (node.bgcolor set OR content present)):
   // no-op, preserve whatever the user picked via native picker.
@@ -143,7 +148,7 @@ function injectCopyButtons(bodyEl) {
     btn.title = "Copy code";
     btn.contentEditable = "false";
     const icon = document.createElement("img");
-    icon.src = "/pixaroma/assets/icons/ui/copy.svg";
+    icon.src = "/linuxtechlab/assets/icons/ui/copy.svg";
     icon.draggable = false;
     btn.appendChild(icon);
     pre.appendChild(btn);
@@ -164,15 +169,22 @@ function injectCopyButtons(bodyEl) {
       setTimeout(() => cb.classList.remove("copied"), 1200);
     };
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(flash).catch(() => {});
+      navigator.clipboard
+        .writeText(text)
+        .then(flash)
+        .catch(() => {});
     } else {
       // Fallback for older browsers / non-secure contexts.
       const ta = document.createElement("textarea");
       ta.value = text;
-      ta.style.position = "fixed"; ta.style.opacity = "0";
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand("copy"); flash(); } catch {}
+      try {
+        document.execCommand("copy");
+        flash();
+      } catch {}
       ta.remove();
     }
   });
@@ -182,10 +194,18 @@ export function attachCanvasClickDelegation(bodyEl) {
   // Pills are plain links — the browser handles navigation via target=_blank.
   // The only side-effect we need here is stopping propagation so a click
   // inside the note body doesn't initiate a LiteGraph node drag underneath.
-  bodyEl.addEventListener("click", (e) => {
-    if (e.target.closest("a")) e.stopPropagation();
-  }, true);
-  bodyEl.addEventListener("mousedown", (e) => {
-    if (e.target.closest("a")) e.stopPropagation();
-  }, true);
+  bodyEl.addEventListener(
+    "click",
+    (e) => {
+      if (e.target.closest("a")) e.stopPropagation();
+    },
+    true,
+  );
+  bodyEl.addEventListener(
+    "mousedown",
+    (e) => {
+      if (e.target.closest("a")) e.stopPropagation();
+    },
+    true,
+  );
 }

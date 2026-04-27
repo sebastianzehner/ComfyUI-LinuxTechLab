@@ -105,7 +105,10 @@ export class NoteEditor {
           if (this._editArea && document.activeElement !== this._editArea) {
             this._editArea.focus();
           }
-          try { if (isRedo) this.doRedo(); else this.doUndo(); } catch (err) {}
+          try {
+            if (isRedo) this.doRedo();
+            else this.doUndo();
+          } catch (err) {}
         }
         return;
       }
@@ -122,8 +125,11 @@ export class NoteEditor {
           if (this._editArea && document.activeElement !== this._editArea) {
             this._editArea.focus();
           }
-          const cmd = key === "b" ? "bold" : key === "i" ? "italic" : "underline";
-          try { document.execCommand(cmd); } catch (err) {}
+          const cmd =
+            key === "b" ? "bold" : key === "i" ? "italic" : "underline";
+          try {
+            document.execCommand(cmd);
+          } catch (err) {}
           this._dirty = true;
           return;
         }
@@ -144,7 +150,10 @@ export class NoteEditor {
           let cell = null;
           let n = anchor;
           while (n && n !== this._editArea) {
-            if (n.nodeType === 1 && (n.tagName === "TD" || n.tagName === "TH")) {
+            if (
+              n.nodeType === 1 &&
+              (n.tagName === "TD" || n.tagName === "TH")
+            ) {
               cell = n;
               break;
             }
@@ -154,7 +163,7 @@ export class NoteEditor {
             e.preventDefault();
             e.stopImmediatePropagation();
             const cells = Array.from(
-              cell.closest("table").querySelectorAll("th, td")
+              cell.closest("table").querySelectorAll("th, td"),
             );
             const ix = cells.indexOf(cell);
             const next = e.shiftKey ? cells[ix - 1] : cells[ix + 1];
@@ -213,7 +222,8 @@ export class NoteEditor {
                     r2.setStart(node, 0);
                   } else {
                     const idx = Array.prototype.indexOf.call(
-                      parent.childNodes, node
+                      parent.childNodes,
+                      node,
                     );
                     parent.removeChild(node);
                     r2.setStart(parent, Math.max(0, idx));
@@ -258,7 +268,8 @@ export class NoteEditor {
                     r2.setStart(node, 0);
                   } else {
                     const idx = Array.prototype.indexOf.call(
-                      parent.childNodes, node
+                      parent.childNodes,
+                      node,
                     );
                     parent.removeChild(node);
                     r2.setStart(parent, Math.max(0, idx));
@@ -316,7 +327,7 @@ export class NoteEditor {
                   // (valid Range offset: 0..childNodes.length).
                   const clamped = Math.min(
                     Math.max(0, off - 1),
-                    node.childNodes.length
+                    node.childNodes.length,
                   );
                   r2.setStart(node, clamped);
                   r2.collapse(true);
@@ -338,7 +349,7 @@ export class NoteEditor {
         // Cancel/outside to dismiss.
         if (key === "escape") {
           const hasModal = !!document.querySelector(
-            ".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop, .pix-note-iconpop, .pix-note-help-overlay"
+            ".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop, .pix-note-iconpop, .pix-note-help-overlay",
           );
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -426,14 +437,18 @@ export class NoteEditor {
     if (typeof app.loadGraphData === "function") {
       this._savedLoadGraphData = app.loadGraphData.bind(app);
       app.loadGraphData = () => {
-        console.warn("[pix-note] loadGraphData blocked while note editor is open");
+        console.warn(
+          "[pix-note] loadGraphData blocked while note editor is open",
+        );
         return Promise.resolve();
       };
     }
     if (app.graph && typeof app.graph.configure === "function") {
       this._savedGraphConfigure = app.graph.configure.bind(app.graph);
       app.graph.configure = () => {
-        console.warn("[pix-note] graph.configure blocked while note editor is open");
+        console.warn(
+          "[pix-note] graph.configure blocked while note editor is open",
+        );
       };
     }
     // Try to intercept the Vue frontend's command dispatch for Undo/Redo.
@@ -441,7 +456,7 @@ export class NoteEditor {
     // find so Comfy.Undo and Comfy.Redo become no-ops while editor is open.
     try {
       const cmd = app?.extensionManager?.command;
-      const execPath = cmd?.execute ? cmd : (cmd?.commandStore || cmd);
+      const execPath = cmd?.execute ? cmd : cmd?.commandStore || cmd;
       if (execPath && typeof execPath.execute === "function") {
         this._savedCmdExecute = execPath.execute.bind(execPath);
         const orig = this._savedCmdExecute;
@@ -451,7 +466,9 @@ export class NoteEditor {
         };
         this._cmdExecPath = execPath;
       }
-    } catch (e) { /* Vue frontend API surface may change — non-fatal. */ }
+    } catch (e) {
+      /* Vue frontend API surface may change — non-fatal. */
+    }
     // Node-resurrection safety net: if Ctrl+Z still slips through and the
     // node is removed from the graph while the editor is open, LiteGraph's
     // onRemoved fires. Close the editor gracefully so the user isn't stuck
@@ -460,9 +477,13 @@ export class NoteEditor {
     this._origOnRemoved = this.node.onRemoved;
     const self = this;
     this.node.onRemoved = function () {
-      try { self._origOnRemoved?.call(this); } catch (e) {}
+      try {
+        self._origOnRemoved?.call(this);
+      } catch (e) {}
       if (self._el?.isConnected) {
-        console.warn("[pix-note] node removed while editor open — closing editor");
+        console.warn(
+          "[pix-note] node removed while editor open — closing editor",
+        );
         self._dirty = false;
         self.close(true);
       }
@@ -471,7 +492,10 @@ export class NoteEditor {
     this._removalObserver = new MutationObserver(() => {
       if (this._el && !this._el.isConnected) this._cleanup();
     });
-    this._removalObserver.observe(document.body, { childList: true, subtree: false });
+    this._removalObserver.observe(document.body, {
+      childList: true,
+      subtree: false,
+    });
     requestAnimationFrame(() => this._editArea?.focus());
   }
 
@@ -494,7 +518,8 @@ export class NoteEditor {
       title.textContent = "You have unsaved changes";
       const text = document.createElement("div");
       text.className = "pix-note-confirm-text";
-      text.textContent = "If you close now, your edits will be lost. What do you want to do?";
+      text.textContent =
+        "If you close now, your edits will be lost. What do you want to do?";
       const actions = document.createElement("div");
       actions.className = "pix-note-confirm-actions";
       const cancelBtn = document.createElement("button");
@@ -562,7 +587,10 @@ export class NoteEditor {
       this._origOnRemoved = undefined;
     }
     if (this._selectionChangeHandler) {
-      document.removeEventListener("selectionchange", this._selectionChangeHandler);
+      document.removeEventListener(
+        "selectionchange",
+        this._selectionChangeHandler,
+      );
       this._selectionChangeHandler = null;
     }
     if (this._onWindowResize) {
@@ -585,7 +613,8 @@ export class NoteEditor {
       if (app.graph) app.graph.configure = this._savedGraphConfigure;
       this._savedGraphConfigure = null;
     }
-    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
+    if (this._el && this._el.parentNode)
+      this._el.parentNode.removeChild(this._el);
     this._el = null;
     if (this.node && this.node._noteEditor === this) {
       this.node._noteEditor = null;
@@ -596,14 +625,19 @@ export class NoteEditor {
     // If the user is in Code view, persist what they edited in the textarea,
     // not what's currently in the (hidden) WYSIWYG area. sanitize runs either
     // way so malicious markup added in Code view is stripped before storage.
-    const raw = this._mode === "code"
-      ? (this._codeArea?.value || "")
-      : (this._editArea?.innerHTML || "");
+    const raw =
+      this._mode === "code"
+        ? this._codeArea?.value || ""
+        : this._editArea?.innerHTML || "";
     let html;
     try {
       html = sanitize(raw);
     } catch (e) {
-      console.error("[pix-note] sanitize threw during save; keeping raw HTML", e, { raw });
+      console.error(
+        "[pix-note] sanitize threw during save; keeping raw HTML",
+        e,
+        { raw },
+      );
       html = raw;
     }
     this.cfg.content = html;
@@ -676,7 +710,7 @@ export class NoteEditor {
       // unsaved-changes prompt ON TOP of the still-open modal. Mirrors
       // the same hasModal check the Escape-key handler already uses above.
       const hasModal = !!document.querySelector(
-        ".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop, .pix-note-iconpop, .pix-note-help-overlay"
+        ".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop, .pix-note-iconpop, .pix-note-help-overlay",
       );
       if (hasModal) return;
       this.close();
@@ -689,12 +723,12 @@ export class NoteEditor {
     const header = el("div", "pix-note-header");
     const titleSpan = el("div", "pix-note-title");
     const logo = document.createElement("img");
-    logo.src = "/pixaroma/assets/pixaroma_logo.svg";
+    logo.src = "/linuxtechlab/assets/linuxtechlab_logo.svg";
     logo.className = "pix-note-title-logo";
     titleSpan.appendChild(logo);
     titleSpan.append(" Note Editor ");
     const brandSpan = el("span", "pix-note-title-brand");
-    brandSpan.textContent = "Pixaroma";
+    brandSpan.textContent = "LinuxTechLab";
     titleSpan.appendChild(brandSpan);
     header.appendChild(titleSpan);
 
@@ -729,7 +763,9 @@ export class NoteEditor {
     // Force <p> as Enter's default paragraph separator so spacing stays
     // consistent (Chrome otherwise uses <div>, which has no default margin
     // and looks mismatched against older <p>-wrapped content).
-    try { document.execCommand("defaultParagraphSeparator", false, "p"); } catch (e) {}
+    try {
+      document.execCommand("defaultParagraphSeparator", false, "p");
+    } catch (e) {}
     // Manual undo history. We replace the browser's native contenteditable
     // undo entirely because direct-DOM mutations from toolbar buttons (code
     // block insert, etc.) aren't tracked by it. Typing / execCommand
@@ -781,18 +817,22 @@ export class NoteEditor {
     // and then Tx-clear-format or delete it. The pencil handles bulk
     // edits; this just lets simple click-to-position work. Use capture
     // so we preempt the anchor's default navigation.
-    editArea.addEventListener("click", (e) => {
-      if (e.target.closest("a")) {
-        e.preventDefault();
-      }
-    }, true);
+    editArea.addEventListener(
+      "click",
+      (e) => {
+        if (e.target.closest("a")) {
+          e.preventDefault();
+        }
+      },
+      true,
+    );
     main.appendChild(editArea);
     this._editArea = editArea;
     // Write the Btn/Ln CSS vars on editArea NOW that it exists. The
     // makeColorPicker factory inside _buildToolbar() ran before this
     // assignment, so its apply() no-oped on `this._editArea?.`—
     // without this explicit call, the editor preview would fall back
-    // to the default orange for lines/buttons on every open even when
+    // to the default blue for lines/buttons on every open even when
     // cfg has a saved color. Click-time picker updates still work via
     // their own apply() call because editArea is set by then.
     this._applyCfgColorsToEditArea();
@@ -844,7 +884,7 @@ export class NoteEditor {
     h.className = "pix-note-help-overlay";
     h.innerHTML = `
       <div class="pix-note-help-header">
-        <h3>Note Pixaroma — Shortcuts &amp; Features</h3>
+        <h3>Note LinuxTechLab — Shortcuts &amp; Features</h3>
         <button type="button" class="pix-note-help-close" title="Close">\u2715</button>
       </div>
       <div class="pix-note-help-content">
@@ -862,7 +902,7 @@ export class NoteEditor {
             <b><i>I</i></b><span>Italic (Ctrl+I)</span>
             <b><u>U</u></b><span>Underline (Ctrl+U)</span>
             <b><s>S</s></b><span>Strikethrough</span>
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/clear-format.svg">Broom</b><span>Clear all formatting on selection; demotes headings to paragraph; unwraps code / lists</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/clear-format.svg">Broom</b><span>Clear all formatting on selection; demotes headings to paragraph; unwraps code / lists</span>
           </div>
         </div>
         <div class="pix-note-help-section">
@@ -894,17 +934,17 @@ export class NoteEditor {
             <b><span class="pix-note-tbtn-maskicon pix-note-icon-link"></span>Link</b><span>http, https, or mailto URLs only. Opens in new tab.</span>
             <b><span class="pix-note-tbtn-maskicon pix-note-icon-code"></span>Code</b><span>Code block (&lt;pre&gt;&lt;code&gt;). Multi-line via the themed dialog</span>
             <b><span class="pix-note-tbtn-maskicon pix-note-icon-separator"></span>Separator</b><span>&lt;hr&gt; horizontal rule</span>
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/grid.svg">Grid</b><span>Table: 2–4 columns × 1–10 rows. Tab navigates cells</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/grid.svg">Grid</b><span>Table: 2–4 columns × 1–10 rows. Tab navigates cells</span>
             <b><span class="pix-note-tbtn-maskicon pix-note-icon-icon-insert"></span>Icon</b><span>SVG from assets/icons/note/. Takes current A color on insert</span>
           </div>
         </div>
         <div class="pix-note-help-section">
-          <h4>Pixaroma Blocks</h4>
+          <h4>LinuxTechLab Blocks</h4>
           <div class="pix-note-help-grid">
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/button-design.svg">Button Design</b><span>Rich dialog — Download / View Page / Read More pill with icon + optional folder hint + size tag</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/button-design.svg">Button Design</b><span>Rich dialog — Download / View Page / Read More pill with icon + optional folder hint + size tag</span>
             <b>Download pill</b><span>On canvas: click opens the URL in a new tab. The folder hint below is informational — save the file manually into that path.</span>
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/youtube.svg">YouTube</b><span>Preset Pixaroma YouTube link (override freely)</span>
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/discord.svg">Discord</b><span>Preset Pixaroma Discord link (override freely)</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/youtube.svg">YouTube</b><span>Preset LinuxTechLab YouTube link (override freely)</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/discord.svg">Discord</b><span>Preset LinuxTechLab Discord link (override freely)</span>
           </div>
         </div>
         <div class="pix-note-help-section">
@@ -926,8 +966,8 @@ export class NoteEditor {
           <h4>Keyboard</h4>
           <div class="pix-note-help-grid">
             <b>Ctrl+B / I / U</b><span>Bold / Italic / Underline</span>
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/undo.svg">Ctrl+Z</b><span>Undo</span>
-            <b><img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/redo.svg">Ctrl+Y / Ctrl+Shift+Z</b><span>Redo</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/undo.svg">Ctrl+Z</b><span>Undo</span>
+            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/redo.svg">Ctrl+Y / Ctrl+Shift+Z</b><span>Redo</span>
             <b>Ctrl+S</b><span>Save</span>
             <b>Tab / Shift+Tab</b><span>Move between grid cells (when inside one)</span>
             <b>Esc</b><span>Close editor (prompts if unsaved)</span>
@@ -944,8 +984,8 @@ export class NoteEditor {
       <div class="pix-note-help-footer">
         For the list of HTML tags / styles / classes allowed in Code
         view, click <b>? Code</b> in the footer.<br>
-        Designed by <a href="https://www.youtube.com/@pixaroma" target="_blank" rel="noopener noreferrer">Pixaroma</a>
-        &middot; <a href="https://github.com/pixaroma/ComfyUI-Pixaroma" target="_blank" rel="noopener noreferrer">GitHub</a>
+        Designed by <a href="https://www.youtube.com/@linuxtechlab" target="_blank" rel="noopener noreferrer">LinuxTechLab</a>
+        &middot; <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     `;
     const close = h.querySelector(".pix-note-help-close");
@@ -961,7 +1001,7 @@ export class NoteEditor {
     h.className = "pix-note-help-overlay";
     h.innerHTML = `
       <div class="pix-note-help-header">
-        <h3>Note Pixaroma — Code View Reference</h3>
+        <h3>Note LinuxTechLab — Code View Reference</h3>
         <button type="button" class="pix-note-help-close" title="Close">\u2715</button>
       </div>
       <div class="pix-note-help-content">
@@ -1058,8 +1098,8 @@ export class NoteEditor {
         </div>
       </div>
       <div class="pix-note-help-footer">
-        Designed by <a href="https://www.youtube.com/@pixaroma" target="_blank" rel="noopener noreferrer">Pixaroma</a>
-        &middot; <a href="https://github.com/pixaroma/ComfyUI-Pixaroma" target="_blank" rel="noopener noreferrer">GitHub</a>
+        Designed by <a href="https://www.youtube.com/@LinuxTechLab" target="_blank" rel="noopener noreferrer">LinuxTechLab</a>
+        &middot; <a href="https://github.com/linuxtechlab/ComfyUI-LinuxTechLab" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     `;
     const close = h.querySelector(".pix-note-help-close");
@@ -1139,11 +1179,20 @@ NoteEditor.prototype._normalizeEditArea = function (area) {
   for (const n of nodes) {
     const isTextish =
       n.nodeType === 3 ||
-      (n.nodeType === 1 && (n.tagName === "BR" || n.tagName === "SPAN" ||
-        n.tagName === "B" || n.tagName === "STRONG" || n.tagName === "I" ||
-        n.tagName === "EM" || n.tagName === "U" || n.tagName === "S" ||
-        n.tagName === "STRIKE" || n.tagName === "A" || n.tagName === "CODE" ||
-        n.tagName === "FONT" || n.tagName === "LABEL"));
+      (n.nodeType === 1 &&
+        (n.tagName === "BR" ||
+          n.tagName === "SPAN" ||
+          n.tagName === "B" ||
+          n.tagName === "STRONG" ||
+          n.tagName === "I" ||
+          n.tagName === "EM" ||
+          n.tagName === "U" ||
+          n.tagName === "S" ||
+          n.tagName === "STRIKE" ||
+          n.tagName === "A" ||
+          n.tagName === "CODE" ||
+          n.tagName === "FONT" ||
+          n.tagName === "LABEL"));
     if (isTextish) {
       if (!currentP) {
         currentP = document.createElement("p");
@@ -1177,7 +1226,9 @@ NoteEditor.prototype._enterCodeView = function () {
     this._codeView = null;
   }
   const cv = buildCodeViewDOM(htmlNow, {
-    onInput: () => { this._dirty = true; },
+    onInput: () => {
+      this._dirty = true;
+    },
   });
   this._editArea.parentElement.appendChild(cv.root);
   this._codeView = cv;
@@ -1188,7 +1239,10 @@ NoteEditor.prototype._enterCodeView = function () {
 };
 
 NoteEditor.prototype._enterPreviewView = function () {
-  if (this._mode !== "code") { this._mode = "preview"; return; }
+  if (this._mode !== "code") {
+    this._mode = "preview";
+    return;
+  }
   const raw = this._codeView?.textarea.value || "";
   const clean = sanitize(raw);
   this._editArea.innerHTML = clean;
@@ -1243,8 +1297,8 @@ NoteEditor.prototype._applyEditAreaBg = function (area) {
 NoteEditor.prototype._applyCfgColorsToEditArea = function () {
   const a = this._editArea;
   if (!a) return;
-  a.style.setProperty("--pix-note-btn",  this.cfg.buttonColor || "#f66744");
-  a.style.setProperty("--pix-note-line", this.cfg.lineColor   || "#f66744");
+  a.style.setProperty("--pix-note-btn", this.cfg.buttonColor || "#89b4fa");
+  a.style.setProperty("--pix-note-line", this.cfg.lineColor || "#89b4fa");
 };
 
 NoteEditor.prototype._placeCursorAtEnd = function () {
@@ -1273,7 +1327,7 @@ const PENCIL_BLOCK_SELECTORS = [
   "a.pix-note-yt",
   "a.pix-note-discord",
   "pre",
-  // Plain anchors last so a Pixaroma-classed <a> matches above first.
+  // Plain anchors last so a LinuxTechLab-classed <a> matches above first.
   "a:not([class*='pix-note-'])",
 ].join(",");
 
@@ -1284,7 +1338,7 @@ NoteEditor.prototype._installPencil = function (main, editArea) {
   pencil.contentEditable = "false";
   pencil.setAttribute("aria-label", "Edit block");
   const icon = document.createElement("img");
-  icon.src = "/pixaroma/assets/icons/layers/edit.svg";
+  icon.src = "/linuxtechlab/assets/icons/layers/edit.svg";
   icon.draggable = false;
   pencil.appendChild(icon);
   main.appendChild(pencil);
@@ -1293,7 +1347,10 @@ NoteEditor.prototype._installPencil = function (main, editArea) {
 
   let hideTimer = null;
   const show = (target) => {
-    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
+    }
     this._pencilTarget = target;
     this._repositionPencil();
     pencil.classList.add("visible");
@@ -1319,7 +1376,10 @@ NoteEditor.prototype._installPencil = function (main, editArea) {
     scheduleHide();
   });
   pencil.addEventListener("mouseenter", () => {
-    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
+    }
   });
   pencil.addEventListener("mouseleave", () => scheduleHide());
 
@@ -1342,7 +1402,10 @@ NoteEditor.prototype._installPencil = function (main, editArea) {
   // Recompute position on editArea scroll + window resize so the pencil
   // tracks its target during layout changes.
   editArea.addEventListener("scroll", () => this._repositionPencil());
-  window.addEventListener("resize", this._onWindowResize = () => this._repositionPencil());
+  window.addEventListener(
+    "resize",
+    (this._onWindowResize = () => this._repositionPencil()),
+  );
 };
 
 NoteEditor.prototype._repositionPencil = function () {

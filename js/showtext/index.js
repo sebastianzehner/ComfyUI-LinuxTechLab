@@ -46,10 +46,10 @@ function wrapText(ctx, text, maxWidth) {
 
 // ─── extension ────────────────────────────────────────────────────────────────
 app.registerExtension({
-  name: "Pixaroma.ShowText",
+  name: "LinuxTechLab.ShowText",
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaShowText") return;
+    if (nodeData.name !== "LinuxTechLabShowText") return;
 
     nodeType.prototype.onNodeCreated = function () {
       this._pixText = "";
@@ -74,9 +74,7 @@ app.registerExtension({
       const bW = this.size[0] - MARGIN * 2;
       const maxWidth = bW - PAD_H * 2;
 
-      this._displayLines = text
-        ? wrapText(ctx, text, maxWidth)
-        : ["text..."];
+      this._displayLines = text ? wrapText(ctx, text, maxWidth) : ["text..."];
 
       const minHeight = boxHeight(this._displayLines);
       const bH = Math.max(minHeight, this.size[1] - BOX_TOP - 10);
@@ -104,13 +102,17 @@ app.registerExtension({
       }
 
       // Text Style
-      ctx.fillStyle = text ? "#c8c8c8" : "#666";
+      ctx.fillStyle = text ? "#cdd6f4" : "#6c7086";
       ctx.font = "13px monospace";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
       const TEXT_OFFSET_Y = 2; // increase to move text down
       this._displayLines.forEach((line, i) => {
-        ctx.fillText(line, MARGIN + PAD_H, BOX_TOP + PAD_V + i * LINE_H + TEXT_OFFSET_Y);
+        ctx.fillText(
+          line,
+          MARGIN + PAD_H,
+          BOX_TOP + PAD_V + i * LINE_H + TEXT_OFFSET_Y,
+        );
       });
 
       ctx.restore();

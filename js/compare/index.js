@@ -34,7 +34,12 @@ function showRect() {
   return { x: BTN_X, y: ROW1_Y, w: BTN_W, h: BTN_H };
 }
 function modeRect(i) {
-  return { x: BTN_X + (i + 1) * (BTN_W + BTN_GAP), y: ROW1_Y, w: BTN_W, h: BTN_H };
+  return {
+    x: BTN_X + (i + 1) * (BTN_W + BTN_GAP),
+    y: ROW1_Y,
+    w: BTN_W,
+    h: BTN_H,
+  };
 }
 function hintRect() {
   return { x: BTN_X, y: ROW2_Y, w: BTN_W * 6 + BTN_GAP * 5, h: BTN_H };
@@ -45,15 +50,15 @@ function inside(pos, r) {
   );
 }
 function paintBtn(ctx, r, label, on) {
-  ctx.fillStyle = on ? BRAND : "#2a2c2e";
-  ctx.strokeStyle = on ? BRAND : "#444";
+  ctx.fillStyle = on ? BRAND : "#313244";
+  ctx.strokeStyle = on ? BRAND : "#45475a";
   ctx.lineWidth = 1;
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(r.x, r.y, r.w, r.h, 3);
   else ctx.rect(r.x, r.y, r.w, r.h);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = on ? "#fff" : "#999";
+  ctx.fillStyle = on ? "#1e1e2e" : "#a6adc8";
   ctx.font = "9px 'Segoe UI',sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -61,14 +66,19 @@ function paintBtn(ctx, r, label, on) {
 }
 
 // Setting ID and option list
-const SETTING_DEFAULT_MODE = "Pixaroma.Compare.DefaultMode";
+const SETTING_DEFAULT_MODE = "LinuxTechLab.Compare.DefaultMode";
 const DEFAULT_MODE_OPTIONS = [
-  "Show 2", "Show 1", "Left Right", "Right Left",
-  "Up Down", "Overlay", "Difference",
+  "Show 2",
+  "Show 1",
+  "Left Right",
+  "Right Left",
+  "Up Down",
+  "Overlay",
+  "Difference",
 ];
 
 app.registerExtension({
-  name: "Pixaroma.Compare",
+  name: "LinuxTechLab.Compare",
   settings: [
     {
       id: SETTING_DEFAULT_MODE,
@@ -77,11 +87,11 @@ app.registerExtension({
       defaultValue: "Show 2",
       options: DEFAULT_MODE_OPTIONS,
       tooltip: "The initial view mode when a new Compare node is created",
-      category: ["👑 Pixaroma", "Image Compare"],
+      category: ["LinuxTechLab", "Image Compare"],
     },
   ],
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaCompare") return;
+    if (nodeData.name !== "LinuxTechLabCompare") return;
 
     // ── Creation ─────────────────────────────────────────
     const _origCreated = nodeType.prototype.onNodeCreated;
@@ -89,7 +99,8 @@ app.registerExtension({
       _origCreated?.apply(this, arguments);
 
       // Read user's preferred default mode from settings
-      const pref = app.ui?.settings?.getSettingValue?.(SETTING_DEFAULT_MODE) || "Show 2";
+      const pref =
+        app.ui?.settings?.getSettingValue?.(SETTING_DEFAULT_MODE) || "Show 2";
       const modeIdx = MODES.indexOf(pref);
       if (modeIdx !== -1) {
         this._cmpMode = modeIdx;
@@ -152,10 +163,20 @@ app.registerExtension({
 
       // ── Row 1: Show toggle + mode buttons ──
       ctx.save();
-      const showLabel = this._cmpShowWhich === 1 ? "Show 1" : this._cmpShowWhich === 2 ? "Show 2" : "Show 1";
+      const showLabel =
+        this._cmpShowWhich === 1
+          ? "Show 1"
+          : this._cmpShowWhich === 2
+            ? "Show 2"
+            : "Show 1";
       paintBtn(ctx, showRect(), showLabel, this._cmpShowWhich !== 0);
       for (let i = 0; i < 5; i++)
-        paintBtn(ctx, modeRect(i), MODES[i], this._cmpShowWhich === 0 && this._cmpMode === i);
+        paintBtn(
+          ctx,
+          modeRect(i),
+          MODES[i],
+          this._cmpShowWhich === 0 && this._cmpMode === i,
+        );
       ctx.restore();
 
       // ── Row 2: opacity slider or hint text (same height) ──
@@ -172,13 +193,13 @@ app.registerExtension({
 
         // Label
         ctx.font = "9px 'Segoe UI',sans-serif";
-        ctx.fillStyle = "#999";
+        ctx.fillStyle = "#a6adc8";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         ctx.fillText("Opacity", r2.x, r2.y + r2.h / 2);
 
         // Track bg
-        ctx.fillStyle = "#2a2c2e";
+        ctx.fillStyle = "#313244";
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(trackX, trackY, trackW, trackH, 3);
         else ctx.rect(trackX, trackY, trackW, trackH);
@@ -197,13 +218,13 @@ app.registerExtension({
         ctx.beginPath();
         ctx.arc(thumbX, r2.y + r2.h / 2, 6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#fff";
+        ctx.fillStyle = "#1e1e2e";
         ctx.beginPath();
         ctx.arc(thumbX, r2.y + r2.h / 2, 2.5, 0, Math.PI * 2);
         ctx.fill();
 
         // Value
-        ctx.fillStyle = "#ccc";
+        ctx.fillStyle = "#bac2de";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         ctx.fillText(
@@ -221,13 +242,14 @@ app.registerExtension({
         };
       } else {
         this._cmpSliderGeo = null;
-        ctx.fillStyle = "#999";
+        ctx.fillStyle = "#a6adc8";
         ctx.font = "9px 'Segoe UI',sans-serif";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        const hint = this._cmpShowWhich !== 0
-          ? SHOW_HINTS[this._cmpShowWhich - 1]
-          : (MODE_HINTS[this._cmpMode] || "");
+        const hint =
+          this._cmpShowWhich !== 0
+            ? SHOW_HINTS[this._cmpShowWhich - 1]
+            : MODE_HINTS[this._cmpMode] || "";
         ctx.fillText(hint, r2.x, r2.y + r2.h / 2);
       }
       ctx.restore();
@@ -236,9 +258,9 @@ app.registerExtension({
       const imgH = h - IMG_Y;
       if (!this._cmpImg1 && !this._cmpImg2) {
         ctx.save();
-        ctx.fillStyle = "#171718";
+        ctx.fillStyle = "#1e1e2e";
         ctx.fillRect(0, IMG_Y, w, imgH);
-        ctx.fillStyle = "#555";
+        ctx.fillStyle = "#585b70";
         ctx.font = "12px 'Segoe UI',sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -266,7 +288,7 @@ app.registerExtension({
       ctx.beginPath();
       ctx.rect(0, IMG_Y, w, imgH);
       ctx.clip();
-      ctx.fillStyle = "#111";
+      ctx.fillStyle = "#1e1e2e";
       ctx.fillRect(0, IMG_Y, w, imgH);
 
       // ── Single image override ──
@@ -404,7 +426,7 @@ app.registerExtension({
       }
       if (
         this._cmpShowWhich === 0 &&
-        (this._cmpMode <= 2) &&
+        this._cmpMode <= 2 &&
         (this._cmpImg1 || this._cmpImg2)
       ) {
         const imgW = this.size[0],

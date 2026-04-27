@@ -1,4 +1,4 @@
-"""Resolution Pixaroma — outputs width + height ints chosen via the JS UI."""
+"""Resolution LinuxTechLab — outputs width + height ints chosen via the JS UI."""
 
 import json
 
@@ -17,7 +17,7 @@ def _clamp(n: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, n))
 
 
-class PixaromaResolution:
+class LinuxTechLabResolution:
     @classmethod
     def INPUT_TYPES(cls):
         # ResolutionState is `hidden`, NOT `required`. Hidden inputs do NOT
@@ -39,7 +39,7 @@ class PixaromaResolution:
     RETURN_TYPES = ("INT", "INT")
     RETURN_NAMES = ("width", "height")
     FUNCTION = "get_resolution"
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
 
     def get_resolution(self, ResolutionState: str):
         try:
@@ -47,12 +47,12 @@ class PixaromaResolution:
             w = int(state.get("w", 1024))
             h = int(state.get("h", 1024))
         except Exception:
-            print("[PixaromaResolution] Malformed state, falling back to 1024x1024")
+            print("[LinuxTechLabResolution] Malformed state, falling back to 1024x1024")
             w, h = 1024, 1024
         w = _clamp(w, 64, 16384)
         h = _clamp(h, 64, 16384)
         return (w, h)
 
 
-NODE_CLASS_MAPPINGS = {"PixaromaResolution": PixaromaResolution}
-NODE_DISPLAY_NAME_MAPPINGS = {"PixaromaResolution": "Resolution Pixaroma"}
+NODE_CLASS_MAPPINGS = {"LinuxTechLabResolution": LinuxTechLabResolution}
+NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabResolution": "Resolution LinuxTechLab"}

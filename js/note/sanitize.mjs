@@ -3,11 +3,37 @@
 // Drops tags/attributes not on the allowlist. Forces target/rel on anchors.
 
 const ALLOWED_TAGS = new Set([
-  "h1","h2","h3","p","br","hr","ul","ol","li","b","i","u","s","strike","strong","em",
-  "code","pre","span","div","a","blockquote","label",
+  "h1",
+  "h2",
+  "h3",
+  "p",
+  "br",
+  "hr",
+  "ul",
+  "ol",
+  "li",
+  "b",
+  "i",
+  "u",
+  "s",
+  "strike",
+  "strong",
+  "em",
+  "code",
+  "pre",
+  "span",
+  "div",
+  "a",
+  "blockquote",
+  "label",
   // Grid / table support — see spec 2026-04-21-note-grid-design.md.
   // No colspan/rowspan (V1); hand-edit via Code view if needed.
-  "table","thead","tbody","tr","th","td",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "th",
+  "td",
 ]);
 
 // Tags whose content is ALSO discarded when removed (vs. unwrapped).
@@ -15,17 +41,36 @@ const ALLOWED_TAGS = new Set([
 // survive — e.g. Chrome wraps strikeThrough in <strike>; if that tag weren't
 // allowed we'd still want the wrapped text to remain.
 const DANGEROUS_TAGS = new Set([
-  "script","style","iframe","object","embed","link","meta",
-  "form","button","select","textarea","svg","math",
-  "applet","frame","frameset","base",
+  "script",
+  "style",
+  "iframe",
+  "object",
+  "embed",
+  "link",
+  "meta",
+  "form",
+  "button",
+  "select",
+  "textarea",
+  "svg",
+  "math",
+  "applet",
+  "frame",
+  "frameset",
+  "base",
 ]);
 
-// Pixaroma block classes are the ONLY allowed class values.
+// LinuxTechLab block classes are the ONLY allowed class values.
 const ALLOWED_CLASS_VALUES = new Set([
-  "pix-note-dl","pix-note-yt","pix-note-discord",
-  "pix-note-vp","pix-note-rm",
+  "pix-note-dl",
+  "pix-note-yt",
+  "pix-note-discord",
+  "pix-note-vp",
+  "pix-note-rm",
   // Wrapper + decoration pieces for the Button Design output
-  "pix-note-btnblock","pix-note-folderhint","pix-note-btnsize",
+  "pix-note-btnblock",
+  "pix-note-folderhint",
+  "pix-note-btnsize",
   // Grid (table) marker class
   "pix-note-grid",
   // Inline-icon span marker (data-ic slug on <span>)
@@ -34,11 +79,14 @@ const ALLOWED_CLASS_VALUES = new Set([
 
 // Inline-style properties we allow. Values are validated separately.
 const ALLOWED_STYLE_PROPS = new Set([
-  "color", "background-color", "text-align",
+  "color",
+  "background-color",
+  "text-align",
 ]);
 
 // Color pattern: #abc, #aabbcc, rgb(), rgba(), or a narrow set of named colors.
-const COLOR_RE = /^(#[0-9a-f]{3}([0-9a-f]{3})?|rgba?\([^)]+\)|transparent|inherit|currentColor|black|white|red|green|blue|yellow|orange|purple|gray|grey)$/i;
+const COLOR_RE =
+  /^(#[0-9a-f]{3}([0-9a-f]{3})?|rgba?\([^)]+\)|transparent|inherit|currentColor|black|white|red|green|blue|yellow|orange|purple|gray|grey)$/i;
 const ALIGN_RE = /^(left|right|center|justify)$/i;
 
 const ALLOWED_HREF_PROTOCOLS = ["http:", "https:", "mailto:"];
@@ -53,9 +101,18 @@ const IC_SLUG_RE = /^[A-Za-z0-9_-]{1,64}$/;
 // Per-tag attribute allowlist. "*" means "any tag".
 const ALLOWED_ATTRS = {
   "*": new Set(["class", "style"]),
-  a: new Set(["class","style","href","target","rel","data-folder","data-size","data-label"]),
-  label: new Set(["class","style"]),
-  span: new Set(["class","style","data-ic"]),
+  a: new Set([
+    "class",
+    "style",
+    "href",
+    "target",
+    "rel",
+    "data-folder",
+    "data-size",
+    "data-label",
+  ]),
+  label: new Set(["class", "style"]),
+  span: new Set(["class", "style", "data-ic"]),
 };
 
 function filterClass(value) {
@@ -75,7 +132,11 @@ function filterStyle(value) {
     const prop = chunk.slice(0, ix).trim().toLowerCase();
     const val = chunk.slice(ix + 1).trim();
     if (!ALLOWED_STYLE_PROPS.has(prop)) continue;
-    if ((prop === "color" || prop === "background-color") && !COLOR_RE.test(val)) continue;
+    if (
+      (prop === "color" || prop === "background-color") &&
+      !COLOR_RE.test(val)
+    )
+      continue;
     if (prop === "text-align" && !ALIGN_RE.test(val)) continue;
     out.push(`${prop}: ${val}`);
   }
@@ -84,7 +145,7 @@ function filterStyle(value) {
 
 function filterHref(value) {
   try {
-    const u = new URL(value);  // no base — throws on relative URLs
+    const u = new URL(value); // no base — throws on relative URLs
     if (!ALLOWED_HREF_PROTOCOLS.includes(u.protocol)) return null;
     return u.toString();
   } catch {
@@ -94,7 +155,10 @@ function filterHref(value) {
 
 function unwrap(el) {
   const parent = el.parentNode;
-  if (!parent) { el.remove(); return []; }
+  if (!parent) {
+    el.remove();
+    return [];
+  }
   const kids = Array.from(el.childNodes);
   for (const c of kids) parent.insertBefore(c, el);
   parent.removeChild(el);
@@ -123,7 +187,10 @@ function filterElement(el) {
   for (const a of attrs) {
     const name = a.name.toLowerCase();
     // Drop all event handlers unconditionally.
-    if (name.startsWith("on")) { el.removeAttribute(a.name); continue; }
+    if (name.startsWith("on")) {
+      el.removeAttribute(a.name);
+      continue;
+    }
     if (!allowedForTag.has(name) && !ALLOWED_ATTRS["*"].has(name)) {
       el.removeAttribute(a.name);
       continue;
@@ -173,7 +240,8 @@ function filterElement(el) {
 export function sanitize(html) {
   if (typeof html !== "string" || html.length === 0) return "";
   const doc = new DOMParser().parseFromString(
-    `<!doctype html><body>${html}</body>`, "text/html"
+    `<!doctype html><body>${html}</body>`,
+    "text/html",
   );
   const body = doc.body;
   // Walk top-level and descendants

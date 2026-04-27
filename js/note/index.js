@@ -1,17 +1,20 @@
 import { app } from "/scripts/app.js";
 import { hideJsonWidget, allow_debug } from "../shared/index.mjs";
-import { createNoteDOMWidget, renderContent, attachEditButton } from "./render.mjs";
+import {
+  createNoteDOMWidget,
+  renderContent,
+  attachEditButton,
+} from "./render.mjs";
 import { NoteEditor } from "./core.mjs";
 import "./toolbar.mjs";
 import "./blocks.mjs";
 import "./icons.mjs";
 
-
 const DEFAULT_CFG = {
   version: 1,
   content: "",
-  buttonColor: "#f66744",
-  lineColor: "#f66744",
+  buttonColor: "#89b4fa",
+  lineColor: "#89b4fa",
   // backgroundColor is intentionally NOT listed here — the key is
   // missing in DEFAULT_CFG so fresh notes have `undefined`, which
   // renderContent treats as "don't touch node.color/bgcolor". That
@@ -36,14 +39,14 @@ function parseCfg(node) {
     // brand-new notes (no content) those defaults are noise — drop
     // them so the node respects native Colors-menu picks.
     //   - "transparent" — the earliest widget default.
-    //   - "#111111"     — the later default, dropped in favour of
+    //   - "#1e1e2e"     — the later default, dropped in favour of
     //                     "undefined means no override".
     // If the note has content, we leave whatever value is there
-    // alone; the user may have explicitly picked #111111, and we
+    // alone; the user may have explicitly picked #1e1e2e, and we
     // shouldn't second-guess that.
     if (
       (parsed.backgroundColor === "transparent" ||
-        parsed.backgroundColor === "#111111") &&
+        parsed.backgroundColor === "#1e1e2e") &&
       !parsed.content
     ) {
       delete parsed.backgroundColor;
@@ -93,15 +96,15 @@ function setupNote(node) {
       getMinHeight: () => 80,
     });
   } catch (err) {
-    console.error("[Pixaroma Note] setupNote error:", err);
+    console.error("[LinuxTechLab Note] setupNote error:", err);
   }
 }
 
 app.registerExtension({
-  name: "Pixaroma.Note",
+  name: "LinuxTechLab.Note",
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaNote") return;
+    if (nodeData.name !== "LinuxTechLabNote") return;
 
     // Prototype-level: suppress double-click so only the hover-reveal Edit
     // button can open the editor. Applies to all instances of this type.
@@ -157,7 +160,7 @@ app.registerExtension({
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "PixaromaNote") return;
+    if (node.comfyClass !== "LinuxTechLabNote") return;
 
     setupNote(node);
 
@@ -168,6 +171,6 @@ app.registerExtension({
       node.size = [node._noteCfg?.width || 420, node._noteCfg?.height || 320];
     }
 
-    if (allow_debug) console.log("PixaromaNote created", node);
+    if (allow_debug) console.log("LinuxTechLabNote created", node);
   },
 });

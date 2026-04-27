@@ -17,7 +17,7 @@ class FlexibleOptionalInputType(dict):
         return True
 
 
-class PixaromaReferenceNode:
+class LinuxTechLabReferenceNode:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -25,7 +25,7 @@ class PixaromaReferenceNode:
             "optional": FlexibleOptionalInputType(any_type),
         }
 
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("output",)
@@ -45,29 +45,29 @@ class PixaromaReferenceNode:
 
 from comfy_api.latest import io
 
-PixaromaData = io.Custom("PIXAROMA_DATA")
+LinuxTechLabData = io.Custom("LINUXTECHLAB_DATA")
 
 
-class PixaromaVueReferenceNode(io.ComfyNode):
+class LinuxTechLabVueReferenceNode(io.ComfyNode):
 
     @classmethod
     def define_schema(cls) -> io.Schema:
         return io.Schema(
-            node_id="Pixaroma_VueReferenceNode",  # unique, use a prefix!
-            display_name="Pixaroma Vue Reference Node",
-            category="Pixaroma",
-            description="new Pixaroma Vue Reference Node compatible with Nodes 2.0",
+            node_id="LinuxTechLab_VueReferenceNode",  # unique, use a prefix!
+            display_name="LinuxTechLab Vue Reference Node",
+            category="LinuxTechLab",
+            description="new LinuxTechLab Vue Reference Node compatible with Nodes 2.0",
             inputs=[
                 io.Image.Input("image"),
                 io.Int.Input("count", default=1, min=0, max=100),
                 io.String.Input("prompt", multiline=True),
                 io.Combo.Input("mode", options=["option1", "option2"]),
                 io.Mask.Input("mask", optional=True),
-                PixaromaData.Input("pixaroma_data", optional=True),
+                LinuxTechLabData.Input("linuxtechlab_data", optional=True),
             ],
             outputs=[
                 io.Image.Output(display_name="result"),
-                PixaromaData.Output(display_name="pixaroma_data"),
+                LinuxTechLabData.Output(display_name="linuxtechlab_data"),
             ],
         )
 
@@ -78,11 +78,11 @@ class PixaromaVueReferenceNode(io.ComfyNode):
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaReferenceNode": PixaromaReferenceNode,
-    "Pixaroma_VueReferenceNode": PixaromaVueReferenceNode,
+    "LinuxTechLabReferenceNode": LinuxTechLabReferenceNode,
+    "LinuxTechLab_VueReferenceNode": LinuxTechLabVueReferenceNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaReferenceNode": "Reference Node",
-    "Pixaroma_VueReferenceNode": "Pixaroma Vue Reference Node",
+    "LinuxTechLabReferenceNode": "Reference Node",
+    "LinuxTechLab_VueReferenceNode": "LinuxTechLab Vue Reference Node",
 }

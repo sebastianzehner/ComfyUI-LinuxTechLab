@@ -1,13 +1,13 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Editor Framework — Theme & CSS Injection           ║
-// ║  Brand colors, CSS custom properties, and shared stylesheet  ║
+// ║  LinuxTechLab Editor Framework — Theme & CSS Injection        ║
+// ║  Brand colors, CSS custom properties, and shared stylesheet   ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 /** Brand accent color hex — re-exported for editor-specific use. */
-export const BRAND = "#f66744";
+export const BRAND = "#89b4fa";
 
-/** Base path for UI icon SVGs served by the Pixaroma backend. */
-export const UI_ICON = "/pixaroma/assets/icons/ui/";
+/** Base path for UI icon SVGs served by the LinuxTechLab backend. */
+export const UI_ICON = "/linuxtechlab/assets/icons/ui/";
 
 /**
  * Creates an <img> element pointing to a UI icon SVG.
@@ -17,14 +17,14 @@ export const UI_ICON = "/pixaroma/assets/icons/ui/";
  */
 export function _uiIcon(name, size = 14) {
   const img = document.createElement("img");
-  img.src = "/pixaroma/assets/icons/ui/" + name;
+  img.src = "/linuxtechlab/assets/icons/ui/" + name;
   img.style.cssText = `width:${size}px;height:${size}px;pointer-events:none;`;
   img.draggable = false;
   return img;
 }
 
 /** ID used for the injected <style> element — prevents duplicate injection. */
-const STYLE_ID = "pixaroma-framework-v1";
+const STYLE_ID = "linuxtechlab-framework-v1";
 
 // ═════════════════════════════════════════════════════════════════
 //  CSS Injection
@@ -36,31 +36,32 @@ export function injectFrameworkStyles() {
   s.id = STYLE_ID;
   s.textContent = `
 /* ═══════════════════════════════════════════════════════
-   Pixaroma Editor Framework — Shared Stylesheet
+   LinuxTechLab Editor Framework — Shared Stylesheet
+   Catppuccin Mocha Theme
    ═══════════════════════════════════════════════════════ */
 
 /* ── CSS Custom Properties ──────────────────────────── */
 .pxf-overlay {
-  --pxf-accent: #f66744;
-  --pxf-accent-hover: #e05535;
-  --pxf-bg-darkest: #131415;
-  --pxf-bg-dark: #171718;
-  --pxf-bg-sidebar: #181a1b;
-  --pxf-bg-panel: #242628;
-  --pxf-bg-input: #111;
-  --pxf-bg-btn: #353535;
-  --pxf-border: #3a3d40;
-  --pxf-border-subtle: #2a2c2e;
-  --pxf-border-titlebar: #2e3033;
-  --pxf-text: #e0e0e0;
-  --pxf-text-dim: #888;
-  --pxf-text-dimmer: #666;
-  --pxf-text-label: #999;
-  --pxf-select-bg: #2a1800;
-  --pxf-select-border: #f66744;
+  --pxf-accent: #89b4fa;
+  --pxf-accent-hover: #b9d2fc;
+  --pxf-bg-darkest: #11111b;
+  --pxf-bg-dark: #1e1e2e;
+  --pxf-bg-sidebar: #181825;
+  --pxf-bg-panel: #313244;
+  --pxf-bg-input: #11111b;
+  --pxf-bg-btn: #313244;
+  --pxf-border: #45475a;
+  --pxf-border-subtle: #313244;
+  --pxf-border-titlebar: #313244;
+  --pxf-text: #cdd6f4;
+  --pxf-text-dim: #6c7086;
+  --pxf-text-dimmer: #585b70;
+  --pxf-text-label: #a6adc8;
+  --pxf-select-bg: #1e2a3a;
+  --pxf-select-border: #89b4fa;
   --pxf-multi-bg: #0a1a2a;
-  --pxf-multi-border: #0ea5e9;
-  --pxf-danger: #d46060;
+  --pxf-multi-border: #74c7ec;
+  --pxf-danger: #f38ba8;
   --pxf-danger-bg: #2a1a1a;
   --pxf-font: 'Segoe UI', system-ui, sans-serif;
   --pxf-font-mono: monospace;
@@ -84,7 +85,7 @@ export function injectFrameworkStyles() {
   flex-shrink: 0; height: 38px;
 }
 .pxf-title {
-  color: #fff; font-size: 13px; font-weight: bold;
+  color: #cdd6f4; font-size: 13px; font-weight: bold;
   display: flex; align-items: center; gap: 6px;
   flex-shrink: 0;
 }
@@ -100,7 +101,7 @@ export function injectFrameworkStyles() {
 }
 .pxf-titlebar-zoom {
   display: flex; align-items: center; gap: 3px;
-  background: rgba(255,255,255,0.05); border: 1px solid var(--pxf-border);
+  background: rgba(205,214,244,0.05); border: 1px solid var(--pxf-border);
   border-radius: 5px; padding: 2px 4px;
 }
 .pxf-titlebar-zoom .pxf-zoom-label {
@@ -145,7 +146,7 @@ export function injectFrameworkStyles() {
 /* ── Workspace (center canvas area) ─────────────────── */
 .pxf-workspace {
   flex: 1; position: relative; overflow: hidden;
-  background: #111315;
+  background: #11111b;
   display: flex; align-items: center; justify-content: center;
 }
 
@@ -160,15 +161,15 @@ export function injectFrameworkStyles() {
 /* ── Tool info (floating tooltip in workspace, bottom-left) ── */
 .pxf-tool-info {
   position: absolute; bottom: 10px; left: 10px;
-  background: rgba(0,0,0,0.75); color: #ccc;
+  background: rgba(0,0,0,0.75); color: #a6adc8;
   padding: 5px 12px; border-radius: 5px;
   font-size: 10px; font-family: var(--pxf-font-mono);
   pointer-events: none; z-index: 5;
   max-width: 80%;
   transition: color 0.15s ease;
 }
-.pxf-tool-info.warn { color: #f66744; }
-.pxf-tool-info.error { color: #f08080; }
+.pxf-tool-info.warn { color: #89b4fa; }
+.pxf-tool-info.error { color: #f38ba8; }
 
 /* ── Panel / Section ────────────────────────────────── */
 .pxf-panel {
@@ -187,7 +188,7 @@ export function injectFrameworkStyles() {
 .pxf-panel.collapsed .pxf-panel-title-arrow { transform: rotate(-90deg); }
 .pxf-panel.collapsed .pxf-panel-content { display: none; }
 .pxf-panel-title.clickable { cursor: pointer; }
-.pxf-panel-title.clickable:hover { color: #fff; }
+.pxf-panel-title.clickable:hover { color: #cdd6f4; }
 
 /* ── Buttons ────────────────────────────────────────── */
 .pxf-btn, .pxf-btn-full, .pxf-btn-sm {
@@ -208,70 +209,70 @@ export function injectFrameworkStyles() {
 }
 
 .pxf-btn {
-  background: var(--pxf-bg-btn); color: #ccc;
+  background: var(--pxf-bg-btn); color: #a6adc8;
   padding: 6px 14px; font-size: 12px;
 }
-.pxf-btn:hover { background: #2e3033; color: var(--pxf-accent); border-color: var(--pxf-accent); }
+.pxf-btn:hover { background: #313244; color: var(--pxf-accent); border-color: var(--pxf-accent); }
 
 .pxf-btn.pxf-btn-accent, .pxf-btn-accent {
   background: var(--pxf-accent); border-color: var(--pxf-accent);
-  color: #fff; font-weight: bold;
+  color: #1e1e2e; font-weight: bold;
 }
 .pxf-btn.pxf-btn-accent:hover, .pxf-btn-accent:hover {
   background: var(--pxf-accent-hover); border-color: var(--pxf-accent-hover);
 }
-.pxf-btn-accent img { filter: brightness(0) invert(1); }
+.pxf-btn-accent img { filter: brightness(0) invert(0); }
 
 .pxf-btn.pxf-btn-danger, .pxf-btn-full.pxf-btn-danger, .pxf-btn-sm.pxf-btn-danger {
-  background: #1e2022 !important; color: #ccc !important;
-  border-color: #d93523 !important;
+  background: #1e1e2e !important; color: #a6adc8 !important;
+  border-color: #f38ba8 !important;
 }
 .pxf-btn.pxf-btn-danger:hover, .pxf-btn-full.pxf-btn-danger:hover, .pxf-btn-sm.pxf-btn-danger:hover {
-  background: #d93523 !important; color: #fff !important;
-  border-color: #d93523 !important;
+  background: #f38ba8 !important; color: #1e1e2e !important;
+  border-color: #f38ba8 !important;
 }
 .pxf-btn-danger img, .pxf-btn-danger svg {
   filter: none !important;
 }
 .pxf-btn-danger:hover img, .pxf-btn-danger:hover svg {
-  filter: brightness(0) invert(1) !important;
+  filter: brightness(0) invert(0) !important;
 }
 
 .pxf-btn-full {
   width: 100%; padding: 7px 10px; font-size: 11px;
-  background: #1e2022; color: #ccc;
+  background: #181825; color: #a6adc8;
 }
-.pxf-btn-full:hover { background: #2e3033; color: var(--pxf-accent); border-color: var(--pxf-accent); }
+.pxf-btn-full:hover { background: #313244; color: var(--pxf-accent); border-color: var(--pxf-accent); }
 
 .pxf-btn-sm {
   min-width: 28px; height: 28px; padding: 0 4px; flex-shrink: 0;
-  background: var(--pxf-bg-panel); color: #ccc; font-size: 13px;
+  background: var(--pxf-bg-panel); color: #a6adc8; font-size: 13px;
 }
-.pxf-btn-sm:hover { background: #2e3033; color: var(--pxf-accent); border-color: var(--pxf-accent); }
+.pxf-btn-sm:hover { background: #313244; color: var(--pxf-accent); border-color: var(--pxf-accent); }
 
 .pxf-btn-icon {
-  background: none; border: none; color: #ccc; padding: 4px;
+  background: none; border: none; color: #a6adc8; padding: 4px;
   cursor: pointer; font-size: 16px; border-radius: 4px; transition: all .15s;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.pxf-btn-icon:hover { color: var(--pxf-accent); background: rgba(255,255,255,0.05); }
+.pxf-btn-icon:hover { color: var(--pxf-accent); background: rgba(205,214,244,0.05); }
 .pxf-btn-icon:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 
 .pxf-btn-row { display: flex; gap: 6px; }
 .pxf-btn-row > .pxf-btn, .pxf-btn-row > .pxf-btn-full { flex: 1; }
 
-.pxf-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #fff; }
-.pxf-btn.active img { filter: brightness(0) invert(1); }
+.pxf-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
+.pxf-btn.active img { filter: brightness(0) invert(0); }
 
 /* ── Pill grid ─────────────────────────────────────── */
 .pxf-pill-grid { display: grid; gap: 4px; }
 .pxf-pill {
-  font-size: 10px; background: #1e2022; border: 1px solid var(--pxf-border);
-  color: #aaa; border-radius: 3px; padding: 4px 0; cursor: pointer;
+  font-size: 10px; background: #181825; border: 1px solid var(--pxf-border);
+  color: #a6adc8; border-radius: 3px; padding: 4px 0; cursor: pointer;
   transition: all .1s; text-align: center; font-family: inherit;
 }
-.pxf-pill:hover { background: #444; color: #fff; }
-.pxf-pill.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #fff; }
+.pxf-pill:hover { background: #45475a; color: #cdd6f4; }
+.pxf-pill.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
 
 /* ── Slider row ─────────────────────────────────────── */
 .pxf-slider-row {
@@ -360,13 +361,13 @@ export function injectFrameworkStyles() {
 .pxf-tool-btn {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 1px;
-  height: 38px; background: #1c1e1f; border: 1px solid var(--pxf-border);
-  color: #ccc; border-radius: 4px; cursor: pointer;
+  height: 38px; background: #181825; border: 1px solid var(--pxf-border);
+  color: #a6adc8; border-radius: 4px; cursor: pointer;
   font-family: inherit; font-size: 10px; transition: all .12s;
   padding: 2px;
 }
-.pxf-tool-btn:hover { background: #2e3033; color: #fff; border-color: #555; }
-.pxf-tool-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #fff; }
+.pxf-tool-btn:hover { background: #313244; color: #cdd6f4; border-color: #6c7086; }
+.pxf-tool-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
 .pxf-tool-btn-icon { font-size: 14px; line-height: 1; }
 .pxf-tool-btn-label { font-size: 8px; line-height: 1; }
 
@@ -423,7 +424,7 @@ export function injectFrameworkStyles() {
   font-size: 11px; transition: background .1s;
   min-height: 30px;
 }
-.pxf-layer-item:hover { background: rgba(255,255,255,0.04); }
+.pxf-layer-item:hover { background: rgba(205,214,244,0.04); }
 .pxf-layer-item.active {
   background: var(--pxf-select-bg); border-color: var(--pxf-select-border);
 }
@@ -451,13 +452,13 @@ export function injectFrameworkStyles() {
 /* Layer thumbnail */
 .pxf-layer-thumb {
   width: 28px; height: 28px; flex-shrink: 0; border-radius: 3px;
-  background: repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 8px 8px;
-  overflow: hidden; border: 1px solid rgba(255,255,255,0.06);
+  background: repeating-conic-gradient(#45475a 0% 25%, #313244 0% 50%) 50% / 8px 8px;
+  overflow: hidden; border: 1px solid rgba(205,214,244,0.06);
 }
 
 /* Layer name */
 .pxf-layer-name {
-  flex: 1; font-size: 11px; color: #ccc;
+  flex: 1; font-size: 11px; color: #a6adc8;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   padding: 2px 4px; min-width: 0;
 }
@@ -481,7 +482,7 @@ export function injectFrameworkStyles() {
   border-radius: 4px; cursor: pointer; transition: all .12s;
 }
 .pxf-layer-action-btn:hover {
-  background: #2e3033; border-color: var(--pxf-accent);
+  background: #313244; border-color: var(--pxf-accent);
 }
 .pxf-layer-action-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 .pxf-layer-action-btn img {
@@ -489,12 +490,12 @@ export function injectFrameworkStyles() {
   filter: brightness(0) invert(0.7);
 }
 .pxf-layer-action-btn:hover img { filter: brightness(0) invert(1); }
-.pxf-layer-action-btn.danger { border-color: #d93523; }
+.pxf-layer-action-btn.danger { border-color: #f38ba8; }
 .pxf-layer-action-btn.danger:hover {
-  background: #d93523; border-color: #d93523;
+  background: #f38ba8; border-color: #f38ba8;
 }
 .pxf-layer-action-btn.danger:hover img {
-  filter: brightness(0) invert(1) !important;
+  filter: brightness(0) invert(0) !important;
 }
 
 /* ── Canvas Toolbar (Add Image, BG Color, Clear) ───── */
@@ -511,7 +512,7 @@ export function injectFrameworkStyles() {
 /* Drag & drop overlay on workspace */
 .pxf-drop-overlay {
   display: none; position: absolute; inset: 0; z-index: 50;
-  background: rgba(246, 103, 68, 0.08);
+  background: rgba(137, 180, 250, 0.08);
   border: 3px dashed var(--pxf-accent);
   border-radius: 8px;
   pointer-events: none;
@@ -528,7 +529,7 @@ export function injectFrameworkStyles() {
 .pxf-help-overlay {
   display: none; position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  background: #171718; border: 1px solid var(--pxf-accent);
+  background: #1e1e2e; border: 1px solid var(--pxf-accent);
   border-radius: 10px; padding: 0;
   width: 960px; max-width: 95%; max-height: 86vh;
   z-index: 100; overflow: hidden;
@@ -537,13 +538,13 @@ export function injectFrameworkStyles() {
 }
 .pxf-help-header {
   display: flex; align-items: center; padding: 14px 20px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid #313244;
 }
 .pxf-help-header h3 { flex: 1; color: var(--pxf-accent); font-size: 14px; margin: 0; font-weight: 600; }
 .pxf-help-content {
   padding: 18px 24px; overflow-y: auto;
   max-height: calc(86vh - 110px);
-  font-size: 11px; line-height: 1.7; color: #ccc;
+  font-size: 11px; line-height: 1.7; color: #a6adc8;
   column-count: 2; column-gap: 36px;
 }
 .pxf-help-section {
@@ -559,17 +560,17 @@ export function injectFrameworkStyles() {
   display: grid; grid-template-columns: max-content 1fr;
   gap: 3px 14px;
 }
-.pxf-help-grid b { color: #eee; white-space: nowrap; font-weight: 600; }
-.pxf-help-grid span { color: #bbb; }
+.pxf-help-grid b { color: #cdd6f4; white-space: nowrap; font-weight: 600; }
+.pxf-help-grid span { color: #bac2de; }
 .pxf-help-content kbd {
-  background: #2a2c2e; border: 1px solid #444; border-radius: 3px;
+  background: #313244; border: 1px solid #45475a; border-radius: 3px;
   padding: 1px 5px; font-size: 10px; color: var(--pxf-text);
   font-family: var(--pxf-font-mono, monospace);
 }
-.pxf-help-content b { color: #eee; }
+.pxf-help-content b { color: #cdd6f4; }
 .pxf-help-footer {
-  padding: 10px 20px; border-top: 1px solid #2a2a2a;
-  font-size: 10px; color: #666; text-align: center; line-height: 1.6;
+  padding: 10px 20px; border-top: 1px solid #313244;
+  font-size: 10px; color: #6c7086; text-align: center; line-height: 1.6;
   flex-shrink: 0;
 }
 .pxf-help-footer a { color: var(--pxf-accent); text-decoration: none; }
@@ -580,7 +581,7 @@ export function injectFrameworkStyles() {
   position: absolute; bottom: 8px; left: 50%;
   transform: translateX(-50%);
   display: flex; align-items: center; gap: 4px;
-  background: rgba(20,20,22,0.85); border: 1px solid var(--pxf-border);
+  background: rgba(17,17,27,0.85); border: 1px solid var(--pxf-border);
   border-radius: 6px; padding: 3px 6px;
 }
 .pxf-zoom-label {
@@ -591,7 +592,7 @@ export function injectFrameworkStyles() {
 /* ── Checkbox ───────────────────────────────────────── */
 .pxf-check-row {
   display: flex; align-items: center; gap: 6px; cursor: pointer;
-  font-size: 11px; color: #ccc;
+  font-size: 11px; color: #a6adc8;
 }
 .pxf-check-row input[type=checkbox] { accent-color: var(--pxf-accent); }
 
@@ -603,17 +604,17 @@ export function injectFrameworkStyles() {
 
 /* ── Info text ──────────────────────────────────────── */
 .pxf-info { font-size: 10px; color: var(--pxf-text-dim); line-height: 1.6; }
-.pxf-info b { color: #ccc; font-weight: 600; }
+.pxf-info b { color: #bac2de; font-weight: 600; }
 
-/* ── Canvas Frame (orange border + dimension label + gray masks) ── */
+/* ── Canvas Frame (blue border + dimension label + gray masks) ── */
 .pxf-canvas-frame {
   position: absolute; pointer-events: none; z-index: 2;
   box-sizing: border-box;
-  border: 2px solid rgba(249, 115, 22, 0.45);
+  border: 2px solid rgba(137, 180, 250, 0.45);
 }
 .pxf-canvas-frame-label {
   position: absolute; bottom: -18px; right: 0;
-  font-size: 12px; color: rgba(249, 115, 22, 0.6);
+  font-size: 12px; color: rgba(137, 180, 250, 0.6);
   font-family: var(--pxf-font-mono); white-space: nowrap;
   transform-origin: bottom right;
 }
@@ -626,14 +627,14 @@ export function injectFrameworkStyles() {
 .pxf-canvas-settings { display: flex; flex-direction: column; gap: 6px; }
 .pxf-ratio-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .pxf-ratio-btn {
-  font-size: 10px; background: #1e2022; border: 1px solid var(--pxf-border);
-  color: #aaa; border-radius: 4px; padding: 5px 0; cursor: pointer;
+  font-size: 10px; background: #181825; border: 1px solid var(--pxf-border);
+  color: #a6adc8; border-radius: 4px; padding: 5px 0; cursor: pointer;
   transition: all .12s; text-align: center; font-family: inherit;
   font-weight: 500;
 }
-.pxf-ratio-btn:hover { background: #444; color: #fff; border-color: #555; }
+.pxf-ratio-btn:hover { background: #45475a; color: #cdd6f4; border-color: #6c7086; }
 .pxf-ratio-btn.active {
-  background: var(--pxf-accent); border-color: var(--pxf-accent); color: #fff;
+  background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e;
 }
 .pxf-size-row {
   display: flex; align-items: center; gap: 4px;
@@ -651,10 +652,10 @@ export function injectFrameworkStyles() {
 .pxf-size-x { font-size: 10px; color: var(--pxf-text-dimmer); flex-shrink: 0; }
 .pxf-swap-btn {
   width: 100%; padding: 5px; font-size: 11px; text-align: center;
-  background: #1e2022; border: 1px solid var(--pxf-border); color: #aaa;
+  background: #181825; border: 1px solid var(--pxf-border); color: #a6adc8;
   border-radius: 4px; cursor: pointer; transition: all .12s; font-family: inherit;
 }
-.pxf-swap-btn:hover { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #fff; }
+.pxf-swap-btn:hover { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
   `;
   document.head.appendChild(s);
 

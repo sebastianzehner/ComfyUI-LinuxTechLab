@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Image Crop Editor — Render (canvas rendering, aspect ratio, save)
-// ============================================================
+// ==============================================================================
+// LinuxTechLab Image Crop Editor — Render (canvas rendering, aspect ratio, save)
+// ==============================================================================
 import { CropEditor, BRAND, RATIOS, SNAPS, CropAPI } from "./core.mjs";
 
 const proto = CropEditor.prototype;
@@ -55,7 +55,7 @@ proto._loadImageFromURL = function (url, onDone) {
 proto._uploadSourceImage = async function (dataURL) {
   try {
     const { api } = await import("/scripts/api.js");
-    const res = await api.fetchApi("/pixaroma/api/crop/upload_src", {
+    const res = await api.fetchApi("/linuxtechlab/api/crop/upload_src", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ project_id: this.projectId, image: dataURL }),
@@ -112,12 +112,12 @@ proto._draw = function () {
   ctx.fillRect(cx + cw, cy, cvs.width - cx - cw, ch);
 
   // Crop border
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "#cdd6f4";
   ctx.lineWidth = 1.5;
   ctx.strokeRect(cx + 0.5, cy + 0.5, cw - 1, ch - 1);
 
   // Rule of thirds
-  ctx.strokeStyle = "rgba(255,255,255,0.2)";
+  ctx.strokeStyle = "rgba(205,214,244,0.2)";
   ctx.lineWidth = 0.5;
   for (let i = 1; i <= 2; i++) {
     const gx = cx + (cw * i) / 3,
@@ -148,7 +148,7 @@ proto._draw = function () {
       ctx.roundRect(cx + cw / 2 - tw / 2, cy + ch / 2 - 10, tw, 20, 4);
     else ctx.rect(cx + cw / 2 - tw / 2, cy + ch / 2 - 10, tw, 20);
     ctx.fill();
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#cdd6f4";
     ctx.fillText(label, cx + cw / 2, cy + ch / 2);
   }
 };
@@ -159,7 +159,7 @@ proto._drawHandles = function (ctx, cx, cy, cw, ch) {
   for (const h of positions) {
     ctx.fillStyle = BRAND;
     ctx.fillRect(h.dx, h.dy, sz, sz);
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = "#1e1e2e";
     ctx.lineWidth = 1.5;
     ctx.strokeRect(h.dx, h.dy, sz, sz);
   }

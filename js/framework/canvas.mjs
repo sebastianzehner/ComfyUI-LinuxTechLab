@@ -1,6 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Editor Framework — Canvas Components               ║
-// ║  Canvas settings, frame overlay, and toolbar                 ║
+// ║  LinuxTechLab Editor Framework — Canvas Components            ║
+// ║  Canvas settings, frame overlay, and toolbar                  ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 import { createButton, createPanel, _dangerIcon } from "./components.mjs";
@@ -377,11 +377,14 @@ export function createCanvasToolbar(config) {
 
     const transpRow = document.createElement("label");
     transpRow.className = "pxf-check-row";
-    transpRow.title = "Save to Disk with transparent background (no background color)";
+    transpRow.title =
+      "Save to Disk with transparent background (no background color)";
     transpRow.style.cssText = "margin:4px 0 0 2px;font-size:11px;opacity:0.85;";
     const transpCb = document.createElement("input");
     transpCb.type = "checkbox";
-    transpCb.addEventListener("change", () => { _transparentBg = transpCb.checked; });
+    transpCb.addEventListener("change", () => {
+      _transparentBg = transpCb.checked;
+    });
     transpRow.appendChild(transpCb);
     transpRow.append("Transparent BG (Save to Disk)");
     wrapper.appendChild(transpRow);
@@ -503,7 +506,9 @@ export function createCanvasToolbar(config) {
   return {
     el: wrapper,
     fileInput,
-    get transparentBg() { return _transparentBg; },
+    get transparentBg() {
+      return _transparentBg;
+    },
     setBgColor(hex) {
       _bgColor = hex;
       if (colorInput) colorInput.value = hex;

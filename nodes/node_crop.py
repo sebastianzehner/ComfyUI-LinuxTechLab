@@ -1,13 +1,15 @@
-import torch
-import numpy as np
-from PIL import Image
-import os
 import json
+import os
+
 import folder_paths
-from .node_ref import any_type, FlexibleOptionalInputType
+import numpy as np
+import torch
+from PIL import Image
+
+from .node_ref import FlexibleOptionalInputType, any_type
 
 
-class PixaromaCrop:
+class LinuxTechLabCrop:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -18,7 +20,7 @@ class PixaromaCrop:
     RETURN_TYPES = ("IMAGE", "INT", "INT")
     RETURN_NAMES = ("image", "width", "height")
     FUNCTION = "load_crop"
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
     OUTPUT_NODE = True
 
     @classmethod
@@ -28,7 +30,11 @@ class PixaromaCrop:
         if not crop_data:
             return ""
         try:
-            crop_json = crop_data.get("crop_json", "{}") if isinstance(crop_data, dict) else str(crop_data)
+            crop_json = (
+                crop_data.get("crop_json", "{}")
+                if isinstance(crop_data, dict)
+                else str(crop_data)
+            )
             meta = json.loads(crop_json)
             composite_path = meta.get("composite_path", "")
             if composite_path:
@@ -47,7 +53,11 @@ class PixaromaCrop:
         if not crop_data:
             return (empty_image, 1024, 1024)
 
-        crop_json = crop_data.get("crop_json", "{}") if isinstance(crop_data, dict) else str(crop_data)
+        crop_json = (
+            crop_data.get("crop_json", "{}")
+            if isinstance(crop_data, dict)
+            else str(crop_data)
+        )
         if not crop_json or crop_json.strip() in ("", "{}"):
             return (empty_image, 1024, 1024)
         try:
@@ -68,7 +78,7 @@ class PixaromaCrop:
 
             if not full_path.startswith(input_dir + os.sep):
                 print(
-                    "[PixaromaCrop] Security: composite_path escapes input directory, blocked."
+                    "[LinuxTechLabCrop] Security: composite_path escapes input directory, blocked."
                 )
                 return (empty_image, doc_w, doc_h)
 
@@ -80,14 +90,14 @@ class PixaromaCrop:
             return (torch.from_numpy(arr)[None,], doc_w, doc_h)
 
         except Exception as e:
-            print(f"[PixaromaCrop] Load error: {e}")
+            print(f"[LinuxTechLabCrop] Load error: {e}")
             return (empty_image, 1024, 1024)
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaCrop": PixaromaCrop,
+    "LinuxTechLabCrop": LinuxTechLabCrop,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaCrop": "Image Crop Pixaroma",
+    "LinuxTechLabCrop": "Image Crop LinuxTechLab",
 }

@@ -1,6 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Shared — Node Preview System                       ║
-// ║  Consistent preview display for all Pixaroma nodes           ║
+// ║  LinuxTechLab Shared — Node Preview System                    ║
+// ║  Consistent preview display for all LinuxTechLab nodes        ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 import { createDummyWidget } from "./utils.mjs";
@@ -18,7 +18,7 @@ export function createNodePreview(titleText, subtitleText, instructionText) {
     justify-content: flex-start;
     gap: 0px;
     padding: 5px;
-    background-color: #2a2a2a;
+    background-color: #1e1e2e;
     border-radius: 4px;
     width: 100%;
     overflow: hidden;
@@ -30,7 +30,7 @@ export function createNodePreview(titleText, subtitleText, instructionText) {
     width: 100%;
     height: 0;
     padding-bottom: 100%;
-    background-color: #000000;
+    background-color: #11111b;
     border-radius: 4px;
     overflow: hidden;
     position: relative;
@@ -54,7 +54,7 @@ export function createNodePreview(titleText, subtitleText, instructionText) {
 
   const infoLabel = document.createElement("div");
   infoLabel.style.cssText =
-    "color:#888;font-size:10px;text-align:center;margin-top:2px;";
+    "color:#6c7086;font-size:10px;text-align:center;margin-top:2px;";
   infoLabel.textContent = "";
   container.appendChild(infoLabel);
 
@@ -102,7 +102,7 @@ export function restoreNodePreview(parts, json, node) {
     const meta = JSON.parse(json);
     if (!meta.composite_path) return;
     const fn = meta.composite_path.split(/[\\/]/).pop();
-    const url = `/view?filename=${encodeURIComponent(fn)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+    const url = `/view?filename=${encodeURIComponent(fn)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
     const dimText = `${meta.doc_w || "?"}\u00d7${meta.doc_h || "?"}`;
     showNodePreview(parts, url, dimText, node);
   } catch {

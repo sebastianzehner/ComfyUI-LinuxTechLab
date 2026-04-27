@@ -23,24 +23,48 @@ function restoreRange(range) {
 // out in 7 columns so the row structure stays intact visually.
 //
 //   Row 1 — Neutrals: white through black, covers 90% of "just a note"
-//           backgrounds and is where default (#111111) lives.
-//   Row 2 — Bright accents: Pixaroma brand orange plus saturated hues,
+//           backgrounds and is where default (#1e1e2e) lives.
+//   Row 2 — Bright accents: LinuxTechLab brand blue plus saturated hues,
 //           most useful for text/highlight colour or for an attention-
 //           grabbing note ("IMPORTANT").
 //   Row 3 — ComfyUI-style muted: approximates the dusty tones from the
-//           Vue canvas right-click 'Colors' menu, so Pixaroma notes can
+//           Vue canvas right-click 'Colors' menu, so LinuxTechLab notes can
 //           colour-coordinate with the built-in node palette.
 //   Row 4 — Modern soft / deep: pastels for calm light notes and deep
 //           tones for rich dark notes.
 const SWATCHES = [
-  // Row 1 — Neutrals
-  "#ffffff","#d4d4d4","#888888","#555555","#2a2a2a","#111111","#000000",
-  // Row 2 — Bright accents (Pixaroma brand first)
-  "#f66744","#e74c3c","#f1c40f","#5bd45b","#00bcd4","#4a90e2","#b565e2",
-  // Row 3 — ComfyUI-muted node colours
-  "#a85848","#a66a3d","#a08147","#6f8e46","#537c90","#4c6db9","#a968c2",
+  // Row 1 — Neutrals (Catppuccin Mocha Grays)
+  "#cdd6f4", // Text
+  "#bac2de", // Subtext1
+  "#a6adc8", // Subtext0
+  "#6c7086", // Overlay1
+  "#45475a", // Surface1
+  "#313244", // Surface0
+  "#1e1e2e", // Base
+  // Row 2 — Bright accents (LinuxTechLab brand first)
+  "#89b4fa", // Blue
+  "#f38ba8", // Red
+  "#f9e2af", // Yellow
+  "#a6e3a1", // Green
+  "#94e2d5", // Teal
+  "#74c7ec", // Sapphire
+  "#cba6f7", // Mauve
+  // Row 3 — ComfyUI-muted
+  "#7d3f4a", // Muted Red
+  "#8a5a3a", // Muted Peach
+  "#7a6a30", // Muted Yellow
+  "#4a6a40", // Muted Green
+  "#2e5a6a", // Muted Teal
+  "#2e4a7a", // Muted Blue
+  "#5a3a7a", // Muted Mauve
   // Row 4 — Modern soft + deep
-  "#ff79c6","#f4a261","#c9a96e","#3a5a40","#1e3a5f","#4a3d6b","#2c3e50",
+  "#f5c2e7", // Pink
+  "#fab387", // Peach
+  "#eba0ac", // Maroon
+  "#181825", // Mantle
+  "#11111b", // Crust
+  "#1e1e2e", // Base
+  "#313244", // Surface0
 ];
 
 function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
@@ -56,9 +80,14 @@ function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
     const s = document.createElement("div");
     s.className = "pix-note-swatch";
     s.style.background = c;
-    if (c.toLowerCase() === (currentColor || "").toLowerCase()) s.classList.add("active");
+    if (c.toLowerCase() === (currentColor || "").toLowerCase())
+      s.classList.add("active");
     s.addEventListener("mousedown", (e) => e.preventDefault());
-    s.addEventListener("click", (e) => { e.stopPropagation(); onPick(c); close(); });
+    s.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onPick(c);
+      close();
+    });
     sw.appendChild(s);
   });
   pop.appendChild(sw);
@@ -67,12 +96,17 @@ function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
   row.className = "pix-note-colorrow";
   const picker = document.createElement("input");
   picker.type = "color";
-  picker.value = /^#[0-9a-f]{6}$/i.test(currentColor || "") ? currentColor : "#f66744";
+  picker.value = /^#[0-9a-f]{6}$/i.test(currentColor || "")
+    ? currentColor
+    : "#89b4fa";
   picker.addEventListener("mousedown", (e) => e.stopPropagation());
   // Use `change` (fires once when native picker dialog closes) instead of
   // `input` (fires on every drag). Native picker steals focus from the
   // contenteditable; repeated live applies operate on a stale range.
-  picker.addEventListener("change", () => { onPick(picker.value); hex.value = picker.value; });
+  picker.addEventListener("change", () => {
+    onPick(picker.value);
+    hex.value = picker.value;
+  });
   const hex = document.createElement("input");
   hex.type = "text";
   hex.value = currentColor || "";
@@ -80,7 +114,10 @@ function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
   hex.addEventListener("mousedown", (e) => e.stopPropagation());
   hex.oninput = () => {
     const v = hex.value.startsWith("#") ? hex.value : `#${hex.value}`;
-    if (/^#[0-9a-f]{6}$/i.test(v)) { onPick(v); picker.value = v; }
+    if (/^#[0-9a-f]{6}$/i.test(v)) {
+      onPick(v);
+      picker.value = v;
+    }
   };
   row.appendChild(picker);
   row.appendChild(hex);
@@ -89,7 +126,11 @@ function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
     cl.className = "clearbtn";
     cl.title = "Clear";
     cl.addEventListener("mousedown", (e) => e.preventDefault());
-    cl.addEventListener("click", (e) => { e.stopPropagation(); onPick(null); close(); });
+    cl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onPick(null);
+      close();
+    });
     row.appendChild(cl);
   }
   pop.appendChild(row);
@@ -160,7 +201,9 @@ NoteEditor.prototype._buildToolbar = function () {
     if (queryCmd) {
       this._activeChecks.push(() => {
         let on = false;
-        try { on = document.queryCommandState(queryCmd); } catch (e) {}
+        try {
+          on = document.queryCommandState(queryCmd);
+        } catch (e) {}
         b.classList.toggle("active", on);
       });
     }
@@ -179,127 +222,173 @@ NoteEditor.prototype._buildToolbar = function () {
   //      produces a span instead of a <b>. A tag-walk for B/STRONG would
   //      miss this and the icon would never light up after picking a
   //      text/highlight colour.
-  const bBtn = makeBtn("<b>B</b>", "Bold (Ctrl+B)", "", () =>
-    document.execCommand("bold"), "bold");
+  const bBtn = makeBtn(
+    "<b>B</b>",
+    "Bold (Ctrl+B)",
+    "",
+    () => document.execCommand("bold"),
+    "bold",
+  );
   g1.appendChild(bBtn);
-  g1.appendChild(makeBtn("<i>I</i>", "Italic (Ctrl+I)", "italic", () =>
-    document.execCommand("italic"), "italic"));
-  g1.appendChild(makeBtn("<span class='under'>U</span>", "Underline (Ctrl+U)", "", () =>
-    document.execCommand("underline"), "underline"));
-  g1.appendChild(makeBtn("<span class='strike'>S</span>", "Strikethrough", "", () =>
-    document.execCommand("strikeThrough"), "strikeThrough"));
-  // Clear formatting — always-on orange icon button. Strips inline format
+  g1.appendChild(
+    makeBtn(
+      "<i>I</i>",
+      "Italic (Ctrl+I)",
+      "italic",
+      () => document.execCommand("italic"),
+      "italic",
+    ),
+  );
+  g1.appendChild(
+    makeBtn(
+      "<span class='under'>U</span>",
+      "Underline (Ctrl+U)",
+      "",
+      () => document.execCommand("underline"),
+      "underline",
+    ),
+  );
+  g1.appendChild(
+    makeBtn(
+      "<span class='strike'>S</span>",
+      "Strikethrough",
+      "",
+      () => document.execCommand("strikeThrough"),
+      "strikeThrough",
+    ),
+  );
+  // Clear formatting — always-on blue icon button. Strips inline format
   // (bold/italic/underline/colors), unlinks anchors, unwraps <code>/<pre>
   // (execCommand leaves those alone), and demotes the current block
   // (heading) back to a paragraph. List items are left alone — removing a
   // bullet/numbered wrapper requires toggling the list button itself.
-  const clearFmtLabel = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/clear-format.svg" draggable="false">`;
-  g1.appendChild(makeBtn(clearFmtLabel, "Clear all formatting on selection", "pix-note-tbtn-accent", () => {
-    const sel = window.getSelection();
-    if (sel?.rangeCount > 0) {
-      const range = sel.getRangeAt(0);
-      const ca = range.commonAncestorContainer;
-      const scope = ca.nodeType === 1 ? ca : ca.parentElement;
-      const toUnwrap = new Set();
-      const walkUp = (start) => {
-        let n = start;
-        while (n && n !== this._editArea) {
-          if (n.nodeType === 1 && (n.tagName === "CODE" || n.tagName === "PRE")) {
-            toUnwrap.add(n);
+  const clearFmtLabel = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/clear-format.svg" draggable="false">`;
+  g1.appendChild(
+    makeBtn(
+      clearFmtLabel,
+      "Clear all formatting on selection",
+      "pix-note-tbtn-accent",
+      () => {
+        const sel = window.getSelection();
+        if (sel?.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          const ca = range.commonAncestorContainer;
+          const scope = ca.nodeType === 1 ? ca : ca.parentElement;
+          const toUnwrap = new Set();
+          const walkUp = (start) => {
+            let n = start;
+            while (n && n !== this._editArea) {
+              if (
+                n.nodeType === 1 &&
+                (n.tagName === "CODE" || n.tagName === "PRE")
+              ) {
+                toUnwrap.add(n);
+              }
+              n = n.parentNode;
+            }
+          };
+          walkUp(range.startContainer);
+          walkUp(range.endContainer);
+          if (scope?.querySelectorAll) {
+            for (const el of scope.querySelectorAll("code, pre")) {
+              if (range.intersectsNode(el)) toUnwrap.add(el);
+            }
           }
-          n = n.parentNode;
-        }
-      };
-      walkUp(range.startContainer);
-      walkUp(range.endContainer);
-      if (scope?.querySelectorAll) {
-        for (const el of scope.querySelectorAll("code, pre")) {
-          if (range.intersectsNode(el)) toUnwrap.add(el);
-        }
-      }
-      for (const el of toUnwrap) {
-        const parent = el.parentNode;
-        if (!parent) continue;
-        while (el.firstChild) parent.insertBefore(el.firstChild, el);
-        parent.removeChild(el);
-      }
-      // Also unwrap any UL/OL intersected by the selection: promote every LI
-      // to a P and drop the list wrapper. execCommand("removeFormat") doesn't
-      // touch lists, so without this step a bulleted/numbered selection still
-      // shows its bullets after Tx.
-      const listsToUnwrap = new Set();
-      const walkUpList = (start) => {
-        let n = start;
-        while (n && n !== this._editArea) {
-          if (n.nodeType === 1 && (n.tagName === "UL" || n.tagName === "OL")) {
-            listsToUnwrap.add(n);
+          for (const el of toUnwrap) {
+            const parent = el.parentNode;
+            if (!parent) continue;
+            while (el.firstChild) parent.insertBefore(el.firstChild, el);
+            parent.removeChild(el);
           }
-          n = n.parentNode;
-        }
-      };
-      walkUpList(range.startContainer);
-      walkUpList(range.endContainer);
-      if (scope?.querySelectorAll) {
-        for (const el of scope.querySelectorAll("ul, ol")) {
-          if (range.intersectsNode(el)) listsToUnwrap.add(el);
-        }
-      }
-      for (const list of listsToUnwrap) {
-        const parent = list.parentNode;
-        if (!parent) continue;
-        const lis = Array.from(list.children).filter((c) => c.tagName === "LI");
-        for (const li of lis) {
-          const p = document.createElement("p");
-          while (li.firstChild) p.appendChild(li.firstChild);
-          parent.insertBefore(p, list);
-        }
-        parent.removeChild(list);
-      }
-    }
-    document.execCommand("removeFormat");
-    document.execCommand("unlink");
-    // Demote headings / blockquotes into plain paragraphs by manual DOM
-    // replacement. execCommand("formatBlock", false, "p") sometimes leaves
-    // the heading wrapper intact or nests elements awkwardly, especially
-    // after the list/code unwrap steps above have already mutated the DOM.
-    const sel2 = window.getSelection();
-    if (sel2?.rangeCount > 0) {
-      const range2 = sel2.getRangeAt(0);
-      const ca2 = range2.commonAncestorContainer;
-      const scope2 = ca2.nodeType === 1 ? ca2 : ca2.parentElement;
-      const blocks = new Set();
-      const walkUpBlock = (start) => {
-        let n = start;
-        while (n && n !== this._editArea) {
-          if (n.nodeType === 1 && /^(H1|H2|H3|BLOCKQUOTE)$/.test(n.tagName)) {
-            blocks.add(n);
+          // Also unwrap any UL/OL intersected by the selection: promote every LI
+          // to a P and drop the list wrapper. execCommand("removeFormat") doesn't
+          // touch lists, so without this step a bulleted/numbered selection still
+          // shows its bullets after Tx.
+          const listsToUnwrap = new Set();
+          const walkUpList = (start) => {
+            let n = start;
+            while (n && n !== this._editArea) {
+              if (
+                n.nodeType === 1 &&
+                (n.tagName === "UL" || n.tagName === "OL")
+              ) {
+                listsToUnwrap.add(n);
+              }
+              n = n.parentNode;
+            }
+          };
+          walkUpList(range.startContainer);
+          walkUpList(range.endContainer);
+          if (scope?.querySelectorAll) {
+            for (const el of scope.querySelectorAll("ul, ol")) {
+              if (range.intersectsNode(el)) listsToUnwrap.add(el);
+            }
           }
-          n = n.parentNode;
+          for (const list of listsToUnwrap) {
+            const parent = list.parentNode;
+            if (!parent) continue;
+            const lis = Array.from(list.children).filter(
+              (c) => c.tagName === "LI",
+            );
+            for (const li of lis) {
+              const p = document.createElement("p");
+              while (li.firstChild) p.appendChild(li.firstChild);
+              parent.insertBefore(p, list);
+            }
+            parent.removeChild(list);
+          }
         }
-      };
-      walkUpBlock(range2.startContainer);
-      walkUpBlock(range2.endContainer);
-      if (scope2?.querySelectorAll) {
-        for (const el of scope2.querySelectorAll("h1, h2, h3, blockquote")) {
-          if (range2.intersectsNode(el)) blocks.add(el);
+        document.execCommand("removeFormat");
+        document.execCommand("unlink");
+        // Demote headings / blockquotes into plain paragraphs by manual DOM
+        // replacement. execCommand("formatBlock", false, "p") sometimes leaves
+        // the heading wrapper intact or nests elements awkwardly, especially
+        // after the list/code unwrap steps above have already mutated the DOM.
+        const sel2 = window.getSelection();
+        if (sel2?.rangeCount > 0) {
+          const range2 = sel2.getRangeAt(0);
+          const ca2 = range2.commonAncestorContainer;
+          const scope2 = ca2.nodeType === 1 ? ca2 : ca2.parentElement;
+          const blocks = new Set();
+          const walkUpBlock = (start) => {
+            let n = start;
+            while (n && n !== this._editArea) {
+              if (
+                n.nodeType === 1 &&
+                /^(H1|H2|H3|BLOCKQUOTE)$/.test(n.tagName)
+              ) {
+                blocks.add(n);
+              }
+              n = n.parentNode;
+            }
+          };
+          walkUpBlock(range2.startContainer);
+          walkUpBlock(range2.endContainer);
+          if (scope2?.querySelectorAll) {
+            for (const el of scope2.querySelectorAll(
+              "h1, h2, h3, blockquote",
+            )) {
+              if (range2.intersectsNode(el)) blocks.add(el);
+            }
+          }
+          for (const el of blocks) {
+            const parent = el.parentNode;
+            if (!parent) continue;
+            const p = document.createElement("p");
+            while (el.firstChild) p.appendChild(el.firstChild);
+            parent.replaceChild(p, el);
+          }
         }
-      }
-      for (const el of blocks) {
-        const parent = el.parentNode;
-        if (!parent) continue;
-        const p = document.createElement("p");
-        while (el.firstChild) p.appendChild(el.firstChild);
-        parent.replaceChild(p, el);
-      }
-    }
-  }));
+      },
+    ),
+  );
   tb.appendChild(g1);
   tb.appendChild(el("div", "pix-note-tsep"));
 
   // Group 2 — headings
   const mkHeading = (tag, label) =>
     makeBtn(label, `Heading ${tag.toUpperCase()}`, "", () =>
-      document.execCommand("formatBlock", false, tag)
+      document.execCommand("formatBlock", false, tag),
     );
   const g2 = el("div", "pix-note-tgroup");
   const h1Btn = mkHeading("h1", "H1");
@@ -318,7 +407,9 @@ NoteEditor.prototype._buildToolbar = function () {
   const headingMap = { h1: h1Btn, h2: h2Btn, h3: h3Btn };
   this._activeChecks.push(() => {
     let block = "";
-    try { block = (document.queryCommandValue("formatBlock") || "").toString(); } catch (e) {}
+    try {
+      block = (document.queryCommandValue("formatBlock") || "").toString();
+    } catch (e) {}
     block = block.toLowerCase().replace(/[<>]/g, "");
     for (const [tag, btn] of Object.entries(headingMap)) {
       btn.classList.toggle("active", block === tag);
@@ -345,24 +436,29 @@ NoteEditor.prototype._buildToolbar = function () {
   textColorBtn.addEventListener("click", (e) => {
     e.preventDefault();
     const r = saveRange(this._editArea);
-    openColorPop(textColorBtn, null, (c) => {
-      this._editArea.focus();
-      restoreRange(r);
-      // Force CSS output (<span style="color:...">) instead of legacy
-      // <font color="..."> so headings and the sanitizer preserve the color.
-      document.execCommand("styleWithCSS", false, true);
-      if (c == null) {
-        // "Clear" means reset to the body's default text color rather than
-        // execCommand("removeFormat") which would strip bold/italic/etc too.
-        document.execCommand("foreColor", false, "#e4e4e4");
-        textColorBtn.style.removeProperty("--pix-note-tbtn-tint");
-      } else {
-        document.execCommand("foreColor", false, c);
-        textColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
-      }
-      this._dirty = true;
-      this._refreshActiveStates();
-    }, true);
+    openColorPop(
+      textColorBtn,
+      null,
+      (c) => {
+        this._editArea.focus();
+        restoreRange(r);
+        // Force CSS output (<span style="color:...">) instead of legacy
+        // <font color="..."> so headings and the sanitizer preserve the color.
+        document.execCommand("styleWithCSS", false, true);
+        if (c == null) {
+          // "Clear" means reset to the body's default text color rather than
+          // execCommand("removeFormat") which would strip bold/italic/etc too.
+          document.execCommand("foreColor", false, "#e4e4e4");
+          textColorBtn.style.removeProperty("--pix-note-tbtn-tint");
+        } else {
+          document.execCommand("foreColor", false, c);
+          textColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
+        }
+        this._dirty = true;
+        this._refreshActiveStates();
+      },
+      true,
+    );
   });
   g3.appendChild(textColorBtn);
 
@@ -387,53 +483,63 @@ NoteEditor.prototype._buildToolbar = function () {
   hiColorBtn.addEventListener("click", (e) => {
     e.preventDefault();
     const r = saveRange(this._editArea);
-    openColorPop(hiColorBtn, null, (c) => {
-      this._editArea.focus();
-      restoreRange(r);
-      document.execCommand("styleWithCSS", false, true);
-      if (c == null) {
-        // hiliteColor("transparent") creates a nested span instead of
-        // unsetting the parent span/li's color, so the old highlight
-        // persists. Walk the selection's ancestors + descendants and
-        // directly strip inline background-color.
-        const sel = window.getSelection();
-        if (sel && sel.rangeCount > 0) {
-          const ca = sel.getRangeAt(0).commonAncestorContainer;
-          const scope = ca.nodeType === 1 ? ca : ca.parentNode;
-          const targets = new Set([scope, ...scope.querySelectorAll("*")]);
-          let p = scope.parentNode;
-          while (p && p !== this._editArea && p !== document.body) {
-            targets.add(p); p = p.parentNode;
-          }
-          for (const el of targets) {
-            if (el.style && el.style.backgroundColor) {
-              el.style.backgroundColor = "";
-              if (!el.getAttribute("style")) el.removeAttribute("style");
+    openColorPop(
+      hiColorBtn,
+      null,
+      (c) => {
+        this._editArea.focus();
+        restoreRange(r);
+        document.execCommand("styleWithCSS", false, true);
+        if (c == null) {
+          // hiliteColor("transparent") creates a nested span instead of
+          // unsetting the parent span/li's color, so the old highlight
+          // persists. Walk the selection's ancestors + descendants and
+          // directly strip inline background-color.
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            const ca = sel.getRangeAt(0).commonAncestorContainer;
+            const scope = ca.nodeType === 1 ? ca : ca.parentNode;
+            const targets = new Set([scope, ...scope.querySelectorAll("*")]);
+            let p = scope.parentNode;
+            while (p && p !== this._editArea && p !== document.body) {
+              targets.add(p);
+              p = p.parentNode;
+            }
+            for (const el of targets) {
+              if (el.style && el.style.backgroundColor) {
+                el.style.backgroundColor = "";
+                if (!el.getAttribute("style")) el.removeAttribute("style");
+              }
             }
           }
+          hiColorBtn.style.removeProperty("--pix-note-tbtn-tint");
+        } else {
+          document.execCommand("hiliteColor", false, c);
+          // Chrome quirk: execCommand("hiliteColor", ...) on a collapsed
+          // selection CREATES a new <span style="background-color:..."> at
+          // the cursor, and in doing so it CLEARS any previously-staged
+          // foreColor. If the user just picked a text color (staged but
+          // not yet in the DOM), typing would then get the default text
+          // color instead. Restage the text color by replaying
+          // execCommand("foreColor") immediately after hiliteColor so the
+          // two combine. We read the color back from the text-color
+          // icon's inline tint so we pick up the most recent A-button
+          // choice.
+          const stagedFg = textColorBtn.style
+            .getPropertyValue("--pix-note-tbtn-tint")
+            .trim();
+          if (stagedFg) {
+            try {
+              document.execCommand("foreColor", false, stagedFg);
+            } catch (e) {}
+          }
+          hiColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
         }
-        hiColorBtn.style.removeProperty("--pix-note-tbtn-tint");
-      } else {
-        document.execCommand("hiliteColor", false, c);
-        // Chrome quirk: execCommand("hiliteColor", ...) on a collapsed
-        // selection CREATES a new <span style="background-color:..."> at
-        // the cursor, and in doing so it CLEARS any previously-staged
-        // foreColor. If the user just picked a text color (staged but
-        // not yet in the DOM), typing would then get the default text
-        // color instead. Restage the text color by replaying
-        // execCommand("foreColor") immediately after hiliteColor so the
-        // two combine. We read the color back from the text-color
-        // icon's inline tint so we pick up the most recent A-button
-        // choice.
-        const stagedFg = textColorBtn.style.getPropertyValue("--pix-note-tbtn-tint").trim();
-        if (stagedFg) {
-          try { document.execCommand("foreColor", false, stagedFg); } catch (e) {}
-        }
-        hiColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
-      }
-      this._dirty = true;
-      this._refreshActiveStates();
-    }, true);
+        this._dirty = true;
+        this._refreshActiveStates();
+      },
+      true,
+    );
   });
   g3.appendChild(hiColorBtn);
 
@@ -465,18 +571,23 @@ NoteEditor.prototype._buildToolbar = function () {
   bgColorBtn.addEventListener("mousedown", (e) => e.preventDefault());
   bgColorBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    openColorPop(bgColorBtn, this.cfg.backgroundColor || "#111111", (c) => {
-      // Clear (c == null) → set cfg.backgroundColor to NULL, not a
-      // hex default. null is the signal to renderContent() that the
-      // user explicitly cleared — it will revert node.color/bgcolor
-      // to LiteGraph defaults, allowing ComfyUI's native right-click
-      // Colors menu to take over. Setting to "#111111" here would
-      // permanently override the native picker (the original bug).
-      this.cfg.backgroundColor = (c == null) ? null : c;
-      this._applyEditAreaBg?.();
-      refreshBgSwatch();
-      this._dirty = true;
-    }, true);
+    openColorPop(
+      bgColorBtn,
+      this.cfg.backgroundColor || "#111111",
+      (c) => {
+        // Clear (c == null) → set cfg.backgroundColor to NULL, not a
+        // hex default. null is the signal to renderContent() that the
+        // user explicitly cleared — it will revert node.color/bgcolor
+        // to LiteGraph defaults, allowing ComfyUI's native right-click
+        // Colors menu to take over. Setting to "#111111" here would
+        // permanently override the native picker (the original bug).
+        this.cfg.backgroundColor = c == null ? null : c;
+        this._applyEditAreaBg?.();
+        refreshBgSwatch();
+        this._dirty = true;
+      },
+      true,
+    );
   });
   g3.appendChild(bgColorBtn);
 
@@ -511,28 +622,41 @@ NoteEditor.prototype._buildToolbar = function () {
     btn.addEventListener("mousedown", (e) => e.preventDefault());
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      openColorPop(btn, this.cfg[cfgKey] || fallback, (c) => {
-        this.cfg[cfgKey] = (c == null) ? fallback : c;
-        apply();
-        refreshSwatch();
-        this._dirty = true;
-      }, true);
+      openColorPop(
+        btn,
+        this.cfg[cfgKey] || fallback,
+        (c) => {
+          this.cfg[cfgKey] = c == null ? fallback : c;
+          apply();
+          refreshSwatch();
+          this._dirty = true;
+        },
+        true,
+      );
     });
     return btn;
   };
 
   // Group 4 — lists
   const g4 = el("div", "pix-note-tgroup");
-  g4.appendChild(makeBtn(
-    '<span class="pix-note-tbtn-maskicon pix-note-icon-list-dot"></span>',
-    "Bulleted list", "", () =>
-    document.execCommand("insertUnorderedList"), "insertUnorderedList"
-  ));
-  g4.appendChild(makeBtn(
-    '<span class="pix-note-tbtn-maskicon pix-note-icon-list-number"></span>',
-    "Numbered list", "", () =>
-    document.execCommand("insertOrderedList"), "insertOrderedList"
-  ));
+  g4.appendChild(
+    makeBtn(
+      '<span class="pix-note-tbtn-maskicon pix-note-icon-list-dot"></span>',
+      "Bulleted list",
+      "",
+      () => document.execCommand("insertUnorderedList"),
+      "insertUnorderedList",
+    ),
+  );
+  g4.appendChild(
+    makeBtn(
+      '<span class="pix-note-tbtn-maskicon pix-note-icon-list-number"></span>',
+      "Numbered list",
+      "",
+      () => document.execCommand("insertOrderedList"),
+      "insertOrderedList",
+    ),
+  );
   tb.appendChild(g4);
   tb.appendChild(el("div", "pix-note-tsep"));
 
@@ -541,22 +665,26 @@ NoteEditor.prototype._buildToolbar = function () {
 
   const linkBtn = makeBtn(
     '<span class="pix-note-tbtn-maskicon pix-note-icon-link"></span>',
-    "Insert link", "", () => {
-    const selText = window.getSelection()?.toString() || "";
-    const savedRange = saveRange(this._editArea);
-    this._promptLinkUrl(selText).then((result) => {
-      if (!result) return;
-      this._editArea.focus();
-      restoreRange(savedRange);
-      const { url, label } = result;
-      document.execCommand(
-        "insertHTML", false,
-        `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`
-      );
-      this._dirty = true;
-      this._refreshActiveStates();
-    });
-  });
+    "Insert link",
+    "",
+    () => {
+      const selText = window.getSelection()?.toString() || "";
+      const savedRange = saveRange(this._editArea);
+      this._promptLinkUrl(selText).then((result) => {
+        if (!result) return;
+        this._editArea.focus();
+        restoreRange(savedRange);
+        const { url, label } = result;
+        document.execCommand(
+          "insertHTML",
+          false,
+          `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`,
+        );
+        this._dirty = true;
+        this._refreshActiveStates();
+      });
+    },
+  );
   g5.appendChild(linkBtn);
 
   const isSelectionInsideTag = (tagNames) => {
@@ -577,153 +705,174 @@ NoteEditor.prototype._buildToolbar = function () {
   // code style keeps the allowed HTML shapes simple and predictable.
   const codeBlockBtn = makeBtn(
     '<span class="pix-note-tbtn-maskicon pix-note-icon-code"></span>',
-    "Code block", "", () => {
-    // Toggle off: unwrap the current <pre> (and any nested <code>) into a
-    // plain paragraph containing its text.
-    if (isSelectionInsideTag(["PRE"])) {
-      const sel = window.getSelection();
-      const anchor = sel?.anchorNode;
-      let pre = null;
-      let n = anchor;
-      while (n && n !== this._editArea) {
-        if (n.nodeType === 1 && n.tagName === "PRE") { pre = n; break; }
-        n = n.parentNode;
+    "Code block",
+    "",
+    () => {
+      // Toggle off: unwrap the current <pre> (and any nested <code>) into a
+      // plain paragraph containing its text.
+      if (isSelectionInsideTag(["PRE"])) {
+        const sel = window.getSelection();
+        const anchor = sel?.anchorNode;
+        let pre = null;
+        let n = anchor;
+        while (n && n !== this._editArea) {
+          if (n.nodeType === 1 && n.tagName === "PRE") {
+            pre = n;
+            break;
+          }
+          n = n.parentNode;
+        }
+        if (pre?.parentNode) {
+          this._snapBefore?.();
+          const p = document.createElement("p");
+          p.textContent = pre.textContent;
+          pre.parentNode.replaceChild(p, pre);
+          const r = document.createRange();
+          r.selectNodeContents(p);
+          r.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(r);
+          this._snapAfter?.();
+        }
+        return;
       }
-      if (pre?.parentNode) {
+      // Unwrap inline <code> before proceeding (leftover from older notes
+      // that had inline code). Nesting <pre> inside <code> violates HTML
+      // spec, so we can't just fall through — but silently no-oping on
+      // click is user-hostile. Walk up from the anchor, find the nearest
+      // inline <code>, unwrap it in place, then continue into the normal
+      // insert path below.
+      if (isSelectionInsideTag(["CODE"])) {
+        const sel = window.getSelection();
+        let n = sel?.anchorNode;
+        let codeEl = null;
+        while (n && n !== this._editArea) {
+          if (n.nodeType === 1 && n.tagName === "CODE") {
+            codeEl = n;
+            break;
+          }
+          n = n.parentNode;
+        }
+        if (codeEl?.parentNode) {
+          this._snapBefore?.();
+          const parent = codeEl.parentNode;
+          while (codeEl.firstChild)
+            parent.insertBefore(codeEl.firstChild, codeEl);
+          parent.removeChild(codeEl);
+          this._snapAfter?.();
+        }
+      }
+      // Safety net: wrap any loose text/inline nodes at the editArea root in
+      // <p> before we capture block references. Without this, typing on a
+      // fresh note leaves raw text as a direct editArea child, and
+      // findTopBlock() returns null for it — the code-block insert then
+      // silently appends instead of replacing.
+      this._normalizeEditArea?.();
+      // Walk up to the top-level block inside editArea. We capture BOTH
+      // endpoints of the selection as direct element references before the
+      // modal opens — restoring a Range after the modal's focus change is
+      // unreliable on Chrome (intersectsNode sometimes misses the first
+      // block), so we keep references instead.
+      const findTopBlock = (node) => {
+        if (!node) return null;
+        if (node.nodeType !== 1) node = node.parentNode;
+        while (
+          node &&
+          node.parentNode !== this._editArea &&
+          node !== this._editArea
+        ) {
+          node = node.parentNode;
+        }
+        return node && node.parentNode === this._editArea ? node : null;
+      };
+      let startBlock = null,
+        endBlock = null,
+        wasCollapsed = true;
+      const sel0 = window.getSelection();
+      if (sel0?.rangeCount > 0) {
+        const r0 = sel0.getRangeAt(0);
+        wasCollapsed = r0.collapsed;
+        startBlock = findTopBlock(r0.startContainer);
+        endBlock = findTopBlock(r0.endContainer);
+      }
+      // Collect code through a modal so the block is built as one clean
+      // DOM insert — avoids the edge cases that came from letting the user
+      // type directly inside a fresh <pre><code> (cursor escaping, nested
+      // inserts, node-vanishing on save).
+      // Trim the selected-text preview: Chrome's selection.toString() across
+      // block boundaries injects newlines/spaces around block edges, which
+      // otherwise shows as a stray leading blank inside the code modal.
+      const rawSel = window.getSelection()?.toString() || "";
+      const selText = rawSel.replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, "");
+      this._promptCodeBlock(selText).then((code) => {
+        if (code == null) return;
         this._snapBefore?.();
-        const p = document.createElement("p");
-        p.textContent = pre.textContent;
-        pre.parentNode.replaceChild(p, pre);
+        // Build the replacement nodes: <pre><code>…</code></pre> plus a
+        // trailing empty <p> so the user has somewhere to type below.
+        const pre = document.createElement("pre");
+        const codeEl = document.createElement("code");
+        codeEl.textContent = code;
+        pre.appendChild(codeEl);
+        const trailing = document.createElement("p");
+        trailing.appendChild(document.createElement("br"));
+        // Walk from startBlock to endBlock (inclusive) using direct element
+        // references captured before the modal. If either reference became
+        // detached (e.g. user clicked elsewhere between open and Insert),
+        // fall back to append.
+        const toReplace = [];
+        if (
+          !wasCollapsed &&
+          startBlock?.parentNode === this._editArea &&
+          endBlock?.parentNode === this._editArea
+        ) {
+          let n = startBlock;
+          while (n) {
+            toReplace.push(n);
+            if (n === endBlock) break;
+            n = n.nextElementSibling;
+          }
+        }
+        if (toReplace.length > 0) {
+          const first = toReplace[0];
+          this._editArea.insertBefore(pre, first);
+          this._editArea.insertBefore(trailing, pre.nextSibling);
+          for (const b of toReplace) {
+            if (b.parentNode === this._editArea) this._editArea.removeChild(b);
+          }
+        } else if (startBlock && startBlock.parentNode === this._editArea) {
+          startBlock.parentNode.insertBefore(pre, startBlock.nextSibling);
+          pre.parentNode.insertBefore(trailing, pre.nextSibling);
+        } else {
+          this._editArea.appendChild(pre);
+          this._editArea.appendChild(trailing);
+        }
         const r = document.createRange();
-        r.selectNodeContents(p);
-        r.collapse(false);
+        r.selectNodeContents(trailing);
+        r.collapse(true);
+        const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(r);
+        this._editArea.focus();
         this._snapAfter?.();
-      }
-      return;
-    }
-    // Unwrap inline <code> before proceeding (leftover from older notes
-    // that had inline code). Nesting <pre> inside <code> violates HTML
-    // spec, so we can't just fall through — but silently no-oping on
-    // click is user-hostile. Walk up from the anchor, find the nearest
-    // inline <code>, unwrap it in place, then continue into the normal
-    // insert path below.
-    if (isSelectionInsideTag(["CODE"])) {
-      const sel = window.getSelection();
-      let n = sel?.anchorNode;
-      let codeEl = null;
-      while (n && n !== this._editArea) {
-        if (n.nodeType === 1 && n.tagName === "CODE") { codeEl = n; break; }
-        n = n.parentNode;
-      }
-      if (codeEl?.parentNode) {
-        this._snapBefore?.();
-        const parent = codeEl.parentNode;
-        while (codeEl.firstChild) parent.insertBefore(codeEl.firstChild, codeEl);
-        parent.removeChild(codeEl);
-        this._snapAfter?.();
-      }
-    }
-    // Safety net: wrap any loose text/inline nodes at the editArea root in
-    // <p> before we capture block references. Without this, typing on a
-    // fresh note leaves raw text as a direct editArea child, and
-    // findTopBlock() returns null for it — the code-block insert then
-    // silently appends instead of replacing.
-    this._normalizeEditArea?.();
-    // Walk up to the top-level block inside editArea. We capture BOTH
-    // endpoints of the selection as direct element references before the
-    // modal opens — restoring a Range after the modal's focus change is
-    // unreliable on Chrome (intersectsNode sometimes misses the first
-    // block), so we keep references instead.
-    const findTopBlock = (node) => {
-      if (!node) return null;
-      if (node.nodeType !== 1) node = node.parentNode;
-      while (node && node.parentNode !== this._editArea && node !== this._editArea) {
-        node = node.parentNode;
-      }
-      return node && node.parentNode === this._editArea ? node : null;
-    };
-    let startBlock = null, endBlock = null, wasCollapsed = true;
-    const sel0 = window.getSelection();
-    if (sel0?.rangeCount > 0) {
-      const r0 = sel0.getRangeAt(0);
-      wasCollapsed = r0.collapsed;
-      startBlock = findTopBlock(r0.startContainer);
-      endBlock = findTopBlock(r0.endContainer);
-    }
-    // Collect code through a modal so the block is built as one clean
-    // DOM insert — avoids the edge cases that came from letting the user
-    // type directly inside a fresh <pre><code> (cursor escaping, nested
-    // inserts, node-vanishing on save).
-    // Trim the selected-text preview: Chrome's selection.toString() across
-    // block boundaries injects newlines/spaces around block edges, which
-    // otherwise shows as a stray leading blank inside the code modal.
-    const rawSel = window.getSelection()?.toString() || "";
-    const selText = rawSel.replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, "");
-    this._promptCodeBlock(selText).then((code) => {
-      if (code == null) return;
-      this._snapBefore?.();
-      // Build the replacement nodes: <pre><code>…</code></pre> plus a
-      // trailing empty <p> so the user has somewhere to type below.
-      const pre = document.createElement("pre");
-      const codeEl = document.createElement("code");
-      codeEl.textContent = code;
-      pre.appendChild(codeEl);
-      const trailing = document.createElement("p");
-      trailing.appendChild(document.createElement("br"));
-      // Walk from startBlock to endBlock (inclusive) using direct element
-      // references captured before the modal. If either reference became
-      // detached (e.g. user clicked elsewhere between open and Insert),
-      // fall back to append.
-      const toReplace = [];
-      if (
-        !wasCollapsed &&
-        startBlock?.parentNode === this._editArea &&
-        endBlock?.parentNode === this._editArea
-      ) {
-        let n = startBlock;
-        while (n) {
-          toReplace.push(n);
-          if (n === endBlock) break;
-          n = n.nextElementSibling;
-        }
-      }
-      if (toReplace.length > 0) {
-        const first = toReplace[0];
-        this._editArea.insertBefore(pre, first);
-        this._editArea.insertBefore(trailing, pre.nextSibling);
-        for (const b of toReplace) {
-          if (b.parentNode === this._editArea) this._editArea.removeChild(b);
-        }
-      } else if (startBlock && startBlock.parentNode === this._editArea) {
-        startBlock.parentNode.insertBefore(pre, startBlock.nextSibling);
-        pre.parentNode.insertBefore(trailing, pre.nextSibling);
-      } else {
-        this._editArea.appendChild(pre);
-        this._editArea.appendChild(trailing);
-      }
-      const r = document.createRange();
-      r.selectNodeContents(trailing);
-      r.collapse(true);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(r);
-      this._editArea.focus();
-      this._snapAfter?.();
-      this._dirty = true;
-      this._refreshActiveStates();
-    });
-  });
+        this._dirty = true;
+        this._refreshActiveStates();
+      });
+    },
+  );
   g5.appendChild(codeBlockBtn);
 
-  g5.appendChild(makeBtn(
-    '<span class="pix-note-tbtn-maskicon pix-note-icon-separator"></span>',
-    "Horizontal separator", "", () => {
-    document.execCommand("insertHTML", false, `<hr><p><br></p>`);
-  }));
+  g5.appendChild(
+    makeBtn(
+      '<span class="pix-note-tbtn-maskicon pix-note-icon-separator"></span>',
+      "Horizontal separator",
+      "",
+      () => {
+        document.execCommand("insertHTML", false, `<hr><p><br></p>`);
+      },
+    ),
+  );
 
-  const gridIcon = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/grid.svg" draggable="false">`;
+  const gridIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/grid.svg" draggable="false">`;
   const gridBtn = makeBtn(gridIcon, "Insert grid (table)", "", () => {});
   gridBtn.onclick = (e) => {
     e.preventDefault();
@@ -748,7 +897,7 @@ NoteEditor.prototype._buildToolbar = function () {
     "Line color (grid borders, grid header underline, HR separator)",
     "lineColor",
     "--pix-note-line",
-    "#f66744"
+    "#89b4fa",
   );
   g5.appendChild(lnColorBtn);
 
@@ -757,7 +906,8 @@ NoteEditor.prototype._buildToolbar = function () {
   this._activeChecks.push(() => {
     const sel = window.getSelection();
     const anchor = sel?.anchorNode;
-    let inA = false, inPre = false;
+    let inA = false,
+      inPre = false;
     if (anchor && this._editArea?.contains(anchor)) {
       let n = anchor;
       while (n && n !== this._editArea) {
@@ -775,15 +925,20 @@ NoteEditor.prototype._buildToolbar = function () {
   tb.appendChild(g5);
   tb.appendChild(el("div", "pix-note-tsep"));
 
-  // Group 6 — Pixaroma blocks
+  // Group 6 — LinuxTechLab blocks
   const g6 = el("div", "pix-note-tgroup");
 
   // Unified "Button Design" entry — opens a rich dialog where the user
   // picks an icon (Download / View Page / Read More) and toggles whether
   // to attach a folder suggestion and a size hint. The 3 pill types still
   // exist as CSS classes so old notes keep rendering.
-  const bdIcon = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/button-design.svg" draggable="false">`;
-  const bdBtn = makeBtn(bdIcon, "Insert button (Download / View Page / Read More)", "", () => {});
+  const bdIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/button-design.svg" draggable="false">`;
+  const bdBtn = makeBtn(
+    bdIcon,
+    "Insert button (Download / View Page / Read More)",
+    "",
+    () => {},
+  );
   bdBtn.onclick = (e) => {
     e.preventDefault();
     this._insertButtonBlock(bdBtn);
@@ -795,11 +950,11 @@ NoteEditor.prototype._buildToolbar = function () {
     "Button color (Download / View Page / Read More pills)",
     "buttonColor",
     "--pix-note-btn",
-    "#f66744"
+    "#89b4fa",
   );
   g6.appendChild(btnColorBtn);
 
-  const ytIcon = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/youtube.svg" draggable="false">`;
+  const ytIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/youtube.svg" draggable="false">`;
   const ytBtn = makeBtn(ytIcon, "Insert YouTube link", "", () => {});
   ytBtn.onclick = (e) => {
     e.preventDefault();
@@ -807,7 +962,7 @@ NoteEditor.prototype._buildToolbar = function () {
   };
   g6.appendChild(ytBtn);
 
-  const dcIcon = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/discord.svg" draggable="false">`;
+  const dcIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/discord.svg" draggable="false">`;
   const dcBtn = makeBtn(dcIcon, "Insert Discord link", "", () => {});
   dcBtn.onclick = (e) => {
     e.preventDefault();
@@ -823,14 +978,18 @@ NoteEditor.prototype._buildToolbar = function () {
   const spacer = el("div", "pix-note-tspacer");
   tb.appendChild(spacer);
   const gURight = el("div", "pix-note-tgroup");
-  const undoLabel = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/undo.svg" draggable="false">`;
-  const redoLabel = `<img class="pix-note-tbtn-icon" src="/pixaroma/assets/icons/ui/redo.svg" draggable="false">`;
-  gURight.appendChild(makeBtn(undoLabel, "Undo (Ctrl+Z)", "pix-note-tbtn-accent", () => {
-    this.doUndo?.();
-  }));
-  gURight.appendChild(makeBtn(redoLabel, "Redo (Ctrl+Shift+Z)", "pix-note-tbtn-accent", () => {
-    this.doRedo?.();
-  }));
+  const undoLabel = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/undo.svg" draggable="false">`;
+  const redoLabel = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/redo.svg" draggable="false">`;
+  gURight.appendChild(
+    makeBtn(undoLabel, "Undo (Ctrl+Z)", "pix-note-tbtn-accent", () => {
+      this.doUndo?.();
+    }),
+  );
+  gURight.appendChild(
+    makeBtn(redoLabel, "Redo (Ctrl+Shift+Z)", "pix-note-tbtn-accent", () => {
+      this.doRedo?.();
+    }),
+  );
   tb.appendChild(gURight);
 
   // View toggle: WYSIWYG vs raw-HTML. Sits on the far right so users
@@ -849,10 +1008,12 @@ NoteEditor.prototype._buildToolbar = function () {
 
   const switchTo = (mode) => {
     if (mode === "code") {
-      codeBtn.classList.add("active"); prevBtn.classList.remove("active");
+      codeBtn.classList.add("active");
+      prevBtn.classList.remove("active");
       this._enterCodeView?.();
     } else {
-      prevBtn.classList.add("active"); codeBtn.classList.remove("active");
+      prevBtn.classList.add("active");
+      codeBtn.classList.remove("active");
       this._enterPreviewView?.();
     }
   };
@@ -895,8 +1056,8 @@ NoteEditor.prototype._refreshActiveStates = function () {
 // execCommand("insertHTML") of a block-level element (grid, code block,
 // HR) — such inserts split the caret out of its current inline
 // formatting context and silently drop any staged foreColor /
-// hiliteColor. Without this, the user picks orange, inserts a grid,
-// clicks into a cell, and typing is white until they re-pick orange.
+// hiliteColor. Without this, the user picks blue, inserts a grid,
+// clicks into a cell, and typing is white until they re-pick blue.
 //
 // For inline inserts (button / YT / Discord pills), the helper is still
 // safe to call: the stage is a no-op when no color has been picked yet,
@@ -907,8 +1068,12 @@ NoteEditor.prototype._refreshActiveStates = function () {
 // so if both colors are set we apply highlight FIRST and foreground
 // SECOND, leaving foreColor as the last-staged command.
 NoteEditor.prototype._restageColors = function () {
-  const fg = this._textColorBtn?.style.getPropertyValue("--pix-note-tbtn-tint").trim();
-  const bg = this._hiColorBtn?.style.getPropertyValue("--pix-note-tbtn-tint").trim();
+  const fg = this._textColorBtn?.style
+    .getPropertyValue("--pix-note-tbtn-tint")
+    .trim();
+  const bg = this._hiColorBtn?.style
+    .getPropertyValue("--pix-note-tbtn-tint")
+    .trim();
   if (!fg && !bg) return;
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return;
@@ -981,11 +1146,17 @@ NoteEditor.prototype._promptLinkUrl = function (presetLabel, presetUrl) {
     backdrop.appendChild(box);
     (this._el || document.body).appendChild(backdrop);
 
-    const finish = (v) => { backdrop.remove(); resolve(v); };
+    const finish = (v) => {
+      backdrop.remove();
+      resolve(v);
+    };
     cancelBtn.addEventListener("click", () => finish(null));
     okBtn.addEventListener("click", () => {
       const url = urlInput.value.trim();
-      if (!url) { finish(null); return; }
+      if (!url) {
+        finish(null);
+        return;
+      }
       if (!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) {
         err.textContent = "URL must start with http://, https://, or mailto:";
         urlInput.focus();
@@ -998,7 +1169,10 @@ NoteEditor.prototype._promptLinkUrl = function (presetLabel, presetUrl) {
       // throw on new URL() and strip the whole anchor.
       try {
         const u = new URL(url);
-        if ((u.protocol === "http:" || u.protocol === "https:") && !u.hostname) {
+        if (
+          (u.protocol === "http:" || u.protocol === "https:") &&
+          !u.hostname
+        ) {
           err.textContent = "URL must include a domain (e.g. example.com)";
           urlInput.focus();
           return;
@@ -1060,16 +1234,24 @@ NoteEditor.prototype._promptCodeBlock = function (presetCode) {
     box.appendChild(actions);
     backdrop.appendChild(box);
     (this._el || document.body).appendChild(backdrop);
-    const finish = (v) => { backdrop.remove(); resolve(v); };
+    const finish = (v) => {
+      backdrop.remove();
+      resolve(v);
+    };
     cancelBtn.addEventListener("click", () => finish(null));
     okBtn.addEventListener("click", () => {
       const v = ta.value;
-      if (!v) { finish(null); return; }
+      if (!v) {
+        finish(null);
+        return;
+      }
       finish(v);
     });
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) finish(null);
     });
-    requestAnimationFrame(() => { ta.focus(); });
+    requestAnimationFrame(() => {
+      ta.focus();
+    });
   });
 };

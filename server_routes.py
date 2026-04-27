@@ -1,14 +1,15 @@
-import os
-import io
-import re
-import json
 import base64
+import io
+import json
+import os
+import re
 import uuid
-from server import PromptServer
+
+import folder_paths
 from aiohttp import web
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
-import folder_paths
+from server import PromptServer
 
 # --- PORTABLE COMFYUI FIX ---
 # Force rembg to download and read AI models from ComfyUI/models/rembg
@@ -18,11 +19,11 @@ os.makedirs(REMBG_MODELS_DIR, exist_ok=True)
 os.environ["U2NET_HOME"] = REMBG_MODELS_DIR
 # ----------------------------
 
-PIXAROMA_ASSETS_DIR = os.path.realpath(
+LINUXTECHLAB_ASSETS_DIR = os.path.realpath(
     os.path.join(os.path.dirname(__file__), "assets")
 )
-PIXAROMA_VENDOR_DIR = os.path.realpath(
-    os.path.join(PIXAROMA_ASSETS_DIR, "vendor")
+LINUXTECHLAB_VENDOR_DIR = os.path.realpath(
+    os.path.join(LINUXTECHLAB_ASSETS_DIR, "vendor")
 )
 
 # Offline-first vendored third-party assets (Three.js, OrbitControls, loaders…).
@@ -38,13 +39,13 @@ _VENDOR_MIME = {
 }
 
 
-@PromptServer.instance.routes.get("/pixaroma/vendor/{tail:.*}")
-async def serve_pixaroma_vendor(request):
+@PromptServer.instance.routes.get("/linuxtechlab/vendor/{tail:.*}")
+async def serve_linuxtechlab_vendor(request):
     tail = request.match_info["tail"]
     if not tail or ".." in tail.split("/") or not _VENDOR_PATH_RE.match(tail):
         return web.Response(status=400)
-    file_path = os.path.realpath(os.path.join(PIXAROMA_VENDOR_DIR, tail))
-    if not file_path.startswith(PIXAROMA_VENDOR_DIR + os.sep):
+    file_path = os.path.realpath(os.path.join(LINUXTECHLAB_VENDOR_DIR, tail))
+    if not file_path.startswith(LINUXTECHLAB_VENDOR_DIR + os.sep):
         return web.Response(status=403)
     if not os.path.isfile(file_path):
         return web.Response(status=404)
@@ -55,56 +56,62 @@ async def serve_pixaroma_vendor(request):
     return web.FileResponse(file_path, headers=headers)
 
 
-@PromptServer.instance.routes.get("/pixaroma/assets/{filename}")
-async def serve_pixaroma_asset(request):
+@PromptServer.instance.routes.get("/linuxtechlab/assets/{filename}")
+async def serve_linuxtechlab_asset(request):
     filename = request.match_info["filename"]
     if not _SAFE_ID_RE.match(
         filename.replace(".", "").replace("-", "").replace("_", "")
     ):
         return web.Response(status=400)
-    file_path = os.path.realpath(os.path.join(PIXAROMA_ASSETS_DIR, filename))
-    if not file_path.startswith(PIXAROMA_ASSETS_DIR):
+    file_path = os.path.realpath(os.path.join(LINUXTECHLAB_ASSETS_DIR, filename))
+    if not file_path.startswith(LINUXTECHLAB_ASSETS_DIR):
         return web.Response(status=403)
     if not os.path.isfile(file_path):
         return web.Response(status=404)
     return web.FileResponse(file_path)
 
 
-@PromptServer.instance.routes.get("/pixaroma/assets/{subdir}/{filename}")
-async def serve_pixaroma_asset_sub(request):
+@PromptServer.instance.routes.get("/linuxtechlab/assets/{subdir}/{filename}")
+async def serve_linuxtechlab_asset_sub(request):
     subdir = request.match_info["subdir"]
     filename = request.match_info["filename"]
     for part in (subdir, filename.replace(".", "").replace("-", "").replace("_", "")):
         if not _SAFE_ID_RE.match(part):
             return web.Response(status=400)
-    file_path = os.path.realpath(os.path.join(PIXAROMA_ASSETS_DIR, subdir, filename))
-    if not file_path.startswith(PIXAROMA_ASSETS_DIR):
+    file_path = os.path.realpath(
+        os.path.join(LINUXTECHLAB_ASSETS_DIR, subdir, filename)
+    )
+    if not file_path.startswith(LINUXTECHLAB_ASSETS_DIR):
         return web.Response(status=403)
     if not os.path.isfile(file_path):
         return web.Response(status=404)
     return web.FileResponse(file_path)
 
 
-@PromptServer.instance.routes.get("/pixaroma/assets/{subdir}/{subdir2}/{filename}")
-async def serve_pixaroma_asset_sub2(request):
+@PromptServer.instance.routes.get("/linuxtechlab/assets/{subdir}/{subdir2}/{filename}")
+async def serve_linuxtechlab_asset_sub2(request):
     subdir = request.match_info["subdir"]
     subdir2 = request.match_info["subdir2"]
     filename = request.match_info["filename"]
-    for part in (subdir, subdir2, filename.replace(".", "").replace("-", "").replace("_", "")):
+    for part in (
+        subdir,
+        subdir2,
+        filename.replace(".", "").replace("-", "").replace("_", ""),
+    ):
         if not _SAFE_ID_RE.match(part):
             return web.Response(status=400)
     file_path = os.path.realpath(
-        os.path.join(PIXAROMA_ASSETS_DIR, subdir, subdir2, filename)
+        os.path.join(LINUXTECHLAB_ASSETS_DIR, subdir, subdir2, filename)
     )
-    if not file_path.startswith(PIXAROMA_ASSETS_DIR):
+    if not file_path.startswith(LINUXTECHLAB_ASSETS_DIR):
         return web.Response(status=403)
     if not os.path.isfile(file_path):
         return web.Response(status=404)
     return web.FileResponse(file_path)
 
 
-PIXAROMA_NOTE_ICONS_DIR = os.path.realpath(
-    os.path.join(PIXAROMA_ASSETS_DIR, "icons", "note")
+LINUXTECHLAB_NOTE_ICONS_DIR = os.path.realpath(
+    os.path.join(LINUXTECHLAB_ASSETS_DIR, "icons", "note")
 )
 
 
@@ -131,7 +138,7 @@ def _derive_icon_label(stem: str) -> str:
     return joined[0].upper() + joined[1:]
 
 
-@PromptServer.instance.routes.get("/pixaroma/api/note/icons/list")
+@PromptServer.instance.routes.get("/linuxtechlab/api/note/icons/list")
 async def list_note_icons(request):
     """Enumerate the note inline-icon folder.
 
@@ -140,10 +147,10 @@ async def list_note_icons(request):
     empty-folder and route-failure with the same "No icons found" UI.
     """
     try:
-        if not os.path.isdir(PIXAROMA_NOTE_ICONS_DIR):
+        if not os.path.isdir(LINUXTECHLAB_NOTE_ICONS_DIR):
             return web.json_response({"icons": []})
         entries = []
-        for name in os.listdir(PIXAROMA_NOTE_ICONS_DIR):
+        for name in os.listdir(LINUXTECHLAB_NOTE_ICONS_DIR):
             if not name.lower().endswith(".svg"):
                 continue
             stem = name[:-4]
@@ -152,11 +159,13 @@ async def list_note_icons(request):
             # never hand the frontend an id it would later strip.
             if not re.match(r"^[A-Za-z0-9_-]{1,64}$", stem):
                 continue
-            entries.append({
-                "id": stem,
-                "label": _derive_icon_label(stem),
-                "url": f"/pixaroma/assets/icons/note/{name}",
-            })
+            entries.append(
+                {
+                    "id": stem,
+                    "label": _derive_icon_label(stem),
+                    "url": f"/linuxtechlab/assets/icons/note/{name}",
+                }
+            )
         entries.sort(key=lambda e: e["label"].lower())
         return web.json_response({"icons": entries})
     except Exception:
@@ -165,10 +174,10 @@ async def list_note_icons(request):
         return web.json_response({"icons": []})
 
 
-PIXAROMA_INPUT_ROOT = os.path.realpath(
-    os.path.join(folder_paths.get_input_directory(), "pixaroma")
+LINUXTECHLAB_INPUT_ROOT = os.path.realpath(
+    os.path.join(folder_paths.get_input_directory(), "linuxtechlab")
 )
-os.makedirs(PIXAROMA_INPUT_ROOT, exist_ok=True)
+os.makedirs(LINUXTECHLAB_INPUT_ROOT, exist_ok=True)
 
 # Max payload: 50 MB of base64 text (≈ 37 MB image)
 _MAX_B64_BYTES = 50 * 1024 * 1024
@@ -186,13 +195,13 @@ def _sanitize_id(value: str, fallback: str) -> str:
 
 def _safe_path(filename: str) -> str | None:
     """
-    Build an absolute path inside PIXAROMA_INPUT_ROOT.
+    Build an absolute path inside LINUXTECHLAB_INPUT_ROOT.
     Returns None if the resolved path would escape the root (path traversal guard).
     """
-    full = os.path.realpath(os.path.join(PIXAROMA_INPUT_ROOT, filename))
+    full = os.path.realpath(os.path.join(LINUXTECHLAB_INPUT_ROOT, filename))
     if (
-        not full.startswith(PIXAROMA_INPUT_ROOT + os.sep)
-        and full != PIXAROMA_INPUT_ROOT
+        not full.startswith(LINUXTECHLAB_INPUT_ROOT + os.sep)
+        and full != LINUXTECHLAB_INPUT_ROOT
     ):
         return None
     return full
@@ -224,7 +233,7 @@ def _embed_workflow_metadata(workflow, prompt) -> PngInfo:
     return pnginfo
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/layer/upload")
+@PromptServer.instance.routes.post("/linuxtechlab/api/layer/upload")
 async def upload_raw_layer(request):
     data = await request.json()
     b64_data = data.get("image", "")
@@ -241,11 +250,11 @@ async def upload_raw_layer(request):
         return web.json_response({"error": "Invalid layer id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"path": relative_path})
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/project/save")
+@PromptServer.instance.routes.post("/linuxtechlab/api/project/save")
 async def save_project(request):
     data = await request.json()
     merged_b64 = data.get("image_merged", "")
@@ -262,11 +271,11 @@ async def save_project(request):
         return web.json_response({"error": "Invalid project id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"status": "success", "composite_path": relative_path})
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/paint/save")
+@PromptServer.instance.routes.post("/linuxtechlab/api/paint/save")
 async def save_paint_composite(request):
     data = await request.json()
     merged_b64 = data.get("image_merged", "")
@@ -283,11 +292,11 @@ async def save_paint_composite(request):
         return web.json_response({"error": "Invalid project id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"status": "success", "composite_path": relative_path})
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/3d/save")
+@PromptServer.instance.routes.post("/linuxtechlab/api/3d/save")
 async def save_3d_render(request):
     data = await request.json()
     merged_b64 = data.get("image_merged", "")
@@ -304,15 +313,15 @@ async def save_3d_render(request):
         return web.json_response({"error": "Invalid project id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"status": "success", "composite_path": relative_path})
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/3d/model_upload")
+@PromptServer.instance.routes.post("/linuxtechlab/api/3d/model_upload")
 async def save_3d_model_upload(request):
     """Accepts a base64 GLB/GLTF/OBJ upload and stores it under
-    input/pixaroma/<project_id>/models/<sha1>.<ext>. Returns the
-    relative path (under the pixaroma input root) so the frontend
+    input/linuxtechlab/<project_id>/models/<sha1>.<ext>. Returns the
+    relative path (under the linuxtechlab input root) so the frontend
     can serve it via /view?type=input&subfolder=…."""
     try:
         data = await request.json()
@@ -330,11 +339,13 @@ async def save_3d_model_upload(request):
         re.IGNORECASE,
     ):
         return web.json_response(
-            {"status": "error", "msg": "bad_filename"}, status=400,
+            {"status": "error", "msg": "bad_filename"},
+            status=400,
         )
     if len(b64) > _MAX_B64_BYTES:
         return web.json_response(
-            {"status": "error", "msg": "too_large"}, status=413,
+            {"status": "error", "msg": "too_large"},
+            status=413,
         )
 
     # Strip optional data URL prefix (the frontend sends `readAsDataURL`).
@@ -345,7 +356,7 @@ async def save_3d_model_upload(request):
     except Exception:
         return web.json_response({"status": "error", "msg": "bad_base64"}, status=400)
 
-    # Store under input/pixaroma/<project_id>/models/<filename>.
+    # Store under input/linuxtechlab/<project_id>/models/<filename>.
     # Preserve the original (sanitized) filename so companion files in
     # an OBJ bundle — .mtl referencing .jpg textures by name — keep
     # their relative links working once served over /view. Repeat
@@ -360,13 +371,13 @@ async def save_3d_model_upload(request):
     with open(full_path, "wb") as f:
         f.write(raw)
 
-    rel = os.path.join("pixaroma", rel_subpath).replace("\\", "/")
+    rel = os.path.join("linuxtechlab", rel_subpath).replace("\\", "/")
     return web.json_response(
         {"status": "success", "path": rel, "filename": safe_name},
     )
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/3d/bg_upload")
+@PromptServer.instance.routes.post("/linuxtechlab/api/3d/bg_upload")
 async def save_3d_bg_image(request):
     data = await request.json()
     b64_data = data.get("image", "")
@@ -383,11 +394,11 @@ async def save_3d_bg_image(request):
         return web.json_response({"error": "Invalid project id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"status": "success", "path": relative_path})
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/crop/save")
+@PromptServer.instance.routes.post("/linuxtechlab/api/crop/save")
 async def save_crop_composite(request):
     data = await request.json()
     merged_b64 = data.get("image_merged", "")
@@ -404,11 +415,11 @@ async def save_crop_composite(request):
         return web.json_response({"error": "Invalid project id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"status": "success", "composite_path": relative_path})
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/crop/upload_src")
+@PromptServer.instance.routes.post("/linuxtechlab/api/crop/upload_src")
 async def upload_crop_source(request):
     data = await request.json()
     b64_data = data.get("image", "")
@@ -425,7 +436,7 @@ async def upload_crop_source(request):
         return web.json_response({"error": "Invalid project id"}, status=400)
 
     img.save(file_path, "PNG")
-    relative_path = os.path.join("pixaroma", filename).replace("\\", "/")
+    relative_path = os.path.join("linuxtechlab", filename).replace("\\", "/")
     return web.json_response({"status": "success", "path": relative_path})
 
 
@@ -438,10 +449,34 @@ async def upload_crop_source(request):
 #   minRembg — "0" means always; otherwise SemVer gate checked by info
 # `auto` is a virtual option; the server picks the best available.
 REMBG_MODELS = [
-    {"id": "auto",              "label": "Auto (recommended)", "hint": "Picks the best available model",   "sizeMB": 0,   "minRembg": "0"},
-    {"id": "u2net",             "label": "Fast",               "hint": "Works on any rembg install (u2net)", "sizeMB": 176, "minRembg": "0"},
-    {"id": "isnet-general-use", "label": "Balanced",           "hint": "Cleaner edges than u2net (isnet)",   "sizeMB": 170, "minRembg": "2.0.27"},
-    {"id": "birefnet-general",  "label": "Best",               "hint": "Highest quality, large (BiRefNet)",  "sizeMB": 900, "minRembg": "2.0.56"},
+    {
+        "id": "auto",
+        "label": "Auto (recommended)",
+        "hint": "Picks the best available model",
+        "sizeMB": 0,
+        "minRembg": "0",
+    },
+    {
+        "id": "u2net",
+        "label": "Fast",
+        "hint": "Works on any rembg install (u2net)",
+        "sizeMB": 176,
+        "minRembg": "0",
+    },
+    {
+        "id": "isnet-general-use",
+        "label": "Balanced",
+        "hint": "Cleaner edges than u2net (isnet)",
+        "sizeMB": 170,
+        "minRembg": "2.0.27",
+    },
+    {
+        "id": "birefnet-general",
+        "label": "Best",
+        "hint": "Highest quality, large (BiRefNet)",
+        "sizeMB": 900,
+        "minRembg": "2.0.56",
+    },
 ]
 
 # Fallback chain used by "auto" — tries best first.
@@ -461,7 +496,7 @@ def _version_tuple(v):
     return tuple(out[:3])
 
 
-@PromptServer.instance.routes.get("/pixaroma/remove_bg_info")
+@PromptServer.instance.routes.get("/linuxtechlab/remove_bg_info")
 async def remove_bg_info(request):
     """Tells the frontend what's installed and what's downloadable.
 
@@ -476,12 +511,15 @@ async def remove_bg_info(request):
     }
     try:
         import rembg  # noqa: F401
+
         info["rembgInstalled"] = True
         info["rembgVersion"] = getattr(rembg, "__version__", "unknown")
     except ImportError:
         # Still return the model catalog so the UI can show greyed
         # entries with the "install rembg" hint.
-        info["models"] = [dict(m, available=False, downloaded=False) for m in REMBG_MODELS]
+        info["models"] = [
+            dict(m, available=False, downloaded=False) for m in REMBG_MODELS
+        ]
         return web.json_response(info)
 
     # Which model files already exist on disk — saves the download wait
@@ -501,15 +539,17 @@ async def remove_bg_info(request):
     for m in REMBG_MODELS:
         req = _version_tuple(m["minRembg"])
         available = installed_ver >= req
-        out_models.append(dict(m, available=available, downloaded=m["id"] in downloaded_ids))
+        out_models.append(
+            dict(m, available=available, downloaded=m["id"] in downloaded_ids)
+        )
     info["models"] = out_models
     return web.json_response(info)
 
 
-@PromptServer.instance.routes.post("/pixaroma/remove_bg")
+@PromptServer.instance.routes.post("/linuxtechlab/remove_bg")
 async def remove_bg(request):
     try:
-        from rembg import remove, new_session
+        from rembg import new_session, remove
     except ImportError:
         return web.json_response(
             {"error": "rembg is not installed.", "code": "REMBG_MISSING"},
@@ -535,43 +575,55 @@ async def remove_bg(request):
     # so the client can surface the real model name to the user.
     def _open_session(requested):
         tried = []
-        order = list(_AUTO_ORDER) if requested == "auto" else [requested] + [n for n in _AUTO_ORDER if n != requested]
+        order = (
+            list(_AUTO_ORDER)
+            if requested == "auto"
+            else [requested] + [n for n in _AUTO_ORDER if n != requested]
+        )
         last_err = None
         for name in order:
             try:
                 s = new_session(name)
-                print(f"[Pixaroma] AI Remove Background: using model '{name}'")
+                print(f"[LinuxTechLab] AI Remove Background: using model '{name}'")
                 return s, name
             except Exception as e:
                 last_err = e
                 tried.append(name)
-                print(f"[Pixaroma] model '{name}' not available: {e}")
-        raise RuntimeError(f"No rembg model could be loaded (tried {tried}): {last_err}")
+                print(f"[LinuxTechLab] model '{name}' not available: {e}")
+        raise RuntimeError(
+            f"No rembg model could be loaded (tried {tried}): {last_err}"
+        )
 
     try:
         session, model_used = _open_session(model)
 
         input_data = base64.b64decode(b64_data)
         input_image = Image.open(io.BytesIO(input_data))
-        print(f"[Pixaroma] AI Remove Background: processing {input_image.size[0]}x{input_image.size[1]} image with '{model_used}'...")
+        print(
+            f"[LinuxTechLab] AI Remove Background: processing {input_image.size[0]}x{input_image.size[1]} image with '{model_used}'..."
+        )
         output_image = remove(input_image, session=session)
 
         buffered = io.BytesIO()
         output_image.save(buffered, format="PNG")
         output_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
-        print(f"[Pixaroma] AI Remove Background: done ({model_used})")
+        print(f"[LinuxTechLab] AI Remove Background: done ({model_used})")
 
-        return web.json_response({
-            "status": "success",
-            "image": f"data:image/png;base64,{output_b64}",
-            "modelUsed": model_used,
-        })
+        return web.json_response(
+            {
+                "status": "success",
+                "image": f"data:image/png;base64,{output_b64}",
+                "modelUsed": model_used,
+            }
+        )
     except Exception as e:
-        print(f"[Pixaroma] AI Remove Background: failed - {e}")
-        return web.json_response({"error": f"Background removal failed: {e}"}, status=500)
+        print(f"[LinuxTechLab] AI Remove Background: failed - {e}")
+        return web.json_response(
+            {"error": f"Background removal failed: {e}"}, status=500
+        )
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/preview/save")
+@PromptServer.instance.routes.post("/linuxtechlab/api/preview/save")
 async def api_preview_save(request):
     """Save a base64 PNG to ComfyUI's output/ folder with workflow metadata.
 
@@ -623,7 +675,7 @@ async def api_preview_save(request):
     )
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/preview/prepare")
+@PromptServer.instance.routes.post("/linuxtechlab/api/preview/prepare")
 async def api_preview_prepare(request):
     """Return an in-memory PNG with workflow metadata embedded.
     Used by the Save-to-Disk flow to keep metadata-embedding logic in Python.

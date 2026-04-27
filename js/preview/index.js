@@ -6,22 +6,22 @@ const BTN_H = 26;
 const BTN_GAP = 8;
 const BTN_MIN_W = 100;
 const BTN_MAX_W = 160;
-const STRIP_V_PAD = 6;              // vertical padding inside the button strip
-const SIDE_PAD = 8;                 // side margin inside the widget strip
+const STRIP_V_PAD = 6; // vertical padding inside the button strip
+const SIDE_PAD = 8; // side margin inside the widget strip
 
 // Minimum node size so the two buttons always fit fully.
-const MIN_W = BTN_MIN_W * 2 + BTN_GAP + SIDE_PAD * 2;   // 224
+const MIN_W = BTN_MIN_W * 2 + BTN_GAP + SIDE_PAD * 2; // 224
 const MIN_H = 260;
 const DEFAULT_W = 320;
 const DEFAULT_H = 380;
 
 const COLOR_ACTIVE_FILL = BRAND;
-const COLOR_ACTIVE_FILL_HOVER = "#ff8a5e";
+const COLOR_ACTIVE_FILL_HOVER = "#b9d2fc";
 const COLOR_ACTIVE_STROKE = BRAND;
-const COLOR_ACTIVE_TEXT = "#fff";
-const COLOR_DISABLED_FILL = "#2a2c2e";
-const COLOR_DISABLED_STROKE = "#444";
-const COLOR_DISABLED_TEXT = "#999";
+const COLOR_ACTIVE_TEXT = "#1e1e2e";
+const COLOR_DISABLED_FILL = "#313244";
+const COLOR_DISABLED_STROKE = "#45475a";
+const COLOR_DISABLED_TEXT = "#6c7086";
 
 const TOAST_MS = 2000;
 
@@ -35,13 +35,25 @@ function computeButtonRects(widgetWidth, stripY) {
   const x0 = Math.max(SIDE_PAD, (widgetWidth - totalW) / 2);
   const y = stripY + STRIP_V_PAD;
   return [
-    { id: "disk",   x: x0,              y, w: btnW, h: BTN_H, label: "Save to Disk" },
-    { id: "output", x: x0 + btnW + gap, y, w: btnW, h: BTN_H, label: "Save to Output" },
+    { id: "disk", x: x0, y, w: btnW, h: BTN_H, label: "Save to Disk" },
+    {
+      id: "output",
+      x: x0 + btnW + gap,
+      y,
+      w: btnW,
+      h: BTN_H,
+      label: "Save to Output",
+    },
   ];
 }
 
 function hitTest(rect, lx, ly) {
-  return lx >= rect.x && lx <= rect.x + rect.w && ly >= rect.y && ly <= rect.y + rect.h;
+  return (
+    lx >= rect.x &&
+    lx <= rect.x + rect.w &&
+    ly >= rect.y &&
+    ly <= rect.y + rect.h
+  );
 }
 
 // ---- paint ----
@@ -49,7 +61,9 @@ function paintBtn(ctx, rect, active, hovered) {
   const { x, y, w, h, label } = rect;
   ctx.save();
   ctx.fillStyle = active
-    ? (hovered ? COLOR_ACTIVE_FILL_HOVER : COLOR_ACTIVE_FILL)
+    ? hovered
+      ? COLOR_ACTIVE_FILL_HOVER
+      : COLOR_ACTIVE_FILL
     : COLOR_DISABLED_FILL;
   ctx.strokeStyle = active ? COLOR_ACTIVE_STROKE : COLOR_DISABLED_STROKE;
   ctx.lineWidth = 1;
@@ -71,14 +85,14 @@ function paintToast(ctx, rects, text) {
   const w = rects[1].x + rects[1].w - x;
   const h = rects[0].h;
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.86)";
+  ctx.fillStyle = "rgba(17,17,27,0.92)";
   ctx.strokeStyle = BRAND;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 4);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#cdd6f4";
   ctx.font = "11px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -87,12 +101,12 @@ function paintToast(ctx, rects, text) {
 }
 
 function showToast(node, text) {
-  node._pixaromaToast = { text, until: Date.now() + TOAST_MS };
+  node._linuxtechlabToast = { text, until: Date.now() + TOAST_MS };
   node.setDirtyCanvas(true, true);
   setTimeout(() => {
-    const t = node._pixaromaToast;
+    const t = node._linuxtechlabToast;
     if (t && t.until <= Date.now()) {
-      node._pixaromaToast = null;
+      node._linuxtechlabToast = null;
       node.setDirtyCanvas(true, true);
     }
   }, TOAST_MS + 100);
@@ -139,7 +153,7 @@ async function saveToOutput(node) {
     if (!blob) throw new Error("no preview blob");
     const dataURL = await blobToDataURL(blob);
     const { workflow, prompt } = await getWorkflowAndPrompt();
-    const resp = await fetch("/pixaroma/api/preview/save", {
+    const resp = await fetch("/linuxtechlab/api/preview/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -171,7 +185,7 @@ async function saveToDisk(node) {
     if (!blob) throw new Error("no preview blob");
     const dataURL = await blobToDataURL(blob);
     const { workflow, prompt } = await getWorkflowAndPrompt();
-    const resp = await fetch("/pixaroma/api/preview/prepare", {
+    const resp = await fetch("/linuxtechlab/api/preview/prepare", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image_b64: dataURL, workflow, prompt }),
@@ -193,7 +207,9 @@ async function saveToDisk(node) {
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName,
-        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }],
+        types: [
+          { description: "PNG image", accept: { "image/png": [".png"] } },
+        ],
       });
       const writable = await handle.createWritable();
       await writable.write(preparedBlob);
@@ -227,7 +243,7 @@ async function saveToDisk(node) {
 //  (c) identical behavior on legacy and Vue frontends (CLAUDE.md Vue Compat #1)
 function createButtonsWidget() {
   return {
-    name: "pixaroma_buttons",
+    name: "linuxtechlab_buttons",
     type: "custom",
     value: null,
     serialize: false,
@@ -237,18 +253,18 @@ function createButtonsWidget() {
     draw(ctx, node, widget_width, y) {
       const active = !!(node.imgs && node.imgs.length > 0);
       const rects = computeButtonRects(widget_width, y);
-      node._pixaromaButtonRects = rects;
-      const hoverId = node._pixaromaHoverId || null;
+      node._linuxtechlabButtonRects = rects;
+      const hoverId = node._linuxtechlabHoverId || null;
       for (const r of rects) paintBtn(ctx, r, active, hoverId === r.id);
 
-      const toast = node._pixaromaToast;
+      const toast = node._linuxtechlabToast;
       if (toast && toast.until > Date.now()) {
         paintToast(ctx, rects, toast.text);
       }
     },
     mouse(event, pos, node) {
       const type = event?.type;
-      const rects = node._pixaromaButtonRects || [];
+      const rects = node._linuxtechlabButtonRects || [];
 
       // Hover tracking — update which button the pointer is over and redraw
       // when that changes. Only triggers a redraw on state transitions to
@@ -256,10 +272,13 @@ function createButtonsWidget() {
       if (type === "pointermove" || type === "mousemove") {
         let newHover = null;
         for (const r of rects) {
-          if (hitTest(r, pos[0], pos[1])) { newHover = r.id; break; }
+          if (hitTest(r, pos[0], pos[1])) {
+            newHover = r.id;
+            break;
+          }
         }
-        if (newHover !== node._pixaromaHoverId) {
-          node._pixaromaHoverId = newHover;
+        if (newHover !== node._linuxtechlabHoverId) {
+          node._linuxtechlabHoverId = newHover;
           node.setDirtyCanvas(true, true);
         }
         return false;
@@ -280,10 +299,10 @@ function createButtonsWidget() {
 
 // ---- extension ----
 app.registerExtension({
-  name: "Pixaroma.Preview",
+  name: "LinuxTechLab.Preview",
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaPreview") return;
+    if (nodeData.name !== "LinuxTechLabPreview") return;
 
     const origNodeCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function () {
@@ -306,16 +325,19 @@ app.registerExtension({
     // Node-level hover tracking. The widget's own `mouse` callback does not
     // receive pointermove events on the Vue frontend, so we track hover at
     // the node level and hit-test against the last-drawn button rects
-    // (which the widget stores on node._pixaromaButtonRects each draw).
+    // (which the widget stores on node._linuxtechlabButtonRects each draw).
     const origMouseMove = nodeType.prototype.onMouseMove;
     nodeType.prototype.onMouseMove = function (e, localPos) {
-      const rects = this._pixaromaButtonRects || [];
+      const rects = this._linuxtechlabButtonRects || [];
       let newHover = null;
       for (const r of rects) {
-        if (hitTest(r, localPos[0], localPos[1])) { newHover = r.id; break; }
+        if (hitTest(r, localPos[0], localPos[1])) {
+          newHover = r.id;
+          break;
+        }
       }
-      if (newHover !== this._pixaromaHoverId) {
-        this._pixaromaHoverId = newHover;
+      if (newHover !== this._linuxtechlabHoverId) {
+        this._linuxtechlabHoverId = newHover;
         this.setDirtyCanvas(true, true);
       }
       return origMouseMove ? origMouseMove.apply(this, arguments) : false;
@@ -323,8 +345,8 @@ app.registerExtension({
 
     const origMouseLeave = nodeType.prototype.onMouseLeave;
     nodeType.prototype.onMouseLeave = function () {
-      if (this._pixaromaHoverId) {
-        this._pixaromaHoverId = null;
+      if (this._linuxtechlabHoverId) {
+        this._linuxtechlabHoverId = null;
         this.setDirtyCanvas(true, true);
       }
       return origMouseLeave ? origMouseLeave.apply(this, arguments) : false;

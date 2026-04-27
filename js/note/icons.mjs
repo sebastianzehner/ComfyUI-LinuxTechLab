@@ -39,7 +39,7 @@ export async function ensureIcons() {
   if (!_iconsPromise) {
     _iconsPromise = (async () => {
       try {
-        const r = await fetch("/pixaroma/api/note/icons/list");
+        const r = await fetch("/linuxtechlab/api/note/icons/list");
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const j = await r.json();
         _iconsCache = Array.isArray(j?.icons) ? j.icons : [];
@@ -52,7 +52,10 @@ export async function ensureIcons() {
         // A successful fetch returning {"icons": []} for a genuinely
         // empty folder DOES cache [] (fast path above), which is the
         // right behavior for intentional empties.
-        console.warn("[pix-note/icons] list fetch failed, will retry on next open:", e);
+        console.warn(
+          "[pix-note/icons] list fetch failed, will retry on next open:",
+          e,
+        );
         _iconsPromise = null;
         return [];
       }
@@ -65,12 +68,16 @@ export async function ensureIcons() {
 // defensively — the backend already validates the slug regex, but
 // defense-in-depth is cheap here.
 export function buildIconCSS(icons) {
-  return (icons || []).map((ic) => {
-    const sel = `.pix-note-ic[data-ic="${CSS.escape(ic.id)}"]`;
-    return `${sel}{` +
-      `-webkit-mask-image:url(${ic.url});` +
-      `mask-image:url(${ic.url});}`;
-  }).join("\n");
+  return (icons || [])
+    .map((ic) => {
+      const sel = `.pix-note-ic[data-ic="${CSS.escape(ic.id)}"]`;
+      return (
+        `${sel}{` +
+        `-webkit-mask-image:url(${ic.url});` +
+        `mask-image:url(${ic.url});}`
+      );
+    })
+    .join("\n");
 }
 
 // Create the <style id="pix-note-icon-css"> element once and populate
@@ -154,8 +161,8 @@ function openIconPop(anchorBtn, icons, onPick) {
     const msg = document.createElement("div");
     msg.className = "pix-note-iconpop-empty";
     msg.innerHTML =
-      'No icons found. Drop SVG files into ' +
-      '<code>assets/icons/note/</code> and reload the browser.';
+      "No icons found. Drop SVG files into " +
+      "<code>assets/icons/note/</code> and reload the browser.";
     pop.appendChild(msg);
   } else {
     const grid = document.createElement("div");
@@ -240,14 +247,11 @@ NoteEditor.prototype._insertInlineIcon = async function (anchorBtn) {
     // then inserting an icon would give a white icon, which is a
     // surprise for the user. Empty string → no inline style, icon
     // inherits currentColor (default behaviour for unpicked state).
-    const pickedColor = this._textColorBtn?.style
-      .getPropertyValue("--pix-note-tbtn-tint")
-      .trim() || "";
-    document.execCommand(
-      "insertHTML",
-      false,
-      renderIconHTML(id, pickedColor),
-    );
+    const pickedColor =
+      this._textColorBtn?.style
+        .getPropertyValue("--pix-note-tbtn-tint")
+        .trim() || "";
+    document.execCommand("insertHTML", false, renderIconHTML(id, pickedColor));
     this._restageColors?.();
     this._dirty = true;
     this._refreshActiveStates?.();

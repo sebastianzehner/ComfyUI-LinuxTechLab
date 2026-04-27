@@ -1,6 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Editor Framework — Layout Factory                  ║
-// ║  Creates the main editor shell (overlay, titlebar, sidebars) ║
+// ║  LinuxTechLab Editor Framework — Layout Factory               ║
+// ║  Creates the main editor shell (overlay, titlebar, sidebars)  ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 import { installFocusTrap } from "../shared/utils.mjs";
@@ -62,12 +62,12 @@ export function createEditorLayout(config) {
   title.className = "pxf-title";
   const logo = document.createElement("img");
   logo.className = "pxf-title-logo";
-  logo.src = "/pixaroma/assets/pixaroma_logo.svg";
+  logo.src = "/linuxtechlab/assets/linuxtechlab_logo.svg";
   title.appendChild(logo);
   title.append(` ${editorName} `);
   const brandSpan = document.createElement("span");
   brandSpan.className = "pxf-title-brand";
-  brandSpan.textContent = "Pixaroma";
+  brandSpan.textContent = "LinuxTechLab";
   title.appendChild(brandSpan);
   titlebar.appendChild(title);
 
@@ -152,7 +152,8 @@ export function createEditorLayout(config) {
       if (onClose) onClose();
     },
   });
-  headerCloseBtn.style.cssText = "padding:5px 12px;font-size:12px;font-weight:bold;margin-left:8px;";
+  headerCloseBtn.style.cssText =
+    "padding:5px 12px;font-size:12px;font-weight:bold;margin-left:8px;";
   actions.appendChild(headerCloseBtn);
 
   titlebar.appendChild(actions);
@@ -191,8 +192,8 @@ export function createEditorLayout(config) {
       </div>
       <div class="pxf-help-content">${helpContent}</div>
       <div class="pxf-help-footer">
-        Designed by <a href="https://www.youtube.com/@pixaroma" target="_blank">Pixaroma</a>
-        · <a href="https://github.com/pixaroma/ComfyUI-Pixaroma" target="_blank">GitHub</a><br>
+        Designed by <a href="https://www.youtube.com/@LinuxTechLab" target="_blank">LinuxTechLab</a>
+        · <a href="https://github.com/linuxtechlab/ComfyUI-LinuxTechLab" target="_blank">GitHub</a><br>
       </div>
     `;
     helpPanel

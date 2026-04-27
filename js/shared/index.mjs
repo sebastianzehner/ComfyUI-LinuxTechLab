@@ -1,10 +1,10 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Shared — Barrel Export                             ║
+// ║  LinuxTechLab Shared — Barrel Export                          ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 export {
   allow_debug,
-  PIXAROMA_LOGO,
+  LINUXTECHLAB_LOGO,
   BRAND,
   createDummyWidget,
   installFocusTrap,

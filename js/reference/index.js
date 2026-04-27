@@ -2,10 +2,10 @@ import { app } from "/scripts/app.js";
 import { allow_debug } from "../shared/index.mjs";
 
 app.registerExtension({
-  name: "Pixaroma.referenceNode",
+  name: "LinuxTechLab.referenceNode",
 
   beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaReferenceNode") return;
+    if (nodeData.name !== "LinuxTechLabReferenceNode") return;
 
     const origOnNodeCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function () {
@@ -55,7 +55,7 @@ app.registerExtension({
       this.onRemoved = () => {
         origOnRemoved?.();
         widget = null;
-        if (allow_debug) console.log("PixaromaReferenceNode removed");
+        if (allow_debug) console.log("LinuxTechLabReferenceNode removed");
       };
 
       // show widget after 100ms to avoid flickering
@@ -76,7 +76,7 @@ function create_widget_elements() {
       justify-content: center;
       gap: 5px;
       padding: 5px;
-      background-color: #2a2a2a;
+      background-color: #1e1e2e;
       border-radius: 4px;
       width: 100%;
     `;

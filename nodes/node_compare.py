@@ -1,15 +1,16 @@
 import os
 import random
+
+import folder_paths
 import numpy as np
 from PIL import Image
-import folder_paths
 
 
-class PixaromaCompare:
+class LinuxTechLabCompare:
     def __init__(self):
         self.output_dir = folder_paths.get_temp_directory()
         self.type = "temp"
-        self.prefix_append = "_pixcmp_" + ''.join(
+        self.prefix_append = "_pixcmp_" + "".join(
             random.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(5)
         )
         self.compress_level = 4
@@ -26,15 +27,17 @@ class PixaromaCompare:
     RETURN_TYPES = ()
     FUNCTION = "compare_images"
     OUTPUT_NODE = True
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
 
     def compare_images(self, image1, image2):
         results = []
-        prefix = "pixaroma_compare" + self.prefix_append
+        prefix = "linuxtechlab_compare" + self.prefix_append
         full_output_folder, filename, counter, subfolder, _ = (
             folder_paths.get_save_image_path(
-                prefix, self.output_dir,
-                image1[0].shape[1], image1[0].shape[0],
+                prefix,
+                self.output_dir,
+                image1[0].shape[1],
+                image1[0].shape[0],
             )
         )
 
@@ -46,20 +49,22 @@ class PixaromaCompare:
                 os.path.join(full_output_folder, file),
                 compress_level=self.compress_level,
             )
-            results.append({
-                "filename": file,
-                "subfolder": subfolder,
-                "type": self.type,
-            })
+            results.append(
+                {
+                    "filename": file,
+                    "subfolder": subfolder,
+                    "type": self.type,
+                }
+            )
             counter += 1
 
         return {"ui": {"images": results}}
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaCompare": PixaromaCompare,
+    "LinuxTechLabCompare": LinuxTechLabCompare,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaCompare": "Image Compare Pixaroma",
+    "LinuxTechLabCompare": "Image Compare LinuxTechLab",
 }

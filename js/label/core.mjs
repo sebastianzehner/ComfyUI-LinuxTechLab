@@ -103,12 +103,12 @@ export class LabelEditor {
     const header = el("div", "pix-lbl-header");
     const titleSpan = el("span", "pix-lbl-title");
     const logo = document.createElement("img");
-    logo.src = "/pixaroma/assets/pixaroma_logo.svg";
+    logo.src = "/linuxtechlab/assets/linuxtechlab_logo.svg";
     logo.className = "pix-lbl-title-logo";
     titleSpan.appendChild(logo);
     titleSpan.append(" Label Editor ");
     const brandSpan = el("span", "pix-lbl-title-brand");
-    brandSpan.textContent = "Pixaroma";
+    brandSpan.textContent = "LinuxTechLab";
     titleSpan.appendChild(brandSpan);
     header.appendChild(titleSpan);
     const closeBtn = el("button", "pix-lbl-close");
@@ -204,7 +204,8 @@ export class LabelEditor {
     sizeRow.style.marginTop = "8px";
     const sizeLbl = el("span");
     sizeLbl.textContent = "Font Size";
-    sizeLbl.style.cssText = "color:#777;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;";
+    sizeLbl.style.cssText =
+      "color:#777;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;";
     const sizeRange = document.createElement("input");
     sizeRange.type = "range";
     sizeRange.min = 8;
@@ -434,11 +435,11 @@ export class LabelEditor {
     const help = document.createElement("div");
     help.className = "pix-lbl-help-overlay";
     help.innerHTML = `
-            <h3>Label Pixaroma</h3>
+            <h3>Label LinuxTechLab</h3>
             <p><b>Double-click</b> a label on the canvas to open this editor.</p>
             <p><b>Text</b> — supports multiline text and emoji.</p>
             <p><b>Font Size</b> — drag the slider to adjust (8–64px).</p>
-            <p><b>Font buttons</b> — click to switch between Arial, Times, Courier, Impact.</p>
+            <p><b>Font buttons</b> — click to switch between CaskaydiaCove, DejaVu, Arial, Times.</p>
             <p><b>B</b> — toggle bold on/off.</p>
             <p><b>Align</b> — left, center, or right text alignment.</p>
             <p><b>Color swatches</b> — click a swatch for quick color selection, or use the picker for custom colors.</p>
@@ -447,7 +448,7 @@ export class LabelEditor {
             <p><b>Radius</b> — corner roundness of the background.</p>
             <p><b>Opacity</b> — overall transparency of the label.</p>
             <p><b>Line Height</b> — spacing between lines of text.</p>
-            <p style="margin-top:14px;color:#777">Pixaroma &mdash; <a href="https://www.youtube.com/@pixaroma" style="color:${BRAND}">youtube.com/@pixaroma</a></p>
+            <p style="margin-top:14px;color:#777">LinuxTechLab &mdash; <a href="https://www.youtube.com/@LinuxTechLab" style="color:${BRAND}">youtube.com/@LinuxTechLab</a></p>
         `;
     const closeBtn = document.createElement("button");
     closeBtn.className = "pix-lbl-help-close";

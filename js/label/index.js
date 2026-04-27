@@ -22,16 +22,16 @@ function setupLabel(node) {
       node.size[1] = Math.max(m.h, 30);
     }
   } catch (err) {
-    console.error("[Pixaroma Label] setupLabel error:", err);
+    console.error("[LinuxTechLab Label] setupLabel error:", err);
   }
 }
 
 // ─── Extension Registration ──────────────────────────────────
 app.registerExtension({
-  name: "Pixaroma.Label",
+  name: "LinuxTechLab.Label",
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaLabel") return;
+    if (nodeData.name !== "LinuxTechLabLabel") return;
 
     nodeType.title_mode = NO_TITLE;
 
@@ -41,7 +41,7 @@ app.registerExtension({
       const r = _origCreated?.apply(this, arguments);
       setupLabel(this);
       this.badges = [];
-      if (allow_debug) console.log("PixaromaLabel", this);
+      if (allow_debug) console.log("LinuxTechLabLabel", this);
       return r;
     };
 

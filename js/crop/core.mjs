@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Image Crop Editor — Core (constructor, open/close, buildUI)
-// ============================================================
+// ========================================================================
+// LinuxTechLab Image Crop Editor — Core (constructor, open/close, buildUI)
+// ========================================================================
 import {
   BRAND,
   createEditorLayout,
@@ -38,7 +38,7 @@ export const SNAPS = [
 export const CropAPI = {
   async saveComposite(projectId, dataURL) {
     const { api } = await import("/scripts/api.js");
-    const res = await api.fetchApi("/pixaroma/api/crop/save", {
+    const res = await api.fetchApi("/linuxtechlab/api/crop/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ project_id: projectId, image_merged: dataURL }),
@@ -87,7 +87,7 @@ export class CropEditor {
 
     if (this._srcPath) {
       const fn = this._srcPath.split(/[\\/]/).pop();
-      const url = `/view?filename=${encodeURIComponent(fn)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+      const url = `/view?filename=${encodeURIComponent(fn)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
       this._loadImageFromURL(url, () => {
         // Restore ratio & snap FIRST (silently, without triggering onChange)
         if (data.ratio_idx != null) {
@@ -106,9 +106,10 @@ export class CropEditor {
         }
         // Now update UI to reflect restored state (setRatio triggers onChange,
         // but we re-apply crop values after it)
-        const savedCrop = data.crop_x != null
-          ? { x: data.crop_x, y: data.crop_y, w: data.crop_w, h: data.crop_h }
-          : null;
+        const savedCrop =
+          data.crop_x != null
+            ? { x: data.crop_x, y: data.crop_y, w: data.crop_w, h: data.crop_h }
+            : null;
         if (data.ratio_idx != null) {
           this._canvasSettings.setRatio(data.ratio_idx);
         }
@@ -136,7 +137,7 @@ export class CropEditor {
   _buildUI() {
     const layout = createEditorLayout({
       editorName: "Image Crop",
-      editorId: "pixaroma-crop-editor",
+      editorId: "linuxtechlab-crop-editor",
       showUndoRedo: false,
       showStatusBar: true,
       showZoomBar: false,
@@ -145,7 +146,7 @@ export class CropEditor {
       helpContent: `
                 <b>Load image:</b> Click <kbd>Load Image</kbd> in sidebar<br>
                 <b>Drag crop region:</b> Click & drag inside the crop area<br>
-                <b>Resize crop:</b> Drag orange corner/edge handles<br>
+                <b>Resize crop:</b> Drag blue corner/edge handles<br>
                 <b>Reset crop:</b> Press <kbd>R</kbd> or click Reset<br>
                 <b>Swap ratio:</b> Press <kbd>X</kbd> to flip W\u2194H ratio<br>
                 <b>Free ratio:</b> Press <kbd>F</kbd><br>
@@ -181,7 +182,7 @@ export class CropEditor {
     wrap.appendChild(cvs);
     layout.workspace.appendChild(wrap);
 
-    // Canvas frame overlay (orange border + gray masks + dimension label)
+    // Canvas frame overlay (blue border + gray masks + dimension label)
     this._canvasFrame = createCanvasFrame(layout.workspace);
 
     this._bindMouse(cvs);

@@ -1,6 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Editor Framework — Component Factories             ║
-// ║  Reusable UI building blocks (buttons, panels, sliders, etc) ║
+// ║  LinuxTechLab Editor Framework — Component Factories          ║
+// ║  Reusable UI building blocks (buttons, panels, sliders, etc)  ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 // ── Button ───────────────────────────────────────────────────
@@ -360,7 +360,7 @@ export function createZoomControls(onZoomIn, onZoomOut, onFit) {
 
 // ── Transform Panel ──────────────────────────────────────────
 export function createTransformPanel(config) {
-  const _ui = "/pixaroma/assets/icons/ui/";
+  const _ui = "/linuxtechlab/assets/icons/ui/";
   const collapsed =
     config.startCollapsed !== undefined ? config.startCollapsed : true;
   const panel = createPanel("Transform Properties", {

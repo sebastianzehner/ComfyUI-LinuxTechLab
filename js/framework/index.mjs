@@ -1,6 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  Pixaroma Editor Framework — Barrel Export                   ║
-// ║  Re-exports everything for backward-compatible imports       ║
+// ║  LinuxTechLab Editor Framework — Barrel Export                ║
+// ║  Re-exports everything for backward-compatible imports        ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 export { BRAND, UI_ICON, _uiIcon, injectFrameworkStyles } from "./theme.mjs";

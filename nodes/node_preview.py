@@ -1,11 +1,12 @@
 import os
 import uuid
+
+import folder_paths
 import numpy as np
 from PIL import Image
-import folder_paths
 
 
-class PixaromaPreview:
+class LinuxTechLabPreview:
     """Preview an image inline in the node body, with buttons for Save-to-Disk
     and Save-to-Output. The image is also exposed on the output edge."""
 
@@ -22,7 +23,7 @@ class PixaromaPreview:
     RETURN_NAMES = ("image",)
     FUNCTION = "preview"
     OUTPUT_NODE = True
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
 
     def preview(self, image, filename_prefix):
         # Only the first frame of the batch is previewed (matches Image Compare).
@@ -33,16 +34,14 @@ class PixaromaPreview:
 
         temp_dir = folder_paths.get_temp_directory()
         os.makedirs(temp_dir, exist_ok=True)
-        fname = f"pixaroma_preview_{uuid.uuid4().hex}.png"
+        fname = f"linuxtechlab_preview_{uuid.uuid4().hex}.png"
         pil.save(os.path.join(temp_dir, fname), "PNG")
 
         return {
-            "ui": {
-                "images": [{"filename": fname, "subfolder": "", "type": "temp"}]
-            },
+            "ui": {"images": [{"filename": fname, "subfolder": "", "type": "temp"}]},
             "result": (image,),
         }
 
 
-NODE_CLASS_MAPPINGS = {"PixaromaPreview": PixaromaPreview}
-NODE_DISPLAY_NAME_MAPPINGS = {"PixaromaPreview": "Preview Image Pixaroma"}
+NODE_CLASS_MAPPINGS = {"LinuxTechLabPreview": LinuxTechLabPreview}
+NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabPreview": "Preview Image LinuxTechLab"}

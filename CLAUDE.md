@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-ComfyUI-Pixaroma is a custom node plugin for ComfyUI that adds interactive visual editors (3D Builder, Paint Studio, Image Composer, Image Crop, Note Pixaroma — a rich-text annotation node, Preview Image Pixaroma — an in-node image previewer with save-to-disk / save-to-output buttons) directly inside ComfyUI workflows. It has zero core dependencies — PIL and PyTorch come from ComfyUI's environment. All nodes share the `👑 Pixaroma` menu category.
+ComfyUI-LinuxTechLab is a custom node plugin for ComfyUI that adds interactive visual editors (3D Builder, Paint Studio, Image Composer, Image Crop, Note LinuxTechLab — a rich-text annotation node, Preview Image LinuxTechLab — an in-node image previewer with save-to-disk / save-to-output buttons) directly inside ComfyUI workflows. It has zero core dependencies — PIL and PyTorch come from ComfyUI's environment. All nodes share the `LinuxTechLab` menu category.
 
 ## Development Setup
 No build step. Install by placing this folder in `ComfyUI/custom_nodes/`. ComfyUI auto-imports `__init__.py` on startup.
@@ -23,23 +23,23 @@ Nodes are `OUTPUT_NODE = True` and receive editor state as a serialized JSON str
 
 ### Frontend → Backend Data Flow
 1. User edits in browser (WebGL / Canvas)
-2. JS saves result to disk via `POST /pixaroma/api/*/save`
+2. JS saves result to disk via `POST /linuxtechlab/api/*/save`
 3. On workflow execution, Python node reads the saved file path from widget JSON and loads it as a tensor
 
 ### Backend Routes (server_routes.py)
 | Route | Purpose |
 |-------|---------|
-| `/pixaroma/api/layer/upload` | Save paint layers |
-| `/pixaroma/api/project/save` | Save composition |
-| `/pixaroma/api/paint/save` | Save paint strokes |
-| `/pixaroma/api/3d/save` | Save 3D render |
-| `/pixaroma/api/3d/bg_upload` | Upload 3D background |
-| `/pixaroma/api/crop/save` | Save crop result |
-| `/pixaroma/api/preview/save` | Preview Image Pixaroma — write PNG with workflow metadata to ComfyUI `output/` with auto-increment counter |
-| `/pixaroma/api/preview/prepare` | Preview Image Pixaroma — return in-memory PNG bytes with workflow metadata embedded (for Save-to-Disk via File System Access API) |
-| `/pixaroma/remove_bg` | AI background removal (rembg) |
-| `/pixaroma/assets/{filename}` | Serve logo/assets |
-| `/pixaroma/api/note/icons/list` | List inline-icon SVGs in `assets/icons/note/` |
+| `/linuxtechlab/api/layer/upload` | Save paint layers |
+| `/linuxtechlab/api/project/save` | Save composition |
+| `/linuxtechlab/api/paint/save` | Save paint strokes |
+| `/linuxtechlab/api/3d/save` | Save 3D render |
+| `/linuxtechlab/api/3d/bg_upload` | Upload 3D background |
+| `/linuxtechlab/api/crop/save` | Save crop result |
+| `/linuxtechlab/api/preview/save` | Preview Image LinuxTechLab — write PNG with workflow metadata to ComfyUI `output/` with auto-increment counter |
+| `/linuxtechlab/api/preview/prepare` | Preview Image LinuxTechLab — return in-memory PNG bytes with workflow metadata embedded (for Save-to-Disk via File System Access API) |
+| `/linuxtechlab/remove_bg` | AI background removal (rembg) |
+| `/linuxtechlab/assets/{filename}` | Serve logo/assets |
+| `/linuxtechlab/api/note/icons/list` | List inline-icon SVGs in `assets/icons/note/` |
 
 ### Frontend Directory Structure
 The frontend is organized into **directory-per-editor** modules under `js/`. Each directory is self-contained with files split by concern (~300 lines max per file).
@@ -75,7 +75,7 @@ js/
 │   ├── engine.mjs      # BrushEngine class, color conversion utils
 │   └── api.mjs         # PaintAPI backend calls
 │
-├── 3d/                 # 3D Builder (Pixaroma3DEditor class, mixin pattern)
+├── 3d/                 # 3D Builder (LinuxTechLab3DEditor class, mixin pattern)
 │   ├── index.js        # Entry: ComfyUI extension registration
 │   ├── core.mjs        # Class shell, UI building, Three.js lazy loading
 │   ├── engine.mjs      # Three.js scene/renderer/camera init, animation
@@ -89,7 +89,7 @@ js/
 │   ├── persistence.mjs # Save/restore scene JSON, background image
 │   └── api.mjs         # ThreeDAPI backend calls
 │
-├── composer/           # Image Composer (PixaromaEditor class, mixin pattern)
+├── composer/           # Image Composer (LinuxTechLabEditor class, mixin pattern)
 │   ├── index.js        # Entry: ComfyUI extension registration
 │   ├── core.mjs        # Class shell, state management
 │   ├── eraser.mjs      # Eraser mode, mask creation/loading
@@ -97,7 +97,7 @@ js/
 │   ├── render.mjs      # Rendering, history/undo
 │   ├── ui.mjs          # Sidebar panel builder
 │   ├── layers.mjs      # Layer helper module
-│   └── api.mjs         # PixaromaAPI backend calls
+│   └── api.mjs         # LinuxTechLabAPI backend calls
 │
 ├── crop/               # Image Crop (CropEditor class, mixin pattern)
 │   ├── index.js        # Entry: ComfyUI extension registration
@@ -110,7 +110,7 @@ js/
 │   ├── core.mjs        # LabelEditor class, UI building
 │   └── render.mjs      # Canvas text rendering, typography helpers
 │
-├── note/               # Note Pixaroma (NoteEditor class, mixin pattern)
+├── note/               # Note LinuxTechLab (NoteEditor class, mixin pattern)
 │   ├── index.js        # Entry: node lifecycle, DEFAULT_CFG, parseCfg, onConfigure/onResize
 │   ├── core.mjs        # Class shell: open/close, save, undo history, Ctrl+Z neutering,
 │   │                   #  code/preview view toggle, _applyEditAreaBg, _normalizeEditArea
@@ -125,7 +125,7 @@ js/
 │   ├── sanitize.mjs    # Allowlist-based HTML sanitizer (tags, attrs, classes, styles, href)
 │   └── css.mjs         # injectCSS — all note styles (overlay, editarea, pills, toggles)
 │
-├── resolution/         # Resolution Pixaroma (single file, ~640 lines)
+├── resolution/         # Resolution LinuxTechLab (single file, ~640 lines)
 │   └── index.js        # 3x3 ratio chip grid + 8-row size list + Custom mode
 │                       #  (W/H inputs, swap, snap chips, aspect preview).
 │                       #  State on node.properties + graphToPrompt hook.
@@ -133,12 +133,12 @@ js/
 ├── compare/            # Compare Viewer (single file, 413 lines)
 │   └── index.js        # Full compare widget (LiteGraph node drawing)
 │
-├── preview/            # Preview Image Pixaroma (single file, ~320 lines)
-│   └── index.js        # Two orange buttons (Save to Disk / Save to Output) as
+├── preview/            # Preview Image LinuxTechLab (single file, ~320 lines)
+│   └── index.js        # Two blue buttons (Save to Disk / Save to Output) as
 │                       #  an addCustomWidget placed between filename_prefix and
 │                       #  the ComfyUI-native preview image. saveToOutput posts
-│                       #  to /pixaroma/api/preview/save; saveToDisk posts to
-│                       #  /pixaroma/api/preview/prepare then writes via
+│                       #  to /linuxtechlab/api/preview/save; saveToDisk posts to
+│                       #  /linuxtechlab/api/preview/prepare then writes via
 │                       #  window.showSaveFilePicker with <a download> fallback.
 │                       #  Node-level onMouseMove/onMouseLeave for hover (widget
 │                       #  mouse() doesn't get pointermove on Vue).
@@ -151,7 +151,7 @@ js/
 ```
 
 ### Mixin Pattern (how editor classes are split)
-Editor classes (PaintStudio, Pixaroma3DEditor, PixaromaEditor, CropEditor) use a **prototype mixin pattern** to split methods across files:
+Editor classes (PaintStudio, LinuxTechLab3DEditor, LinuxTechLabEditor, CropEditor) use a **prototype mixin pattern** to split methods across files:
 - `core.mjs` defines the class with constructor and UI building
 - Other `.mjs` files add methods: `ClassName.prototype.methodName = function() { ... };`
 - `index.js` imports all mixin files as **side-effect imports** before using the class
@@ -171,13 +171,13 @@ ComfyUI's new Vue 3 frontend introduces several behavioral differences from the 
 
 1. **`onDrawForeground` does not fire** — The Vue frontend does not call LiteGraph rendering hooks. Use `setInterval` polling instead for detecting upstream changes (see `js/composer/index.js` for the polling pattern).
 
-2. **Editor overlay removal** — Vue may remove editor overlay elements from the DOM without triggering close callbacks. Always use the `isEditorOpen(node)` pattern that checks `overlay.isConnected` rather than trusting `node._pixaromaEditor` references:
+2. **Editor overlay removal** — Vue may remove editor overlay elements from the DOM without triggering close callbacks. Always use the `isEditorOpen(node)` pattern that checks `overlay.isConnected` rather than trusting `node._linuxtechlabEditor` references:
    ```js
    function isEditorOpen(node) {
-     if (!node._pixaromaEditor) return false;
-     const overlay = node._pixaromaEditor.overlay;
+     if (!node._linuxtechlabEditor) return false;
+     const overlay = node._linuxtechlabEditor.overlay;
      if (!overlay || !overlay.isConnected) {
-       node._pixaromaEditor = null;
+       node._linuxtechlabEditor = null;
        return false;
      }
      return true;
@@ -211,45 +211,45 @@ ComfyUI's new Vue 3 frontend introduces several behavioral differences from the 
    ```
    See `js/note/core.mjs` for the full pattern (also neuters `graph.undo/redo`, `Comfy.Undo`/`Comfy.Redo` commands, plus a `node.onRemoved` resurrection-close safety net). Always debug this class of bug with a stack trace from `onRemoved` — it will show you the exact path that needs wrapping.
 
-7. **`installFocusTrap` and contenteditable don't mix** — Paint/Composer/3D call `installFocusTrap(overlay)` so their hidden textarea absorbs focus for keyboard-shortcut isolation. For rich-text editors that use a contenteditable (Note Pixaroma), do NOT call `installFocusTrap`: its `mouseup` handler refocuses the hidden textarea whenever the event target isn't INPUT/TEXTAREA/SELECT, which steals focus on every toolbar-button click (user has to re-click into the editor to type) and wipes the text selection when a drag-select ends outside the panel. Use the `loadGraphData` / `graph.configure` neutering pattern from point 6 instead.
+7. **`installFocusTrap` and contenteditable don't mix** — Paint/Composer/3D call `installFocusTrap(overlay)` so their hidden textarea absorbs focus for keyboard-shortcut isolation. For rich-text editors that use a contenteditable (Note LinuxTechLab), do NOT call `installFocusTrap`: its `mouseup` handler refocuses the hidden textarea whenever the event target isn't INPUT/TEXTAREA/SELECT, which steals focus on every toolbar-button click (user has to re-click into the editor to type) and wipes the text selection when a drag-select ends outside the panel. Use the `loadGraphData` / `graph.configure` neutering pattern from point 6 instead.
 
-8. **`nodeCreated` fires BEFORE `configure()` — defer initial DOM widget population via `queueMicrotask`** — In Vue's new frontend, the extension-level `nodeCreated(node)` hook fires DURING node construction, BEFORE ComfyUI calls `configure(data)` to restore saved widget values. If you render the DOM widget contents synchronously inside `nodeCreated`, you render from the Python default and then flash to the saved state when `onConfigure`'s re-render hook fires milliseconds later. The fix: create an empty `root` div, call `addDOMWidget(..., root, ...)`, wire event listeners, cache `node._xxxRoot = root`, and **defer the initial populate to `queueMicrotask(() => { ... })`** so the restored widget value is visible by the time we read it. Keep the `onConfigure` re-render for the "open a different workflow into an already-constructed node" case. Pattern applies to any hidden-JSON-widget node (Resolution Pixaroma is the reference implementation; Note Pixaroma's timing happens to mask the flash because its initial render is visually lighter). Full diagnostic path: add `console.log` of the widget value in both `nodeCreated` setup and `onConfigure` — if the first shows defaults and the second shows the saved value, you have this bug.
+8. **`nodeCreated` fires BEFORE `configure()` — defer initial DOM widget population via `queueMicrotask`** — In Vue's new frontend, the extension-level `nodeCreated(node)` hook fires DURING node construction, BEFORE ComfyUI calls `configure(data)` to restore saved widget values. If you render the DOM widget contents synchronously inside `nodeCreated`, you render from the Python default and then flash to the saved state when `onConfigure`'s re-render hook fires milliseconds later. The fix: create an empty `root` div, call `addDOMWidget(..., root, ...)`, wire event listeners, cache `node._xxxRoot = root`, and **defer the initial populate to `queueMicrotask(() => { ... })`** so the restored widget value is visible by the time we read it. Keep the `onConfigure` re-render for the "open a different workflow into an already-constructed node" case. Pattern applies to any hidden-JSON-widget node (Resolution LinuxTechLab is the reference implementation; Note LinuxTechLab's timing happens to mask the flash because its initial render is visually lighter). Full diagnostic path: add `console.log` of the widget value in both `nodeCreated` setup and `onConfigure` — if the first shows defaults and the second shows the saved value, you have this bug.
 
 9. **For hidden state, prefer Python `hidden` inputs + `node.properties` + `graphToPrompt` over hidden STRING widgets — eliminates both the input dot and the persistence fragility.** Vue auto-exposes primitive-type *required* inputs (STRING/INT/FLOAT) as convertible input slots that flash a grey dot on hover. Two ways to suppress the dot:
    - **Wrong**: `node.removeInput(idx)` on the auto-created slot. Causes saved JSON to have `"inputs": []`, and on workflow RELOAD Vue fails to reconnect the saved `widgets_values[0]` to the hidden STRING widget — silent revert to defaults on every workflow open.
-   - **Right (Resolution Pixaroma pattern)**: Define the input as `"hidden"` (not `"required"`) in Python — no widget, no slot, no dot. Store state on `node.properties[YOUR_KEY]` (LiteGraph serializes `properties` natively in workflow JSON). At extension scope, monkey-patch `app.graphToPrompt` to inject the saved state into each node's `inputs.YourHiddenName` right before submission. Read state via `node.properties[YOUR_KEY]` in setup; include a one-time migration that scans `node.widgets_values` for the old JSON format if you're upgrading from a widget-based architecture.
-   - **Acceptable (Note Pixaroma pattern)**: keep the required STRING widget + `hideJsonWidget`. The hover dot remains but persistence is rock-solid via the standard widget value flow. Use this when no extra prompt-time injection is desired.
+   - **Right (Resolution LinuxTechLab pattern)**: Define the input as `"hidden"` (not `"required"`) in Python — no widget, no slot, no dot. Store state on `node.properties[YOUR_KEY]` (LiteGraph serializes `properties` natively in workflow JSON). At extension scope, monkey-patch `app.graphToPrompt` to inject the saved state into each node's `inputs.YourHiddenName` right before submission. Read state via `node.properties[YOUR_KEY]` in setup; include a one-time migration that scans `node.widgets_values` for the old JSON format if you're upgrading from a widget-based architecture.
+   - **Acceptable (Note LinuxTechLab pattern)**: keep the required STRING widget + `hideJsonWidget`. The hover dot remains but persistence is rock-solid via the standard widget value flow. Use this when no extra prompt-time injection is desired.
 
 ### ComfyUI Settings Integration
-Pixaroma registers user-facing settings in ComfyUI's Settings panel using the `settings` array inside `app.registerExtension()`. Settings appear under the **👑 Pixaroma** category.
+LinuxTechLab registers user-facing settings in ComfyUI's Settings panel using the `settings` array inside `app.registerExtension()`. Settings appear under the **LinuxTechLab** category.
 
 **How to add a new setting:**
 1. Add a setting object to the `settings` array in the relevant `index.js` entry point:
    ```js
    app.registerExtension({
-     name: "Pixaroma.SomeEditor",
+     name: "LinuxTechLab.SomeEditor",
      settings: [
        {
-         id: "Pixaroma.SomeEditor.SettingName",
+         id: "LinuxTechLab.SomeEditor.SettingName",
          name: "Human-readable label",
          type: "combo",              // types: boolean, combo, slider, number, text, color
          defaultValue: "Option A",
          options: ["Option A", "Option B"],  // combo only
          tooltip: "Shown on hover",
-         category: ["👑 Pixaroma", "Sub-category"],
+         category: ["LinuxTechLab", "Sub-category"],
        },
      ],
      // ...
    });
    ```
-2. Read the value at runtime: `app.ui.settings.getSettingValue("Pixaroma.SomeEditor.SettingName")`
+2. Read the value at runtime: `app.ui.settings.getSettingValue("LinuxTechLab.SomeEditor.SettingName")`
 3. **No custom icons** — categories only support text/emoji, not SVG or images.
-4. All Pixaroma settings use the `["👑 Pixaroma", "..."]` category prefix for consistency.
+4. All LinuxTechLab settings use the `["LinuxTechLab", "..."]` category prefix for consistency.
 
 **Current settings:**
 | Setting ID | Type | Location | Purpose |
 |------------|------|----------|---------|
-| `Pixaroma.Compare.DefaultMode` | combo | `js/compare/index.js` | Default view mode for new Compare nodes |
+| `LinuxTechLab.Compare.DefaultMode` | combo | `js/compare/index.js` | Default view mode for new Compare nodes |
 
 ### Transparent Background Save-to-Disk
 Paint, Composer, and 3D Builder each have a "Transparent BG (Save to Disk)" checkbox next to their BG color picker. It only affects **Save to Disk** — the workflow "Save" path is untouched so existing workflows stay compatible (Python nodes still output RGB tensors).
@@ -292,9 +292,9 @@ These patterns were hard-won during 3D Builder v2 development. Regressing any of
 
 11. **Keyboard shortcuts use `e.code`, not `e.key`** — `Digit1`, `Digit2`, `Numpad1` etc. This is layout-independent. `e.key` depends on the user's keyboard layout and breaks for non-QWERTY users.
 
-### Note Pixaroma Patterns (do not regress)
+### Note LinuxTechLab Patterns (do not regress)
 
-These patterns were hard-won during Note Pixaroma development. Regressing any of them reintroduces specific bugs, some silent.
+These patterns were hard-won during Note LinuxTechLab development. Regressing any of them reintroduces specific bugs, some silent.
 
 1. **Sanitizer must UNWRAP on invalid href, not remove** — in `sanitize.mjs` `filterElement`, when `filterHref` returns null the old code called `el.remove()` which deleted the `<a>` *and* its child text. Users lost their typed content silently on save whenever a link had a bad URL (e.g. dialog default `https://` with no host). Unwrap the anchor instead, keep the inner text, recurse into children. Same policy as for unknown wrapper tags.
 
@@ -304,7 +304,7 @@ These patterns were hard-won during Note Pixaroma development. Regressing any of
 
 4. **Bg picker is a THREE-state override on node.color + node.bgcolor — do NOT go back to the old always-override flow** — `renderContent(node, bodyEl)` in `render.mjs` must respect `cfg.backgroundColor` having three different meanings, or it will clobber ComfyUI's native right-click Colors menu every time the user saves text edits (the original bug that forced this pattern to exist). States: (a) **undefined / key missing** → user has never touched the Bg picker; renderContent must LEAVE `node.color` / `node.bgcolor` alone so the native picker + LiteGraph theme defaults survive. (b) **null OR `"transparent"`** → user clicked Clear in the Bg picker; renderContent must null out `node.color` / `node.bgcolor` so our override reverts. (c) **hex string** → user picked via Bg picker; `node.bgcolor = hex` and `node.color = darken(hex, 0.3)` — the darkened title-bar color is REQUIRED so the title reads visually distinct against the body (same contrast the native Colors menu produces). `.pix-note-body` stays transparent so the frame color flows through as one surface. `node.setDirtyCanvas(true, true)` forces LiteGraph to repaint immediately. Bg picker Clear sets `cfg.backgroundColor = null`, NOT a hex — that's the signal the user explicitly reverted. `DEFAULT_CFG` in `index.js` omits the key entirely; the widget default JSON in `node_note.py` matches. `parseCfg` migrates legacy `"transparent"` / `"#111111"` values (both old widget defaults) to unset when the note has no content.
 
-5. **Ctrl+Z escape fix — patch `app.loadGraphData` AND `app.graph.configure`** — see Vue Frontend Compatibility point 6 above. Note Pixaroma is the canonical implementation; `core.mjs` `open()` saves the originals and restores in `_cleanup`. Also neuters `graph.undo`/`graph.redo`, `Comfy.Undo`/`Comfy.Redo` commands, and has a `node.onRemoved` resurrection-close safety net. Missing any of these leaves a path that deletes the note while the editor is open.
+5. **Ctrl+Z escape fix — patch `app.loadGraphData` AND `app.graph.configure`** — see Vue Frontend Compatibility point 6 above. Note LinuxTechLab is the canonical implementation; `core.mjs` `open()` saves the originals and restores in `_cleanup`. Also neuters `graph.undo`/`graph.redo`, `Comfy.Undo`/`Comfy.Redo` commands, and has a `node.onRemoved` resurrection-close safety net. Missing any of these leaves a path that deletes the note while the editor is open.
 
 6. **Do NOT call `installFocusTrap` with a contenteditable editor** — see Vue Frontend Compatibility point 7 above. The focus trap's mouseup handler steals focus and wipes text selection after drag-selects outside the panel.
 
@@ -360,7 +360,7 @@ These patterns were hard-won during Note Pixaroma development. Regressing any of
 - `_safe_path()` in `server_routes.py` — validates all file paths stay within `PIXAROMA_INPUT_ROOT`
 - IDs validated against `^[a-zA-Z0-9_\-]+$` regex (max 64 chars)
 - Base64 payloads capped at 50 MB
-- Note sanitizer (`js/note/sanitize.mjs`) — allowlist-based. Anything user-reachable (link insert, code-view HTML edit, paste) must round-trip through `sanitize(html)` before being written to the DOM or saved. Class allowlist covers only Pixaroma-specific classes; style allowlist covers only `color`, `background-color`, `text-align`; href allowlist is `http:`, `https:`, `mailto:`.
+- Note sanitizer (`js/note/sanitize.mjs`) — allowlist-based. Anything user-reachable (link insert, code-view HTML edit, paste) must round-trip through `sanitize(html)` before being written to the DOM or saved. Class allowlist covers only LinuxTechLab-specific classes; style allowlist covers only `color`, `background-color`, `text-align`; href allowlist is `http:`, `https:`, `mailto:`.
 
 ### Offline-first: Vendored Three.js
 The 3D Builder used to `import("https://esm.sh/three@0.170.0/…")` at runtime, which
@@ -425,7 +425,7 @@ Files are named by concern. Match the task to the file:
 | Add a new composite (multi-mesh) 3D shape | `js/3d/composites.mjs` + `js/3d/picker.mjs` SECTIONS |
 | Change the per-object Shape panel | `js/3d/shape_params.mjs` |
 | Handle GLB/OBJ import behavior | `js/3d/importer.mjs` |
-| Add / change Resolution Pixaroma sizes per ratio | `js/resolution/index.js` `SIZES` const + `DEFAULT_PER_RATIO` (per-ratio click default) — keep the spec doc table in sync. Layout sizing (NODE_H / WIDGET_H / list min-height) lives at the top of the same file. State schema on `node.properties.resolutionState` + `app.graphToPrompt` injection hook at the bottom of the file (Pattern #9). |
+| Add / change Resolution LinuxTechLab sizes per ratio | `js/resolution/index.js` `SIZES` const + `DEFAULT_PER_RATIO` (per-ratio click default) — keep the spec doc table in sync. Layout sizing (NODE_H / WIDGET_H / list min-height) lives at the top of the same file. State schema on `node.properties.resolutionState` + `app.graphToPrompt` injection hook at the bottom of the file (Pattern #9). |
 | Fix / extend Note toolbar (buttons, pickers) | `js/note/toolbar.mjs` |
 | Add / change a toolbar mask-icon | `js/note/css.mjs` (`.pix-note-tbtn-maskicon` for single-layer, `.pix-note-tbtn-maskicon-multi` for two-layer color pickers) + SVG files in `assets/icons/ui/` (two-layer icons need `<name>-outline.svg` + `<name>-drop.svg`) + `makeMaskIcon`/`makeMaskIconMulti` call in `toolbar.mjs` |
 | Change per-note colour pickers (Btn, Ln, Bg, text, highlight) | `js/note/toolbar.mjs` (`makeColorPicker` factory for Btn/Ln; inline pickers for text / highlight / Bg in G3); `js/note/render.mjs` writes CSS vars on canvas body; `core.mjs` `_applyCfgColorsToEditArea` writes same vars on the editor's contenteditable on each open |
@@ -439,8 +439,8 @@ Files are named by concern. Match the task to the file:
 | Add a new Python node | `nodes/node_<name>.py` |
 | Fix composer blend mode save/restore/execute | `js/composer/interaction.mjs` (save), `render.mjs` (restore), `ui.mjs` (dropdown sync), `nodes/node_composition.py` `_blend_over()` |
 | Paint AI Background Removal panel | `js/paint/core.mjs` `_buildBgRemovalPanel` + `_removeBgFromActiveLayer` (button gated on `ly.sourceKind === "image"`, set by the `onAddImage` handler and serialized as `source_kind` in the layer project JSON). Reuses the `/pixaroma/remove_bg` backend route via `PaintAPI.removeBg`. |
-| Preview Image Pixaroma — change button layout / geometry / colors | `js/preview/index.js` constants at the top (`BTN_H`, `BTN_GAP`, `MIN_W`, `MIN_H`, `DEFAULT_W`, `DEFAULT_H`, `COLOR_ACTIVE_*` / `COLOR_DISABLED_*`). Button rects computed in `computeButtonRects`, painted in `paintBtn`. Buttons live as an `addCustomWidget` (so they reserve vertical space above the image) — don't switch back to `onDrawForeground` overlay; it collides with ComfyUI's native preview + dimension label. |
-| Preview Image Pixaroma — change save flow / routes | Backend: `nodes/node_preview.py` (tensor → temp PNG for preview display) + `server_routes.py` helpers `_embed_workflow_metadata`, `/pixaroma/api/preview/save`, `/pixaroma/api/preview/prepare`. Frontend: `js/preview/index.js` `saveToOutput` / `saveToDisk`. Both POST a dataURL + the workflow/prompt from `app.graphToPrompt()`. Metadata embedding lives in Python only (single source of truth). |
+| Preview Image LinuxTechLab — change button layout / geometry / colors | `js/preview/index.js` constants at the top (`BTN_H`, `BTN_GAP`, `MIN_W`, `MIN_H`, `DEFAULT_W`, `DEFAULT_H`, `COLOR_ACTIVE_*` / `COLOR_DISABLED_*`). Button rects computed in `computeButtonRects`, painted in `paintBtn`. Buttons live as an `addCustomWidget` (so they reserve vertical space above the image) — don't switch back to `onDrawForeground` overlay; it collides with ComfyUI's native preview + dimension label. |
+| Preview Image LinuxTechLab — change save flow / routes | Backend: `nodes/node_preview.py` (tensor → temp PNG for preview display) + `server_routes.py` helpers `_embed_workflow_metadata`, `/pixaroma/api/preview/save`, `/pixaroma/api/preview/prepare`. Frontend: `js/preview/index.js` `saveToOutput` / `saveToDisk`. Both POST a dataURL + the workflow/prompt from `app.graphToPrompt()`. Metadata embedding lives in Python only (single source of truth). |
 
 ### 3. When adding a new method to an editor class
 - Add it to the most relevant existing `.mjs` file by concern (tools, events, render, etc.)

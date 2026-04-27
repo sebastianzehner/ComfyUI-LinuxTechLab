@@ -18,9 +18,27 @@ const ICON_TO_FALLBACK_LABEL = {
 // applied to toggles the user hasn't manually flipped yet — so switching
 // the icon mid-edit won't clobber an intentional override.
 const ICON_DEFAULTS = {
-  dl: { folderOn: true,  sizeOn: true,  label: "", labelPh: "e.g. Flux 2 Model",    folder: "models/diffusion_models" },
-  vp: { folderOn: false, sizeOn: false, label: "", labelPh: "e.g. Flux 2 on HuggingFace", folder: "models/diffusion_models" },
-  rm: { folderOn: false, sizeOn: false, label: "", labelPh: "e.g. Release notes",   folder: "models/diffusion_models" },
+  dl: {
+    folderOn: true,
+    sizeOn: true,
+    label: "",
+    labelPh: "e.g. Flux 2 Model",
+    folder: "models/diffusion_models",
+  },
+  vp: {
+    folderOn: false,
+    sizeOn: false,
+    label: "",
+    labelPh: "e.g. Flux 2 on HuggingFace",
+    folder: "models/diffusion_models",
+  },
+  rm: {
+    folderOn: false,
+    sizeOn: false,
+    label: "",
+    labelPh: "e.g. Release notes",
+    folder: "models/diffusion_models",
+  },
 };
 
 // Capture / restore helpers. When the block dialog opens, focus moves to
@@ -52,12 +70,18 @@ function restoreRange(range) {
 function validateUrl(url) {
   if (!url) return { ok: false, message: "URL is required" };
   if (!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) {
-    return { ok: false, message: "URL must start with http://, https://, or mailto:" };
+    return {
+      ok: false,
+      message: "URL must start with http://, https://, or mailto:",
+    };
   }
   try {
     const u = new URL(url);
     if ((u.protocol === "http:" || u.protocol === "https:") && !u.hostname) {
-      return { ok: false, message: "URL must include a domain (e.g. example.com)" };
+      return {
+        ok: false,
+        message: "URL must include a domain (e.g. example.com)",
+      };
     }
   } catch {
     return { ok: false, message: "That doesn't look like a valid URL" };
@@ -89,9 +113,10 @@ function makeDialog(anchorBtn, title, fields, onSubmit, initialValues) {
     // initialValues wins over defaultVal — it's only passed when the
     // dialog opens from a pencil-edit, in which case we want the
     // block's actual current value, not the "fresh insert" default.
-    const pre = (initialValues && Object.prototype.hasOwnProperty.call(initialValues, key))
-      ? initialValues[key]
-      : defaultVal;
+    const pre =
+      initialValues && Object.prototype.hasOwnProperty.call(initialValues, key)
+        ? initialValues[key]
+        : defaultVal;
     inp.value = pre || "";
     if (placeholder) inp.placeholder = placeholder;
     row.appendChild(lbl);
@@ -125,8 +150,13 @@ function makeDialog(anchorBtn, title, fields, onSubmit, initialValues) {
   document.body.appendChild(dlg);
   setTimeout(() => inputs[Object.keys(inputs)[0]]?.focus(), 10);
 
-  function close() { dlg.remove(); document.removeEventListener("mousedown", onOutside, true); }
-  const onOutside = (e) => { if (!dlg.contains(e.target)) close(); };
+  function close() {
+    dlg.remove();
+    document.removeEventListener("mousedown", onOutside, true);
+  }
+  const onOutside = (e) => {
+    if (!dlg.contains(e.target)) close();
+  };
   setTimeout(() => document.addEventListener("mousedown", onOutside, true), 0);
   cancel.onclick = close;
   // onSubmit can:
@@ -136,12 +166,16 @@ function makeDialog(anchorBtn, title, fields, onSubmit, initialValues) {
     const values = {};
     for (const k of Object.keys(inputs)) values[k] = inputs[k].value.trim();
     err.textContent = "";
-    const showError = (msg) => { err.textContent = msg || ""; };
+    const showError = (msg) => {
+      err.textContent = msg || "";
+    };
     const result = onSubmit(values, { showError });
     if (result !== false) close();
   };
   [...dlg.querySelectorAll("input")].forEach((i) =>
-    i.addEventListener("keydown", (e) => { if (e.key === "Enter") ok.click(); })
+    i.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") ok.click();
+    }),
   );
 }
 
@@ -199,20 +233,24 @@ function renderButtonHTML(v) {
   const cls = ICON_TO_CLASS[v.icon] || "pix-note-dl";
   const labelFallback = ICON_TO_FALLBACK_LABEL[v.icon] || "Download";
   const labelText = escapeHtml(v.label || labelFallback);
-  const sizeInner = (v.sizeOn && v.size)
-    ? `<span class="pix-note-btnsize">${escapeHtml(v.size)}</span>`
-    : "";
-  const pill = `<a class="${cls}" href="${escapeHtml(v.url)}"` +
+  const sizeInner =
+    v.sizeOn && v.size
+      ? `<span class="pix-note-btnsize">${escapeHtml(v.size)}</span>`
+      : "";
+  const pill =
+    `<a class="${cls}" href="${escapeHtml(v.url)}"` +
     ` target="_blank" rel="noopener noreferrer">${labelText}${sizeInner}</a>`;
-  const hint = (v.folderOn && v.folder)
-    ? `<span class="pix-note-folderhint">Place in: ComfyUI/${escapeHtml(v.folder)}</span>`
-    : "";
+  const hint =
+    v.folderOn && v.folder
+      ? `<span class="pix-note-folderhint">Place in: ComfyUI/${escapeHtml(v.folder)}</span>`
+      : "";
   return `<span class="pix-note-btnblock">${pill}${hint}</span>&nbsp;`;
 }
 
 // Kept as backwards-compatible alias so nothing that still calls the
 // old method name crashes — redirects to the new unified button dialog.
-NoteEditor.prototype._insertDownloadBlock = NoteEditor.prototype._insertButtonBlock;
+NoteEditor.prototype._insertDownloadBlock =
+  NoteEditor.prototype._insertButtonBlock;
 
 NoteEditor.prototype._insertYouTubeBlock = function (anchorBtn) {
   const savedRange = saveRange(this._editArea);
@@ -220,16 +258,20 @@ NoteEditor.prototype._insertYouTubeBlock = function (anchorBtn) {
     anchorBtn,
     "Insert YouTube link",
     [
-      ["label", "Label", "Pixaroma YouTube Channel", ""],
-      ["url", "URL", "https://www.youtube.com/@pixaroma", ""],
+      ["label", "Label", "LinuxTechLab YouTube Channel", ""],
+      ["url", "URL", "https://www.youtube.com/@LinuxTechLab", ""],
     ],
     (v, ctx) => {
       const check = validateUrl(v.url);
-      if (!check.ok) { ctx.showError(check.message); return false; }
-      const html = `<a class="pix-note-yt" href="${escapeHtml(v.url)}"` +
+      if (!check.ok) {
+        ctx.showError(check.message);
+        return false;
+      }
+      const html =
+        `<a class="pix-note-yt" href="${escapeHtml(v.url)}"` +
         ` target="_blank" rel="noopener noreferrer">${escapeHtml(v.label || "YouTube")}</a>&nbsp;`;
       insertAtSavedRange(this, savedRange, html);
-    }
+    },
   );
 };
 
@@ -244,11 +286,15 @@ NoteEditor.prototype._insertDiscordBlock = function (anchorBtn) {
     ],
     (v, ctx) => {
       const check = validateUrl(v.url);
-      if (!check.ok) { ctx.showError(check.message); return false; }
-      const html = `<a class="pix-note-discord" href="${escapeHtml(v.url)}"` +
+      if (!check.ok) {
+        ctx.showError(check.message);
+        return false;
+      }
+      const html =
+        `<a class="pix-note-discord" href="${escapeHtml(v.url)}"` +
         ` target="_blank" rel="noopener noreferrer">${escapeHtml(v.label || "Join Discord")}</a>&nbsp;`;
       insertAtSavedRange(this, savedRange, html);
-    }
+    },
   );
 };
 
@@ -324,7 +370,7 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   const iconRow = document.createElement("div");
   iconRow.className = "pix-note-iconpick";
   const ICON_OPTS = [
-    { id: "dl", label: "Download",  svg: "download-model.svg" },
+    { id: "dl", label: "Download", svg: "download-model.svg" },
     { id: "vp", label: "View Page", svg: "view-model-page.svg" },
     { id: "rm", label: "Read More", svg: "read-more.svg" },
   ];
@@ -335,7 +381,7 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
     b.dataset.icon = opt.id;
     const ico = document.createElement("span");
     ico.className = "ico";
-    const url = `url(/pixaroma/assets/icons/ui/${opt.svg})`;
+    const url = `url(/linuxtechlab/assets/icons/ui/${opt.svg})`;
     ico.style.webkitMaskImage = url;
     ico.style.maskImage = url;
     const txt = document.createElement("span");
@@ -344,7 +390,9 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
     b.appendChild(ico);
     b.appendChild(txt);
     b.addEventListener("mousedown", (e) => e.preventDefault());
-    b.addEventListener("click", () => { setIcon(opt.id); });
+    b.addEventListener("click", () => {
+      setIcon(opt.id);
+    });
     iconBtns[opt.id] = b;
     iconRow.appendChild(b);
   }
@@ -354,13 +402,18 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   const labelRow = makeField("Label");
   const labelInput = labelRow.querySelector("input");
   labelInput.placeholder = ICON_DEFAULTS.dl.labelPh;
-  labelInput.addEventListener("input", () => { state.label = labelInput.value; refresh(); });
+  labelInput.addEventListener("input", () => {
+    state.label = labelInput.value;
+    refresh();
+  });
   dlg.appendChild(labelRow);
 
   const urlRow = makeField("URL");
   const urlInput = urlRow.querySelector("input");
   urlInput.placeholder = "https://...";
-  urlInput.addEventListener("input", () => { state.url = urlInput.value; });
+  urlInput.addEventListener("input", () => {
+    state.url = urlInput.value;
+  });
   dlg.appendChild(urlRow);
 
   // --- Folder suggestion: header row (label + toggle) + input row ---------
@@ -368,7 +421,9 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   const folderToggle = folderHead.toggle;
   folderHead.row.addEventListener("click", (e) => {
     if (e.target.closest("input")) return;
-    state.folderOn = !state.folderOn; touched.folderOn = true; refresh();
+    state.folderOn = !state.folderOn;
+    touched.folderOn = true;
+    refresh();
   });
   dlg.appendChild(folderHead.row);
 
@@ -381,7 +436,10 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   folderInput.type = "text";
   folderInput.placeholder = "e.g. models/loras";
   folderInput.value = state.folder;
-  folderInput.addEventListener("input", () => { state.folder = folderInput.value; refresh(); });
+  folderInput.addEventListener("input", () => {
+    state.folder = folderInput.value;
+    refresh();
+  });
   folderInputRow.appendChild(folderInput);
   dlg.appendChild(folderInputRow);
 
@@ -390,7 +448,9 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   const sizeToggle = sizeHead.toggle;
   sizeHead.row.addEventListener("click", (e) => {
     if (e.target.closest("input")) return;
-    state.sizeOn = !state.sizeOn; touched.sizeOn = true; refresh();
+    state.sizeOn = !state.sizeOn;
+    touched.sizeOn = true;
+    refresh();
   });
   dlg.appendChild(sizeHead.row);
 
@@ -399,7 +459,10 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   const sizeInput = document.createElement("input");
   sizeInput.type = "text";
   sizeInput.placeholder = "e.g. 9.4 GB";
-  sizeInput.addEventListener("input", () => { state.size = sizeInput.value; refresh(); });
+  sizeInput.addEventListener("input", () => {
+    state.size = sizeInput.value;
+    refresh();
+  });
   sizeInputRow.appendChild(sizeInput);
   dlg.appendChild(sizeInputRow);
 
@@ -473,10 +536,17 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
     document.removeEventListener("mousedown", onOutside, true);
     document.removeEventListener("keydown", onKey, true);
   }
-  const onOutside = (e) => { if (!dlg.contains(e.target)) close(); };
+  const onOutside = (e) => {
+    if (!dlg.contains(e.target)) close();
+  };
   const onKey = (e) => {
-    if (e.key === "Escape") { e.preventDefault(); close(); }
-    else if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
   };
   setTimeout(() => {
     document.addEventListener("mousedown", onOutside, true);
@@ -574,7 +644,7 @@ function escapeHtml(s) {
 // ICON_TO_CLASS. Callers default to "dl" when no class matches, so
 // unknown shapes at least round-trip as a Download pill.
 const CLASS_TO_ICON = Object.fromEntries(
-  Object.entries(ICON_TO_CLASS).map(([icon, cls]) => [cls, icon])
+  Object.entries(ICON_TO_CLASS).map(([icon, cls]) => [cls, icon]),
 );
 
 export function extractButtonValues(el) {
@@ -584,7 +654,10 @@ export function extractButtonValues(el) {
   if (!a) return null;
   let icon = "dl";
   for (const c of a.classList) {
-    if (CLASS_TO_ICON[c]) { icon = CLASS_TO_ICON[c]; break; }
+    if (CLASS_TO_ICON[c]) {
+      icon = CLASS_TO_ICON[c];
+      break;
+    }
   }
   // Size lives in a nested <span class="pix-note-btnsize">. Pull it
   // out (text only) before reading the pill label, then remove the
@@ -668,33 +741,55 @@ NoteEditor.prototype._dispatchBlockEdit = function (target, anchorBtn) {
   if (!target || !this._editArea || !this._editArea.contains(target)) return;
 
   // Button Design block: span.pix-note-btnblock
-  if (target.tagName === "SPAN" && target.classList.contains("pix-note-btnblock")) {
+  if (
+    target.tagName === "SPAN" &&
+    target.classList.contains("pix-note-btnblock")
+  ) {
     const values = extractButtonValues(target);
     if (!values) return;
-    makeButtonDesignDialog(anchorBtn, (v, ctx) => {
-      const check = validateUrl(v.url);
-      if (!check.ok) { ctx.showError(check.message); return false; }
-      this._snapBefore?.();
-      // renderButtonHTML returns "<span …>…</span>&nbsp;". When editing
-      // we replace only the span, not the trailing &nbsp;; otherwise
-      // consecutive pencil-edits would keep appending nbsp chars.
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = renderButtonHTML(v);
-      const newBlock = wrapper.querySelector(".pix-note-btnblock");
-      if (newBlock) target.replaceWith(newBlock);
-      this._snapAfter?.();
-      this._dirty = true;
-      return true;
-    }, values);
+    makeButtonDesignDialog(
+      anchorBtn,
+      (v, ctx) => {
+        const check = validateUrl(v.url);
+        if (!check.ok) {
+          ctx.showError(check.message);
+          return false;
+        }
+        this._snapBefore?.();
+        // renderButtonHTML returns "<span …>…</span>&nbsp;". When editing
+        // we replace only the span, not the trailing &nbsp;; otherwise
+        // consecutive pencil-edits would keep appending nbsp chars.
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = renderButtonHTML(v);
+        const newBlock = wrapper.querySelector(".pix-note-btnblock");
+        if (newBlock) target.replaceWith(newBlock);
+        this._snapAfter?.();
+        this._dirty = true;
+        return true;
+      },
+      values,
+    );
     return;
   }
 
   // YouTube / Discord: a.pix-note-yt / a.pix-note-discord
   if (target.tagName === "A" && target.classList.contains("pix-note-yt")) {
-    return openLinkEditor(this, target, "Edit YouTube link", "pix-note-yt", anchorBtn);
+    return openLinkEditor(
+      this,
+      target,
+      "Edit YouTube link",
+      "pix-note-yt",
+      anchorBtn,
+    );
   }
   if (target.tagName === "A" && target.classList.contains("pix-note-discord")) {
-    return openLinkEditor(this, target, "Edit Discord link", "pix-note-discord", anchorBtn);
+    return openLinkEditor(
+      this,
+      target,
+      "Edit Discord link",
+      "pix-note-discord",
+      anchorBtn,
+    );
   }
 
   // Plain link: <a> without any pix-note-* class. Reuse _promptLinkUrl
@@ -746,7 +841,10 @@ function openLinkEditor(editor, target, title, className, anchorBtn) {
     ],
     (v, ctx) => {
       const check = validateUrl(v.url);
-      if (!check.ok) { ctx.showError(check.message); return false; }
+      if (!check.ok) {
+        ctx.showError(check.message);
+        return false;
+      }
       editor._snapBefore?.();
       target.setAttribute("href", v.url);
       target.textContent = v.label || v.url;
@@ -910,10 +1008,17 @@ function makeGridDialog(anchorBtn, onSubmit) {
     document.removeEventListener("mousedown", onOutside, true);
     document.removeEventListener("keydown", onKey, true);
   }
-  const onOutside = (e) => { if (!dlg.contains(e.target)) close(); };
+  const onOutside = (e) => {
+    if (!dlg.contains(e.target)) close();
+  };
   const onKey = (e) => {
-    if (e.key === "Escape") { e.preventDefault(); close(); }
-    else if (e.key === "Enter") { e.preventDefault(); submit(); }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+    }
   };
   setTimeout(() => {
     document.addEventListener("mousedown", onOutside, true);
@@ -957,14 +1062,21 @@ NoteEditor.prototype._insertGridBlock = function (anchorBtn) {
     wrapper.innerHTML = renderGridHTML(v.cols, v.rows, v.header);
     const table = wrapper.querySelector("table");
     const trailing = wrapper.querySelector("p");
-    if (!table || !trailing) { this._snapAfter?.(); return true; }
+    if (!table || !trailing) {
+      this._snapAfter?.();
+      return true;
+    }
 
     // Find the top-level block inside editArea that contains the saved
     // range (or fall back to end-of-editArea).
     const findTopBlock = (node) => {
       if (!node) return null;
       if (node.nodeType !== 1) node = node.parentNode;
-      while (node && node.parentNode !== this._editArea && node !== this._editArea) {
+      while (
+        node &&
+        node.parentNode !== this._editArea &&
+        node !== this._editArea
+      ) {
         node = node.parentNode;
       }
       return node && node.parentNode === this._editArea ? node : null;

@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Image Crop Editor — Interaction (mouse/keyboard events, handle dragging)
-// ============================================================
+// =====================================================================================
+// LinuxTechLab Image Crop Editor — Interaction (mouse/keyboard events, handle dragging)
+// =====================================================================================
 import { CropEditor, SNAPS } from "./core.mjs";
 
 const proto = CropEditor.prototype;
@@ -251,7 +251,7 @@ proto._bindKeys = function () {
       (ae?.tagName === "INPUT" ||
         ae?.tagName === "TEXTAREA" ||
         ae?.tagName === "SELECT") &&
-      !ae?.dataset?.pixaromaTrap
+      !ae?.dataset?.linuxtechlabTrap
     )
       return;
     const key = e.key.toLowerCase();

@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Image Crop Editor — Entry Point
+// LinuxTechLab Image Crop Editor — Entry Point
 // ============================================================
 import { app } from "/scripts/app.js";
 import { CropEditor } from "./core.mjs";
@@ -15,20 +15,20 @@ import {
 } from "../shared/index.mjs";
 
 app.registerExtension({
-  name: "Pixaroma.Crop",
+  name: "LinuxTechLab.Crop",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "PixaromaCrop") return;
+    if (nodeData.name !== "LinuxTechLabCrop") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       originalOnExecuted?.apply(this, arguments);
-      if (allow_debug) console.log("PixaromaCrop executed");
+      if (allow_debug) console.log("LinuxTechLabCrop executed");
     };
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "PixaromaCrop") return;
+    if (node.comfyClass !== "LinuxTechLabCrop") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
@@ -36,7 +36,7 @@ app.registerExtension({
     // -- Shared preview system --
     const parts = createNodePreview(
       "Image Crop",
-      "Pixaroma",
+      "LinuxTechLab",
       "Click 'Open Crop' to start",
     );
 
@@ -62,7 +62,7 @@ app.registerExtension({
       };
 
       editor.onSaveToDisk = (dataURL) =>
-        downloadDataURL(dataURL, "pixaroma_crop");
+        downloadDataURL(dataURL, "linuxtechlab_crop");
 
       editor.onClose = () => {
         node.setDirtyCanvas(true, true);
