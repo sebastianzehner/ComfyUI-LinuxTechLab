@@ -23,6 +23,14 @@ A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furn
 ![3D Builder — Node](workflows/3D%20Builder%20Pixaroma%20Workflow.jpg)
 ![3D Builder — Editor](workflows/3D%20Builder%20Pixaroma%20Workflow%20v2.jpg)
 
+### 🎚️ AudioReact LinuxTechLab
+Audio-reactive image-to-video. **No extra models needed**, just an image and an audio track. Open the fullscreen editor, scrub the audio, and watch 15 motion modes (Pulse Zoom, Camera Shake, Glitch, Pinch, Wave, Tilt, Pixelate, RGB Split, and more) react to the beat in real time with a live WebGL preview. Stack 8 overlay effects on top: chroma shift, bloom, vignette, hue shift, cinematic teal/orange grade, letterbox, scanlines, and film grain. Pairs with **Save Mp4 LinuxTechLab** to write the clip directly to MP4 with audio muxed in. Requires WebGL2.
+
+📥 [Download example workflow](workflows/AudioReact%20Workflow.json)
+
+![AudioReact Node](workflows/AudioReact%20Workflow.jpg)
+![AudioReact Editor](workflows/AudioReact%20Workflow%20v2.jpg)
+
 ### ✨ Image Composer
 Easily combine and arrange multiple images. Move, scale, and rotate layers using a simple visual editor. Use the eraser to tweak things by hand, or let our AI background removal tool isolate objects for you instantly.
 ![Image Composer — Node](workflows/Image%20Composer%20Pixaroma%20Workflow.jpg)
@@ -53,6 +61,9 @@ Keep your workflows tidy with clean, custom labels.
 
 ![Labels — Node](workflows/Labels%20Pixaroma%20Workflow.jpg)
 ![Labels — Editor](workflows/Labels%20Pixaroma%20Workflow%20v2.jpg)
+
+### 🎬 Save Mp4 LinuxTechLab
+Encode video frames + optional audio straight to MP4. Built-in `<video>` preview right on the node so you can watch the result without leaving ComfyUI. Pairs with AudioReact, but works with any source that produces frames + AUDIO.
 
 ### 💬 Show Text LinuxTechLab
 Easily see what text or data is flowing through your nodes.
@@ -113,6 +124,10 @@ Master the Pixaroma suite with our video guides and workflow deep-dives:
 ---
 
 ## 🛠 Changelog
+
+### **April 27, 2026**
+- **NEW: AudioReact LinuxTechLab**: turn an image into an audio-reactive video with a fullscreen WebGL editor. 15 motion modes, 8 stackable overlays, real-time scrubbable preview.
+- **NEW: Save Mp4 LinuxTechLab**: encode frames + audio straight to MP4, with an in-node video preview.
 
 ### **April 25, 2026**
 - **Smoother 3D Builder:** Moving the camera, spinning, and zooming in your 3D scenes is now much faster and less laggy!

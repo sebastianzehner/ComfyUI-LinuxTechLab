@@ -3,6 +3,10 @@ import os
 from . import server_routes  # side-effect import for route registration
 from .nodes.node_3d import NODE_CLASS_MAPPINGS as _MAPS_3D
 from .nodes.node_3d import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_3D
+from .nodes.node_audio_studio import NODE_CLASS_MAPPINGS as _MAPS_AUDIO_STUDIO
+from .nodes.node_audio_studio import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_AUDIO_STUDIO
+from .nodes.node_save_mp4 import NODE_CLASS_MAPPINGS as _MAPS_SAVE_MP4
+from .nodes.node_save_mp4 import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SAVE_MP4
 from .nodes.node_compare import NODE_CLASS_MAPPINGS as _MAPS_COMPARE
 from .nodes.node_compare import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPARE
 from .nodes.node_composition import NODE_CLASS_MAPPINGS as _MAPS_COMPOSITION
@@ -34,6 +38,7 @@ else:
 # combine all node mappings
 NODE_CLASS_MAPPINGS = {
     **_MAPS_3D,
+    **_MAPS_AUDIO_STUDIO,
     **_MAPS_COMPOSITION,
     **_MAPS_PAINT,
     **_MAPS_PREVIEW,
@@ -42,6 +47,7 @@ NODE_CLASS_MAPPINGS = {
     **_MAPS_CROP,
     **_MAPS_LABEL,
     **_MAPS_NOTE,
+    **_MAPS_SAVE_MP4,
     **_MAPS_UTILS,
     **_MAPS_SHOW_TEXT,
 }
@@ -50,10 +56,12 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     **_NAMES_COMPOSITION,
     **_NAMES_3D,
+    **_NAMES_AUDIO_STUDIO,
     **_NAMES_COMPARE,
     **_NAMES_CROP,
     **_NAMES_LABEL,
     **_NAMES_NOTE,
+    **_NAMES_SAVE_MP4,
     **_NAMES_UTILS,
     **_NAMES_PAINT,
     **_NAMES_PREVIEW,

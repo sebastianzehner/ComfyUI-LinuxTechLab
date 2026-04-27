@@ -143,6 +143,28 @@ js/
 │                       #  Node-level onMouseMove/onMouseLeave for hover (widget
 │                       #  mouse() doesn't get pointermove on Vue).
 │
+├── audio_studio/       # AudioReact LinuxTechLab — fullscreen editor for audio-reactive effects
+│   ├── index.js        # Entry: button widget on the node, app.graphToPrompt hook
+│   │                   #  (Pattern #9), nodeCreated lifecycle. DEFAULT_CFG mirrors
+│   │                   #  Params() defaults in nodes/_audio_react_engine.py.
+│   ├── core.mjs        # AudioStudioEditor class — open/close/save/discard,
+│   │                   #  Vue-compat Ctrl+Z neutering, undo/redo stack, source
+│   │                   #  resolution + drag-drop, header/sidebar building.
+│   ├── transport.mjs   # Mixin — transport bar UI (play/scrub/sparkline/frame
+│   │                   #  stepper), Web Audio playback synced to playhead.
+│   ├── audio_analysis.mjs # Decode (Web Audio API), inline Cooley-Tukey real
+│   │                   #  FFT (no deps), 4-band envelope/onset packed for
+│   │                   #  RGBA32F upload, encodeWav() for upload conversion.
+│   ├── render.mjs      # Mixin — WebGL2 pipeline init + 2-pass render
+│   │                   #  (motion → intermediate FBO → overlay → screen).
+│   ├── shaders.mjs     # 8 motion shader fragments + combined-overlay shader,
+│   │                   #  compileProgram() with WeakMap cache.
+│   ├── ui.mjs          # Mixin — tabbed sidebar (Motion / Overlays / Audio /
+│   │                   #  Output), control factories, helpers.
+│   └── api.mjs         # Backend wrappers — uploadSource (multipart POST),
+│                       #  getUpstreamImageUrl (Vue links Map/object dual access),
+│                       #  getInlineSourceUrl.
+│
 ├── showtext/           # Show Text node (single file, 97 lines)
 │   └── index.js
 │
@@ -292,6 +314,56 @@ These patterns were hard-won during 3D Builder v2 development. Regressing any of
 
 11. **Keyboard shortcuts use `e.code`, not `e.key`** — `Digit1`, `Digit2`, `Numpad1` etc. This is layout-independent. `e.key` depends on the user's keyboard layout and breaks for non-QWERTY users.
 
+### AudioReact Engine Patterns (do not regress)
+
+1. **`slit_scan` is a per-row time-evolving sine wave, NOT a frame-buffer pull** — the spec at `docs/superpowers/specs/2026-04-27-audio-react-linuxtechlab-design.md` originally described slit_scan as pulling rows from past frames in a buffer (`num_frames × H × W × 3` memory). The implementation simplifies this to per-row vertical sine displacement at row-shifted phase, audio-modulated amplitude — visually the same kind of "time-displaced rows" effect at zero extra memory cost. If you ever switch to a real frame buffer, clamp lookback to ≤ 0.5s of frames or memory blows up at high fps / 4K.
+
+2. **`shake` motion mode caches dx/dy on `self`, must be cleared at the top of `generate()`** — the cache size depends on `total_frames`, which differs per audio length. `generate()` does `if hasattr(self, "_shake_dx_cache"): del ...` before computing the envelope. Without that, switching audio (different total_frames) reuses stale jitter and crashes on index OOB.
+
+3. **`audio_envelope`, `bandpass_fft`, `onset_track`, `process_aspect`, `Params`, all motion functions, all overlay functions live in `nodes/_audio_react_engine.py` — and ONLY there.** `node_audio_studio.py` is a thin wrapper that builds a `Params` and calls `engine.generate_video()`. Do NOT copy helpers into the node file — divergence breaks parity between the Python render and the editor preview (via `js/audio_studio/shaders.mjs`) and the regression goldens. The math is locked behind one file by design.
+
+4. **Print line uses ASCII `->`, not `→` (U+2192)** — Windows console default codec (cp1252) can't encode the arrow. Crashes the generate() call before frame 1.
+
+5. **Color shift / channel offset uses resolution-relative pixel counts, not hardcoded** — `glitch` overlay computes max_px = `int(onset_t * strength * 0.012 * min(H, W))` so a 720p clip and a 4K clip produce visually-equivalent glitch amplitudes. Same pattern in `ripple` (`A = 0.015 * 2.0` in normalized grid units, since grid spans `[-1, 1]`). Hardcoded pixel counts feel different at every resolution and break the "drop-in defaults" promise.
+
+6. **Overlay short-circuit at strength == 0 is mandatory for performance** — every overlay's first line is `if env_t <= 0.001 or strength <= 0: return frame`. Without the early-return, bloom (which does a Gaussian blur per frame) costs ~30% even at strength=0. The `generate()` loop also checks `if glitch_strength > 0.0:` etc. before calling. Both layers of guard are intentional.
+
+7. **No `edge_headroom` widget — deliberately omitted, do not add it back** — depth-based parallax nodes (which this project no longer ships) need headroom because depth × strong intensity can displace sample coords well beyond `[-1, 1]`. `audio_react`'s motion modes don't have that problem: `scale_pulse` and `zoom_punch` pull inward (zoom-in only, range stays inside `[-1, 1]`), and `shake` / `drift` / `rotate_pulse` / `ripple` / `swirl` / `slit_scan` excurse by at most ~6% — `padding_mode="border"` handles those invisibly. Headroom would just render extra pixels that get cropped, wasting compute. `_process_aspect()` is still called (defaults `headroom=1.0`) so the helper stays general-purpose, but no crop pass after the per-frame loop.
+
+### AudioReact Patterns (do not regress)
+
+These patterns were hard-won during AudioReact v1 development. Regressing any of them reintroduces specific bugs.
+
+1. **`DEFAULT_CFG` in `js/audio_studio/index.js` MUST stay in sync with `Params` defaults in `nodes/_audio_react_engine.py`.** ComfyUI doesn't pre-fill a hidden input's value; the JS extension is the source of truth for first-time-on-canvas defaults. If the two diverge, the editor opens with one set of defaults and the workflow runs with another. Same risk class as Note LinuxTechLab Pattern #3 — keep them in sync at the same commit.
+
+2. **Engine math lives in `nodes/_audio_react_engine.py` ONLY** — `node_audio_studio.py` is a thin wrapper that builds a `Params` and calls `generate_video()`. If you ever feel the urge to "just inline this one helper" in the node file, don't — every formula must travel through the engine.
+
+3. **Math doc (`docs/audio-react-math.md`) is the single source of truth for formulas.** When changing a formula: (1) update the doc first; (2) update the Python implementation in the engine; (3) update the matching GLSL shader in `js/audio_studio/shaders.mjs`; (4) run `scripts/audio_parity_check.py --regenerate` to refresh goldens; (5) run the browser parity harness manually (`assets/audio_studio_parity/index.html`) to confirm the WebGL side still matches. Skipping any step risks editor preview drifting from MP4 output.
+
+4. **Approximate-preview carve-outs are documented, not silent.** Math doc §9 lists `shake` and `bloom` explicitly. The browser harness exempts these from the ΔE check. If you add a new "the WebGL side can't bit-match this" effect, update §9 AND the harness — silently exempting tests has misled debugging in the past.
+
+5. **Audio is WAV-only on disk.** The browser converts MP3 / OGG / AAC / etc. via `decodeAudio` + `encodeWav` in `js/audio_studio/audio_analysis.mjs` BEFORE upload. Server only accepts `.wav` — keeps Python dependency-free (stdlib `wave` module). Don't add server-side ffmpeg / pydub / etc. to "support more formats." Adding a heavy dep ripple-effects through the project's "no extra deps" promise.
+
+6. **WebGL2 required, no fallback.** If `getContext("webgl2")` returns null, the editor shows a clear error to the user. Don't add WebGL1 fallback — none of the modern browsers we target lack WebGL2, and the fallback complexity buys nothing.
+
+7. **Pattern #9 persistence** (CLAUDE.md Vue Frontend Compatibility point #9) — `studio_json` is declared `hidden` in `INPUT_TYPES`, state lives on `node.properties.audioStudioState`, `app.graphToPrompt` hook in `js/audio_studio/index.js` injects it at submission. Same as Resolution LinuxTechLab. If the input ever shows up as a slot dot, Pattern #9 has been broken — likely by `removeInput()` or by re-declaring as `required STRING`.
+
+8. **`shake` motion shader uses a deterministic JS RNG (mulberry32-like hash seeded by frame index) — NOT a port of `torch.Generator(0)`.** Browser preview is approximate for shake. This is documented behavior — if you "fix" the shader to use Python's exact sequence, you'll discover torch's RNG cannot be reproduced cross-platform and break parity in a different way.
+
+9. **Audio analysis runs ONCE per audio load**, packing all 4 bands into one RGBA32F texture (R=full, G=bass, B=mids, A=treble). Toggling `audio_band` in the sidebar is a free uniform swap (`u_audio_band_idx`), not a recompute. Don't add a "recompute on band change" path — it slows the editor and adds latency to a click that should be instant.
+
+10. **`_onCfgChanged` only triggers `_recomputeAudio` when `fps` / `smoothing` / `loop_safe` actually changed**, AND the recompute is debounced 200ms. Cached as `_audioParamsKey`. Without this guard, dragging intensity / overlay sliders would re-run the 4-band FFT on every tick — the smoothing slider especially felt sticky before this was added.
+
+11. **`_setImage` MUST re-attach `this.canvas` to `canvasHost` if it's been disconnected** — `_showCanvasMessage` sets `canvasHost.textContent`, which removes the `<canvas>` from the DOM. Without the re-attach, picking an inline image after seeing the "upstream not ready" message renders to an orphaned canvas that's invisible until the editor is closed and re-opened.
+
+12. **`isDirty()` must OR a `_uploadDirty` flag, not just compare cfg JSON** — re-uploading a source replaces bytes at the same path (`audio_studio/<id>/<kind>.<ext>`), so `cfg.image_path` / `audio_path` doesn't change between picks. Without `_uploadDirty`, the SAVE button stays grey after the second image upload. The flag is set on every upload and cleared in `_save()`.
+
+13. **Vue-compat: editor patches `app.loadGraphData` AND `app.graph.configure`** while open (Pattern #6 in Vue Frontend Compatibility) — Ctrl+Z would otherwise tear down the workflow under the editor. `forceClose` restores both. Plus `node.onRemoved` resurrection-close safety net. Plus we cache `node.onConnectionsChange` to react to upstream wire/disconnect mid-edit (re-resolves the affected source) and restore the original handler on close.
+
+14. **Window-level scrub listeners (`mousemove` / `mouseup`) must be cached on the editor instance and detached in `forceClose`** — see `_detachTransportListeners` in `transport.mjs`. Without detach, the closure keeps the editor alive after close (memory leak + stale references on the next open). Same applies to debounced timers (`_recomputeTimer`, `_snapTimer`) — `forceClose` clears both.
+
+15. **Inline-upload wire disconnects are queued, not immediate — committed on Save, discarded on Cancel.** When the user uploads an image / audio inside the editor, the upstream wire is NOT torn down at upload time. Instead `_queueWireDisconnect(name)` records the input on `editor._pendingDisconnects`, and `cfg.<src>_force_inline = true` keeps the inline preview winning over the still-attached upstream during the session. `_save()` calls `_disconnectUpstreamInput(name)` for each queued entry before serializing. If the user picks Discard from the close prompt, `forceClose()` runs without `_save()` and the queued set is garbage-collected with the editor — the graph wire stays intact. The previous "disconnect immediately on upload" design left the user with a permanently disconnected wire whenever they uploaded by accident and discarded; that's the bug this pattern fixes. If you add a new inline-upload path, route through `_queueWireDisconnect` (not `_disconnectUpstreamInput`) and set `force_inline = true` so the in-session preview is correct.
+
 ### Note LinuxTechLab Patterns (do not regress)
 
 These patterns were hard-won during Note LinuxTechLab development. Regressing any of them reintroduces specific bugs, some silent.
@@ -354,10 +426,10 @@ These patterns were hard-won during Note LinuxTechLab development. Regressing an
 
 28. **`<a>` clicks inside the edit area must be `preventDefault`ed** — the browser follows `<a href>` on any click inside a contenteditable, so clicking on an inserted Download / View Page / Read More / YouTube / Discord pill (or any plain link) to reposition the caret instead opens the URL in a new tab. `core.mjs` `open()` installs `editArea.addEventListener("click", fn, true)` using capture-phase + `e.target.closest("a") ? e.preventDefault() : …` so caret positioning works but navigation doesn't fire. Without this, users cannot reliably click into a pill to delete or re-edit it (the pencil handles the re-edit path, but simple caret positioning / backspace-through-pill doesn't work). Do NOT reach for `pointer-events: none` on pills — that also blocks the pencil hover delegation.
 
-29. **Inline icons render via `<span data-ic="<slug>" class="pix-note-ic" style="color:...">` with per-icon mask-image rules dynamically injected at editor open** — icons are a THREE-file contract: `server_routes.py` enumerates `assets/icons/note/*.svg` and returns `{id, label, url}` via `/pixaroma/api/note/icons/list`; `js/note/icons.mjs` caches the list at module scope and injects one `.pix-note-ic[data-ic="<id>"] { mask-image: url(...) }` rule per icon into a single `<style id="pix-note-icon-css">` at `<head>`; `js/note/sanitize.mjs` allows `pix-note-ic` class + `data-ic` attribute validated against `/^[A-Za-z0-9_-]{1,64}$/`. Any of those three going out of sync with the others breaks the feature silently. Slug case is preserved (CLIP / GGUF / LORA / VAE are intentional acronym filenames). Missing per-icon rule renders the span as a solid 1.2em colored rectangle — deliberately visible so the user notices a broken icon rather than an invisible gap. Color defaults to `#f66744`, lives as inline `style="color:..."`, is recolored by the existing text-color picker via standard `execCommand("foreColor")`. No pencil — delete + re-insert. The picker popup (`.pix-note-iconpop`) must be registered in BOTH `hasModal` selectors in `core.mjs` (Escape handler AND overlay mousedown) per Pattern #27, or clicking outside the popup silently closes the editor. `_insertInlineIcon` in `icons.mjs` deliberately bypasses `insertAtSavedRange` (blocks.mjs) to avoid a circular import; it does its own `execCommand("insertHTML")` + `_restageColors()` call so surrounding text color stays sticky (Pattern #25). If you add a NEW inline-marker class (different kind of inline element), follow this pattern: base class for layout + data-attr for identity + dynamically injected per-value CSS rule — NOT one class per variant (unmanageable with drop-and-discover libraries).
+29. **Inline icons render via `<span data-ic="<slug>" class="pix-note-ic" style="color:...">` with per-icon mask-image rules dynamically injected at editor open** — icons are a THREE-file contract: `server_routes.py` enumerates `assets/icons/note/*.svg` and returns `{id, label, url}` via `/linuxtechlab/api/note/icons/list`; `js/note/icons.mjs` caches the list at module scope and injects one `.pix-note-ic[data-ic="<id>"] { mask-image: url(...) }` rule per icon into a single `<style id="pix-note-icon-css">` at `<head>`; `js/note/sanitize.mjs` allows `pix-note-ic` class + `data-ic` attribute validated against `/^[A-Za-z0-9_-]{1,64}$/`. Any of those three going out of sync with the others breaks the feature silently. Slug case is preserved (CLIP / GGUF / LORA / VAE are intentional acronym filenames). Missing per-icon rule renders the span as a solid 1.2em colored rectangle — deliberately visible so the user notices a broken icon rather than an invisible gap. Color defaults to `#f66744`, lives as inline `style="color:..."`, is recolored by the existing text-color picker via standard `execCommand("foreColor")`. No pencil — delete + re-insert. The picker popup (`.pix-note-iconpop`) must be registered in BOTH `hasModal` selectors in `core.mjs` (Escape handler AND overlay mousedown) per Pattern #27, or clicking outside the popup silently closes the editor. `_insertInlineIcon` in `icons.mjs` deliberately bypasses `insertAtSavedRange` (blocks.mjs) to avoid a circular import; it does its own `execCommand("insertHTML")` + `_restageColors()` call so surrounding text color stays sticky (Pattern #25). If you add a NEW inline-marker class (different kind of inline element), follow this pattern: base class for layout + data-attr for identity + dynamically injected per-value CSS rule — NOT one class per variant (unmanageable with drop-and-discover libraries).
 
 ### Security Patterns (do not remove)
-- `_safe_path()` in `server_routes.py` — validates all file paths stay within `PIXAROMA_INPUT_ROOT`
+- `_safe_path()` in `server_routes.py` — validates all file paths stay within `LINUXTECHLAB_INPUT_ROOT`
 - IDs validated against `^[a-zA-Z0-9_\-]+$` regex (max 64 chars)
 - Base64 payloads capped at 50 MB
 - Note sanitizer (`js/note/sanitize.mjs`) — allowlist-based. Anything user-reachable (link insert, code-view HTML edit, paste) must round-trip through `sanitize(html)` before being written to the DOM or saved. Class allowlist covers only LinuxTechLab-specific classes; style allowlist covers only `color`, `background-color`, `text-align`; href allowlist is `http:`, `https:`, `mailto:`.
@@ -371,10 +443,10 @@ restrictive proxy. Three.js is now vendored inside the plugin.
   touches (controls, postprocessing, loaders, utils, geometries). Each jsm addon
   only imports `../../../three.mjs`, so copying the esm.sh "es2022" build
   preserves all relative resolution with zero rewrites.
-- **Served at**: `/pixaroma/vendor/{tail}` — route in `server_routes.py`. Accepts
+- **Served at**: `/linuxtechlab/vendor/{tail}` — route in `server_routes.py`. Accepts
   arbitrary depth, blocks `..` traversal and any chars outside `[A-Za-z0-9_\-./]`,
-  realpath-checks the result stays under `PIXAROMA_VENDOR_DIR`.
-- **Entry point**: `THREE_VENDOR = "/pixaroma/vendor/three"` exported from
+  realpath-checks the result stays under `LINUXTECHLAB_VENDOR_DIR`.
+- **Entry point**: `THREE_VENDOR = "/linuxtechlab/vendor/three"` exported from
   `js/3d/core.mjs`. All dynamic `import()` calls in `core.mjs`, `importer.mjs`,
   and `shapes.mjs` go through it.
 - **Upgrading three.js**: re-fetch `https://esm.sh/three@<VERSION>/es2022/*` for
@@ -433,14 +505,24 @@ Files are named by concern. Match the task to the file:
 | Change what HTML/attrs/classes are allowed in a note | `js/note/sanitize.mjs` (allowlists) |
 | Change how a note renders on canvas or node colour behaviour | `js/note/render.mjs` (`renderContent`) |
 | Change Note default colour / size / placeholder | `js/note/index.js` DEFAULT_CFG + `nodes/node_note.py` widget default (keep in sync) |
-| Add / manage inline note icons (SVG library) | Drop SVGs into `assets/icons/note/`. Label derivation + list endpoint live in `server_routes.py`'s `/pixaroma/api/note/icons/list` route, mirrored in `js/note/icons.mjs::deriveLabel`. Both must stay in sync if you change the rules. |
+| Add / manage inline note icons (SVG library) | Drop SVGs into `assets/icons/note/`. Label derivation + list endpoint live in `server_routes.py`'s `/linuxtechlab/api/note/icons/list` route, mirrored in `js/note/icons.mjs::deriveLabel`. Both must stay in sync if you change the rules. |
 | Change inline-icon rendering (size / alignment / color model) | `js/note/css.mjs` base `.pix-note-ic` rule + per-icon rules dynamically injected by `js/note/icons.mjs::injectIconCSS`. Picker popup styles: `.pix-note-iconpop` family in `css.mjs`. |
 | Add backend route | `server_routes.py` |
 | Add a new Python node | `nodes/node_<name>.py` |
+| AudioReact LinuxTechLab — change motion mode or overlay effect | `nodes/_audio_react_engine.py` (engine — all motion functions, overlays, audio helpers `bandpass_fft` / `audio_envelope` / `onset_track`, `process_aspect`, `Params` dataclass, `MOTION_MODES` / `OVERLAYS` registries, `generate_video()`). NEVER inline math into `node_audio_studio.py`; divergence breaks parity. Update `docs/audio-react-math.md` first, then engine, then `js/audio_studio/shaders.mjs` (GLSL mirror), then re-run `scripts/audio_parity_check.py --regenerate` and the browser parity harness. |
+| AudioReact LinuxTechLab — change effect math | DO NOT change in `node_audio_studio.py`. Update `nodes/_audio_react_engine.py` only. Mirror the change to `js/audio_studio/shaders.mjs` (GLSL). Update `docs/audio-react-math.md` (single source of truth). Re-run the parity scripts. |
+| AudioReact LinuxTechLab — editor UI / sidebar | `js/audio_studio/ui.mjs` (controls / tabs) + `js/audio_studio/core.mjs` (open/close/save/discard, source resolution, undo, header pills). |
+| AudioReact LinuxTechLab — transport / playback | `js/audio_studio/transport.mjs` (play / pause / scrub / sparkline / Web Audio sync). |
+| AudioReact LinuxTechLab — WebGL pipeline | `js/audio_studio/render.mjs` (orchestration: framebuffer setup, motion + overlay passes, uniform binding) + `js/audio_studio/shaders.mjs` (per-mode GLSL). Reload page (Ctrl+F5) after shader edits — module cache is sticky. |
+| AudioReact LinuxTechLab — Python entry point | `nodes/node_audio_studio.py` (thin wrapper — `optional` image/audio inputs + `hidden` studio_json; engine math lives in `nodes/_audio_react_engine.py`; `_migrate_cfg` for forward-compatible schema bumps). |
+| AudioReact LinuxTechLab — upload route | `server_routes.py` `/linuxtechlab/api/audio_studio/upload`. Image: PNG / JPG / JPEG / WebP. Audio: WAV only (browser converts MP3 / OGG / etc. via `decodeAudio` + `encodeWav` in `js/audio_studio/audio_analysis.mjs` before upload — keeps Python dep-free). 50MB per file, 100MB combined per node dir. |
+| AudioReact LinuxTechLab — config schema | `js/audio_studio/index.js` `DEFAULT_CFG` MUST stay in sync with `Params` defaults in `nodes/_audio_react_engine.py` (AudioReact Pattern #1). `nodes/node_audio_studio.py` `_migrate_cfg` handles version bumps. |
+| Save Mp4 LinuxTechLab — change widgets / encoder flags / output naming | `nodes/node_save_mp4.py`. ffmpeg binary resolved via `_resolve_ffmpeg` (imageio-ffmpeg first, ffmpeg on PATH fallback, clear install hint on failure). Frames piped to ffmpeg's stdin as raw rgb24 (no temp PNGs). Audio (optional) is written to a temp WAV via `_write_wav_pcm16` (stdlib `wave` + numpy, NO torchaudio dep) and passed as a second `-i` input so muxing is one ffmpeg call. Stderr drained in a daemon thread to avoid Windows pipe-buffer deadlock. `trim_to_audio` adds `-shortest` only when audio is present. Output naming via `folder_paths.get_save_image_path` so it auto-increments. `OUTPUT_NODE = True` (terminal). Encoder defaults are baked into class attrs `_CRF` (19) + `_PIX_FMT` (yuv420p) — promote them back to INPUT_TYPES if a workflow needs control. Returns `{"ui": {"images": [...], "linuxtechlab_videos": [...]}}`; the `linuxtechlab_videos` key is consumed by `js/save_mp4/index.js` to render the in-node `<video>` preview. |
+| Save Mp4 LinuxTechLab — in-node video preview | `js/save_mp4/index.js`. Single index.js entry. On `nodeCreated` adds a DOM widget containing a `<video>` element + a placeholder div, both attached via `addDOMWidget(name, type, element, {serialize: false, getMinHeight: () => 180})`. Subscribes to `api.addEventListener("executed", ...)` and looks for `detail.output.linuxtechlab_videos` from our Python node — when found, sets the `<video>.src` to `/view?filename=...&subfolder=...&type=output&t=<timestamp>` (cache-busted) and toggles placeholder off. Node id resolved with both string and parseInt fallbacks for cross-version compat. |
 | Fix composer blend mode save/restore/execute | `js/composer/interaction.mjs` (save), `render.mjs` (restore), `ui.mjs` (dropdown sync), `nodes/node_composition.py` `_blend_over()` |
-| Paint AI Background Removal panel | `js/paint/core.mjs` `_buildBgRemovalPanel` + `_removeBgFromActiveLayer` (button gated on `ly.sourceKind === "image"`, set by the `onAddImage` handler and serialized as `source_kind` in the layer project JSON). Reuses the `/pixaroma/remove_bg` backend route via `PaintAPI.removeBg`. |
+| Paint AI Background Removal panel | `js/paint/core.mjs` `_buildBgRemovalPanel` + `_removeBgFromActiveLayer` (button gated on `ly.sourceKind === "image"`, set by the `onAddImage` handler and serialized as `source_kind` in the layer project JSON). Reuses the `/linuxtechlab/remove_bg` backend route via `PaintAPI.removeBg`. |
 | Preview Image LinuxTechLab — change button layout / geometry / colors | `js/preview/index.js` constants at the top (`BTN_H`, `BTN_GAP`, `MIN_W`, `MIN_H`, `DEFAULT_W`, `DEFAULT_H`, `COLOR_ACTIVE_*` / `COLOR_DISABLED_*`). Button rects computed in `computeButtonRects`, painted in `paintBtn`. Buttons live as an `addCustomWidget` (so they reserve vertical space above the image) — don't switch back to `onDrawForeground` overlay; it collides with ComfyUI's native preview + dimension label. |
-| Preview Image LinuxTechLab — change save flow / routes | Backend: `nodes/node_preview.py` (tensor → temp PNG for preview display) + `server_routes.py` helpers `_embed_workflow_metadata`, `/pixaroma/api/preview/save`, `/pixaroma/api/preview/prepare`. Frontend: `js/preview/index.js` `saveToOutput` / `saveToDisk`. Both POST a dataURL + the workflow/prompt from `app.graphToPrompt()`. Metadata embedding lives in Python only (single source of truth). |
+| Preview Image LinuxTechLab — change save flow / routes | Backend: `nodes/node_preview.py` (tensor → temp PNG for preview display) + `server_routes.py` helpers `_embed_workflow_metadata`, `/linuxtechlab/api/preview/save`, `/linuxtechlab/api/preview/prepare`. Frontend: `js/preview/index.js` `saveToOutput` / `saveToDisk`. Both POST a dataURL + the workflow/prompt from `app.graphToPrompt()`. Metadata embedding lives in Python only (single source of truth). |
 
 ### 3. When adding a new method to an editor class
 - Add it to the most relevant existing `.mjs` file by concern (tools, events, render, etc.)
