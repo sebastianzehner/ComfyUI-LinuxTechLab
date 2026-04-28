@@ -1,13 +1,13 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with code in this repository.
+Detailed patterns for specific editors live in subdirectory CLAUDE.md files.
 
 ## Project Overview
-ComfyUI-LinuxTechLab is a custom node plugin for ComfyUI that adds interactive visual editors (3D Builder, Paint Studio, Image Composer, Image Crop, Note LinuxTechLab — a rich-text annotation node, Preview Image LinuxTechLab — an in-node image previewer with save-to-disk / save-to-output buttons) directly inside ComfyUI workflows. It has zero core dependencies — PIL and PyTorch come from ComfyUI's environment. All nodes share the `LinuxTechLab` menu category.
+ComfyUI-LinuxTechLab is a custom node plugin for ComfyUI that adds interactive visual editors (3D Builder, Paint Studio, Image Composer, Image Crop, Note LinuxTechLab, Preview Image LinuxTechLab, AudioReact LinuxTechLab, Save Mp4 LinuxTechLab) directly inside ComfyUI workflows. Zero core dependencies — PIL and PyTorch come from ComfyUI's environment. All nodes share the `LinuxTechLab` menu category.
 
 ## Development Setup
-No build step. Install by placing this folder in `ComfyUI/custom_nodes/`. ComfyUI auto-imports `__init__.py` on startup.
-No test suite or linting configuration exists in this project.
+No build step. Install by placing this folder in `ComfyUI/custom_nodes/`. ComfyUI auto-imports `__init__.py` on startup. No test suite or linting configuration exists.
 
 ## Architecture
 
@@ -17,9 +17,7 @@ No test suite or linting configuration exists in this project.
 - `nodes/*.py` — Individual node implementations (one per editor, all under 100 lines)
 
 ### Node → ComfyUI Integration
-Each node file exports `NODE_CLASS_MAPPINGS` and `NODE_DISPLAY_NAME_MAPPINGS`. `__init__.py` merges them all.
-
-Nodes are `OUTPUT_NODE = True` and receive editor state as a serialized JSON string inside a widget dict (`kwargs.get("SomeWidget")`). They load pre-rendered images from disk (written by the browser) and return PyTorch tensors.
+Each node file exports `NODE_CLASS_MAPPINGS` and `NODE_DISPLAY_NAME_MAPPINGS`. `__init__.py` merges them all. Nodes are `OUTPUT_NODE = True` and receive editor state as a serialized JSON string. They load pre-rendered images from disk and return PyTorch tensors.
 
 ### Frontend → Backend Data Flow
 1. User edits in browser (WebGL / Canvas)
@@ -35,11 +33,13 @@ Nodes are `OUTPUT_NODE = True` and receive editor state as a serialized JSON str
 | `/linuxtechlab/api/3d/save` | Save 3D render |
 | `/linuxtechlab/api/3d/bg_upload` | Upload 3D background |
 | `/linuxtechlab/api/crop/save` | Save crop result |
-| `/linuxtechlab/api/preview/save` | Preview Image LinuxTechLab — write PNG with workflow metadata to ComfyUI `output/` with auto-increment counter |
-| `/linuxtechlab/api/preview/prepare` | Preview Image LinuxTechLab — return in-memory PNG bytes with workflow metadata embedded (for Save-to-Disk via File System Access API) |
+| `/linuxtechlab/api/preview/save` | Write PNG with workflow metadata to output/ |
+| `/linuxtechlab/api/preview/prepare` | Return in-memory PNG bytes for Save-to-Disk |
+| `/linuxtechlab/api/audio_studio/upload` | Upload image/audio for AudioReact |
 | `/linuxtechlab/remove_bg` | AI background removal (rembg) |
 | `/linuxtechlab/assets/{filename}` | Serve logo/assets |
-| `/linuxtechlab/api/note/icons/list` | List inline-icon SVGs in `assets/icons/note/` |
+| `/linuxtechlab/api/note/icons/list` | List inline-icon SVGs |
+| `/linuxtechlab/vendor/{tail}` | Serve vendored Three.js |
 
 ### Frontend Directory Structure
 The frontend is organized into **directory-per-editor** modules under `js/`. Each directory is self-contained with files split by concern (~300 lines max per file).
@@ -172,302 +172,28 @@ js/
     └── index.js
 ```
 
-### Mixin Pattern (how editor classes are split)
-Editor classes (PaintStudio, LinuxTechLab3DEditor, LinuxTechLabEditor, CropEditor) use a **prototype mixin pattern** to split methods across files:
+### Mixin Pattern
+Editor classes use a **prototype mixin pattern** to split methods across files:
 - `core.mjs` defines the class with constructor and UI building
 - Other `.mjs` files add methods: `ClassName.prototype.methodName = function() { ... };`
-- `index.js` imports all mixin files as **side-effect imports** before using the class
-- All methods use `this` — they have full access to the instance
+- `index.js` imports all mixin files as side-effect imports before using the class
 
 ### Import Conventions
 - Editors import framework from `../framework/index.mjs`
 - Editors import shared utils from `../shared/index.mjs`
-- ComfyUI app is imported as `import { app } from "/scripts/app.js";` (absolute) or relative `../../../../scripts/app.js`
-- Only `index.js` entry points use `.js` extension; all other modules use `.mjs`
+- ComfyUI app: `import { app } from "/scripts/app.js";`
+- Only `index.js` entry points use `.js`; all other modules use `.mjs`
 
-### Editor Isolation
-Each editor directory is a self-contained sub-project. When working on a specific editor, **only read and modify files in that editor's directory** (e.g. `js/paint/*.mjs` and `nodes/node_paint.py`). The only shared dependencies across all editors are `js/framework/` and `js/shared/` — be cautious modifying these as changes affect every editor.
-
-### ComfyUI Vue Frontend Compatibility
-ComfyUI's new Vue 3 frontend introduces several behavioral differences from the legacy LiteGraph frontend. These patterns were discovered during debugging and must be followed:
-
-1. **`onDrawForeground` does not fire** — The Vue frontend does not call LiteGraph rendering hooks. Use `setInterval` polling instead for detecting upstream changes (see `js/composer/index.js` for the polling pattern).
-
-2. **Editor overlay removal** — Vue may remove editor overlay elements from the DOM without triggering close callbacks. Always use the `isEditorOpen(node)` pattern that checks `overlay.isConnected` rather than trusting `node._linuxtechlabEditor` references:
-   ```js
-   function isEditorOpen(node) {
-     if (!node._linuxtechlabEditor) return false;
-     const overlay = node._linuxtechlabEditor.overlay;
-     if (!overlay || !overlay.isConnected) {
-       node._linuxtechlabEditor = null;
-       return false;
-     }
-     return true;
-   }
-   ```
-
-3. **`graph.links` may be a Map** — In newer ComfyUI versions, `graph.links` can be a `Map` instead of a plain object. Always try both access patterns:
-   ```js
-   let link = graph.links?.[linkId];
-   if (!link && typeof graph.links?.get === "function") link = graph.links.get(linkId);
-   ```
-
-4. **Execution detection** — Use ComfyUI API events (`execution_start`, `executing` with `null` detail = finished) imported from `/scripts/api.js`. These are the reliable way to detect workflow execution completion.
-
-5. **DOM widget may be nulled while editor is open** — Vue can tear down a node's DOM widget (added via `node.addDOMWidget`) while the fullscreen editor overlay is still showing. If the editor's `onSave` callback caches a `widget` reference in a closure, that reference becomes null and `widget.value = ...` throws. Guard with null-check + re-lookup from `node.widgets`:
-   ```js
-   editor.onSave = (jsonStr, dataURL) => {
-     sceneJson = jsonStr;
-     const w = widget || node.widgets?.find((x) => x.name === "SceneWidget");
-     if (w) w.value = { scene_json: jsonStr };
-   };
-   ```
-
-6. **Ctrl+Z escapes editor overlays to the graph** — The Vue frontend's undo is driven by `changeTracker.undo` (in the workflow store), which calls `app.loadGraphData` → `graph.configure` → `graph.clear`. `window.addEventListener("keydown", fn, true)` + `stopImmediatePropagation` does NOT preempt it because `changeTracker.undo` is scheduled via `requestAnimationFrame` from a different code path, and patching `app.graph.undo` / `Comfy.Undo` command doesn't cover it either. The only reliable block is patching the bottleneck functions while the editor is open, then restoring them on cleanup:
-   ```js
-   this._savedLoadGraphData = app.loadGraphData.bind(app);
-   app.loadGraphData = () => Promise.resolve();
-   this._savedGraphConfigure = app.graph.configure.bind(app.graph);
-   app.graph.configure = () => {};
-   // On cleanup: app.loadGraphData = this._savedLoadGraphData; etc.
-   ```
-   See `js/note/core.mjs` for the full pattern (also neuters `graph.undo/redo`, `Comfy.Undo`/`Comfy.Redo` commands, plus a `node.onRemoved` resurrection-close safety net). Always debug this class of bug with a stack trace from `onRemoved` — it will show you the exact path that needs wrapping.
-
-7. **`installFocusTrap` and contenteditable don't mix** — Paint/Composer/3D call `installFocusTrap(overlay)` so their hidden textarea absorbs focus for keyboard-shortcut isolation. For rich-text editors that use a contenteditable (Note LinuxTechLab), do NOT call `installFocusTrap`: its `mouseup` handler refocuses the hidden textarea whenever the event target isn't INPUT/TEXTAREA/SELECT, which steals focus on every toolbar-button click (user has to re-click into the editor to type) and wipes the text selection when a drag-select ends outside the panel. Use the `loadGraphData` / `graph.configure` neutering pattern from point 6 instead.
-
-8. **`nodeCreated` fires BEFORE `configure()` — defer initial DOM widget population via `queueMicrotask`** — In Vue's new frontend, the extension-level `nodeCreated(node)` hook fires DURING node construction, BEFORE ComfyUI calls `configure(data)` to restore saved widget values. If you render the DOM widget contents synchronously inside `nodeCreated`, you render from the Python default and then flash to the saved state when `onConfigure`'s re-render hook fires milliseconds later. The fix: create an empty `root` div, call `addDOMWidget(..., root, ...)`, wire event listeners, cache `node._xxxRoot = root`, and **defer the initial populate to `queueMicrotask(() => { ... })`** so the restored widget value is visible by the time we read it. Keep the `onConfigure` re-render for the "open a different workflow into an already-constructed node" case. Pattern applies to any hidden-JSON-widget node (Resolution LinuxTechLab is the reference implementation; Note LinuxTechLab's timing happens to mask the flash because its initial render is visually lighter). Full diagnostic path: add `console.log` of the widget value in both `nodeCreated` setup and `onConfigure` — if the first shows defaults and the second shows the saved value, you have this bug.
-
-9. **For hidden state, prefer Python `hidden` inputs + `node.properties` + `graphToPrompt` over hidden STRING widgets — eliminates both the input dot and the persistence fragility.** Vue auto-exposes primitive-type *required* inputs (STRING/INT/FLOAT) as convertible input slots that flash a grey dot on hover. Two ways to suppress the dot:
-   - **Wrong**: `node.removeInput(idx)` on the auto-created slot. Causes saved JSON to have `"inputs": []`, and on workflow RELOAD Vue fails to reconnect the saved `widgets_values[0]` to the hidden STRING widget — silent revert to defaults on every workflow open.
-   - **Right (Resolution LinuxTechLab pattern)**: Define the input as `"hidden"` (not `"required"`) in Python — no widget, no slot, no dot. Store state on `node.properties[YOUR_KEY]` (LiteGraph serializes `properties` natively in workflow JSON). At extension scope, monkey-patch `app.graphToPrompt` to inject the saved state into each node's `inputs.YourHiddenName` right before submission. Read state via `node.properties[YOUR_KEY]` in setup; include a one-time migration that scans `node.widgets_values` for the old JSON format if you're upgrading from a widget-based architecture.
-   - **Acceptable (Note LinuxTechLab pattern)**: keep the required STRING widget + `hideJsonWidget`. The hover dot remains but persistence is rock-solid via the standard widget value flow. Use this when no extra prompt-time injection is desired.
+### Offline-first: Vendored Three.js
+Three.js is vendored at `assets/vendor/three/`. Served at `/linuxtechlab/vendor/{tail}`. Do NOT reintroduce esm.sh/unpkg/jsdelivr imports.
 
 ### ComfyUI Settings Integration
-LinuxTechLab registers user-facing settings in ComfyUI's Settings panel using the `settings` array inside `app.registerExtension()`. Settings appear under the **LinuxTechLab** category.
+Settings registered via `settings` array in `app.registerExtension()`. All use `["LinuxTechLab", "..."]` category prefix. Read via `app.ui.settings.getSettingValue("LinuxTechLab.SomeEditor.SettingName")`.
 
-**How to add a new setting:**
-1. Add a setting object to the `settings` array in the relevant `index.js` entry point:
-   ```js
-   app.registerExtension({
-     name: "LinuxTechLab.SomeEditor",
-     settings: [
-       {
-         id: "LinuxTechLab.SomeEditor.SettingName",
-         name: "Human-readable label",
-         type: "combo",              // types: boolean, combo, slider, number, text, color
-         defaultValue: "Option A",
-         options: ["Option A", "Option B"],  // combo only
-         tooltip: "Shown on hover",
-         category: ["LinuxTechLab", "Sub-category"],
-       },
-     ],
-     // ...
-   });
-   ```
-2. Read the value at runtime: `app.ui.settings.getSettingValue("LinuxTechLab.SomeEditor.SettingName")`
-3. **No custom icons** — categories only support text/emoji, not SVG or images.
-4. All LinuxTechLab settings use the `["LinuxTechLab", "..."]` category prefix for consistency.
-
-**Current settings:**
-| Setting ID | Type | Location | Purpose |
-|------------|------|----------|---------|
-| `LinuxTechLab.Compare.DefaultMode` | combo | `js/compare/index.js` | Default view mode for new Compare nodes |
-
-### Transparent Background Save-to-Disk
-Paint, Composer, and 3D Builder each have a "Transparent BG (Save to Disk)" checkbox next to their BG color picker. It only affects **Save to Disk** — the workflow "Save" path is untouched so existing workflows stay compatible (Python nodes still output RGB tensors).
-
-- Paint: checkbox is inside `createCanvasToolbar` (`js/framework/canvas.mjs`), state on `this._canvasToolbar.transparentBg`. When saving, `js/paint/ui.mjs` `_save()` builds a second canvas without the `fillRect` for the disk PNG.
-- Composer: checkbox in `js/composer/ui.mjs` (Canvas Settings panel), state on `this._transparentBg`. `_drawImpl` in `render.mjs` checks `this._transparentExport` flag to skip bg fill; save handler in `interaction.mjs` toggles the flag and re-renders for the disk PNG.
-- 3D Builder: checkbox in `js/3d/core.mjs` (Canvas Settings panel), state on `this._transparentBg`. `persistence.mjs` `_save()` does a second Three.js render with `scene.background = null` + `renderer.setClearColor(0x000000, 0)` (renderer already has `alpha: true`).
-
-### Image Composer Patterns (do not regress)
-
-1. **Per-layer blend mode has FOUR touch points that must stay in sync** — (a) in-editor canvas draw (`js/composer/render.mjs` — reads `layer.blendMode`, maps via `BLEND_MAP` to `globalCompositeOperation`), (b) project JSON save (`js/composer/interaction.mjs` `saveBtn` click handler — writes `blendMode` onto `layerEntry` when not "Normal"), (c) the Python executor (`nodes/node_composition.py` `_blend_over()` — W3C Compositing L1 with proper Porter-Duff alpha), AND (d) the **client-side mini-preview recomposite** (`js/composer/index.js` `rebuildPreview` → `drawLayer`). The recomposite runs 300 ms after workflow execution in the fast path (no placeholders/rembg/masks) and would otherwise overwrite the correct save-time preview with a Normal-only render. If any of these four is missing, blend modes silently revert to Normal on some path. The Python path is only taken when a layer has placeholder / auto-rembg / eraser-mask; otherwise the fast path loads the pre-rendered composite PNG which already has blend baked in.
-
-2. **Active-layer blend dropdown needs explicit sync** — `updateActiveLayerUI()` in `js/composer/ui.mjs` must call `core._layerPanel.setBlend(layer.blendMode || "Normal")` whenever a layer becomes active. Without this, `layer.blendMode` stays correct but the `<select>` UI reverts to its default option and misleads the user.
-
-3. **Restore path has THREE layer-construction sites** — `attemptRestore()` in `render.mjs` builds layer objects in three places: `isPlaceholder` fast path, `img.onload` success, and `img.onerror` missing-image fallback. Any new serialized field must be copied from `mLayer` in all three, or it gets silently dropped for certain layer types.
-
-### 3D Builder Patterns (do not regress)
-
-These patterns were hard-won during 3D Builder v2 development. Regressing any of them reintroduces specific bugs.
-
-1. **Use `Box3.setFromObject(o, true)` — ALWAYS pass `precise=true`** for drop-to-floor, auto-frame, and any bbox measurement on a rotated object. Without `precise=true`, Three.js returns a LOOSE AABB (8 corners of the local bbox transformed to world) that can be √2× larger along Y than the actual silhouette. That caused drop-to-floor to undershoot and leave rotated objects floating.
-
-2. **Composites must have `skipPivotWrap: true`** — they're built with pivot at the base-center origin already. Re-centering via `wrapImportPivot` drifts the pivot every rebuild when bumps/arms are asymmetric (e.g. tree trunk drifting when bumps change).
-
-3. **Primitive restore must merge `geoParams` over shape defaults** — `{ ...getShapeDefaults(type), ...savedGeoParams }`. Without the merge, v1 saves missing newer params (seed, smoothness, terrain expansion) deserialize with `undefined` and produce NaN geometry. User-saved keys always win. Same pattern for composites with `getCompositeDefaults`.
-
-4. **Composite restore is SYNCHRONOUS** — use the static `import { prepareImportedGroup } from "./importer.mjs"` at the top of `persistence.mjs` and `interaction.mjs`. The old dynamic `import()` + placeholder-sphere-swap pattern produced a visible sphere flicker on every undo/load. Imports/bunnies still use async (they need network fetch), but composites build from code synchronously.
-
-5. **Undo preserves async groups (import/bunny) by id** — `_applySnap` in `interaction.mjs` must match `userData.id` against the target snapshot and REUSE existing imports/bunnies instead of disposing + refetching. Without this, every undo triggers a 2-3s async re-fetch of the GLB/OBJ + textures.
-
-6. **Shape panel sliders debounce on heavy shapes** — entries in `SHAPES` (shapes.mjs) with `live: false` (terrain, blob, rock, teapot) debounce slider rebuilds. Live sliders on 128²-vertex planes were freezing the browser.
-
-7. **Seam welding must be normal-aware** — `weldSeamByPosition(geo, tolerance, normalThreshold)` in shapes.mjs clusters by NORMAL direction, not just position. A naive position-only weld merges cylinder-top corner pairs that should stay as hard edges. Threshold 0.5 preserves hard edges; on-axis clusters (fans) are detected separately and all normals averaged.
-
-8. **Thickness for vessels uses `thickVesselProfile(outer, wall, baseT)`** — takes an outer silhouette array, returns a closed profile with inner wall offset by `wall` and interior floor at `baseT`. Goblet is a special case (solid foot+stem, hollow cup) and writes its own closed profile manually.
-
-9. **Layer thumbnails use a secondary WebGLRenderer** — `_getThumbRenderer()` in `objects.mjs`. Must be disposed with `forceContextLoss()` in `onCleanup` or Chrome caps at ~16 contexts. Cache key includes type + colorHex + geoParams + scale + material mode. Cache invalidated in `_rebuildObjectGeometry` and `_rebuildCompositeGroup`.
-
-10. **Post-processing camera swap** — when `_setPerspective` toggles between perspective and orthographic, it must update `this._renderPass.camera` and `this._outlinePass.renderCamera`. The EffectComposer caches the camera at pass construction and silently renders with the old camera otherwise.
-
-11. **Keyboard shortcuts use `e.code`, not `e.key`** — `Digit1`, `Digit2`, `Numpad1` etc. This is layout-independent. `e.key` depends on the user's keyboard layout and breaks for non-QWERTY users.
-
-### AudioReact Engine Patterns (do not regress)
-
-1. **`slit_scan` is a per-row time-evolving sine wave, NOT a frame-buffer pull** — the spec at `docs/superpowers/specs/2026-04-27-audio-react-linuxtechlab-design.md` originally described slit_scan as pulling rows from past frames in a buffer (`num_frames × H × W × 3` memory). The implementation simplifies this to per-row vertical sine displacement at row-shifted phase, audio-modulated amplitude — visually the same kind of "time-displaced rows" effect at zero extra memory cost. If you ever switch to a real frame buffer, clamp lookback to ≤ 0.5s of frames or memory blows up at high fps / 4K.
-
-2. **`shake` motion mode caches dx/dy on `self`, must be cleared at the top of `generate()`** — the cache size depends on `total_frames`, which differs per audio length. `generate()` does `if hasattr(self, "_shake_dx_cache"): del ...` before computing the envelope. Without that, switching audio (different total_frames) reuses stale jitter and crashes on index OOB.
-
-3. **`audio_envelope`, `bandpass_fft`, `onset_track`, `process_aspect`, `Params`, all motion functions, all overlay functions live in `nodes/_audio_react_engine.py` — and ONLY there.** `node_audio_studio.py` is a thin wrapper that builds a `Params` and calls `engine.generate_video()`. Do NOT copy helpers into the node file — divergence breaks parity between the Python render and the editor preview (via `js/audio_studio/shaders.mjs`) and the regression goldens. The math is locked behind one file by design.
-
-4. **Print line uses ASCII `->`, not `→` (U+2192)** — Windows console default codec (cp1252) can't encode the arrow. Crashes the generate() call before frame 1.
-
-5. **Color shift / channel offset uses resolution-relative pixel counts, not hardcoded** — `glitch` overlay computes max_px = `int(onset_t * strength * 0.012 * min(H, W))` so a 720p clip and a 4K clip produce visually-equivalent glitch amplitudes. Same pattern in `ripple` (`A = 0.015 * 2.0` in normalized grid units, since grid spans `[-1, 1]`). Hardcoded pixel counts feel different at every resolution and break the "drop-in defaults" promise.
-
-6. **Overlay short-circuit at strength == 0 is mandatory for performance** — every overlay's first line is `if env_t <= 0.001 or strength <= 0: return frame`. Without the early-return, bloom (which does a Gaussian blur per frame) costs ~30% even at strength=0. The `generate()` loop also checks `if glitch_strength > 0.0:` etc. before calling. Both layers of guard are intentional.
-
-7. **No `edge_headroom` widget — deliberately omitted, do not add it back** — depth-based parallax nodes (which this project no longer ships) need headroom because depth × strong intensity can displace sample coords well beyond `[-1, 1]`. `audio_react`'s motion modes don't have that problem: `scale_pulse` and `zoom_punch` pull inward (zoom-in only, range stays inside `[-1, 1]`), and `shake` / `drift` / `rotate_pulse` / `ripple` / `swirl` / `slit_scan` excurse by at most ~6% — `padding_mode="border"` handles those invisibly. Headroom would just render extra pixels that get cropped, wasting compute. `_process_aspect()` is still called (defaults `headroom=1.0`) so the helper stays general-purpose, but no crop pass after the per-frame loop.
-
-### AudioReact Patterns (do not regress)
-
-These patterns were hard-won during AudioReact v1 development. Regressing any of them reintroduces specific bugs.
-
-1. **`DEFAULT_CFG` in `js/audio_studio/index.js` MUST stay in sync with `Params` defaults in `nodes/_audio_react_engine.py`.** ComfyUI doesn't pre-fill a hidden input's value; the JS extension is the source of truth for first-time-on-canvas defaults. If the two diverge, the editor opens with one set of defaults and the workflow runs with another. Same risk class as Note LinuxTechLab Pattern #3 — keep them in sync at the same commit.
-
-2. **Engine math lives in `nodes/_audio_react_engine.py` ONLY** — `node_audio_studio.py` is a thin wrapper that builds a `Params` and calls `generate_video()`. If you ever feel the urge to "just inline this one helper" in the node file, don't — every formula must travel through the engine.
-
-3. **Math doc (`docs/audio-react-math.md`) is the single source of truth for formulas.** When changing a formula: (1) update the doc first; (2) update the Python implementation in the engine; (3) update the matching GLSL shader in `js/audio_studio/shaders.mjs`; (4) run `scripts/audio_parity_check.py --regenerate` to refresh goldens; (5) run the browser parity harness manually (`assets/audio_studio_parity/index.html`) to confirm the WebGL side still matches. Skipping any step risks editor preview drifting from MP4 output.
-
-4. **Approximate-preview carve-outs are documented, not silent.** Math doc §9 lists `shake` and `bloom` explicitly. The browser harness exempts these from the ΔE check. If you add a new "the WebGL side can't bit-match this" effect, update §9 AND the harness — silently exempting tests has misled debugging in the past.
-
-5. **Audio is WAV-only on disk.** The browser converts MP3 / OGG / AAC / etc. via `decodeAudio` + `encodeWav` in `js/audio_studio/audio_analysis.mjs` BEFORE upload. Server only accepts `.wav` — keeps Python dependency-free (stdlib `wave` module). Don't add server-side ffmpeg / pydub / etc. to "support more formats." Adding a heavy dep ripple-effects through the project's "no extra deps" promise.
-
-6. **WebGL2 required, no fallback.** If `getContext("webgl2")` returns null, the editor shows a clear error to the user. Don't add WebGL1 fallback — none of the modern browsers we target lack WebGL2, and the fallback complexity buys nothing.
-
-7. **Pattern #9 persistence** (CLAUDE.md Vue Frontend Compatibility point #9) — `studio_json` is declared `hidden` in `INPUT_TYPES`, state lives on `node.properties.audioStudioState`, `app.graphToPrompt` hook in `js/audio_studio/index.js` injects it at submission. Same as Resolution LinuxTechLab. If the input ever shows up as a slot dot, Pattern #9 has been broken — likely by `removeInput()` or by re-declaring as `required STRING`.
-
-8. **`shake` motion shader uses a deterministic JS RNG (mulberry32-like hash seeded by frame index) — NOT a port of `torch.Generator(0)`.** Browser preview is approximate for shake. This is documented behavior — if you "fix" the shader to use Python's exact sequence, you'll discover torch's RNG cannot be reproduced cross-platform and break parity in a different way.
-
-9. **Audio analysis runs ONCE per audio load**, packing all 4 bands into one RGBA32F texture (R=full, G=bass, B=mids, A=treble). Toggling `audio_band` in the sidebar is a free uniform swap (`u_audio_band_idx`), not a recompute. Don't add a "recompute on band change" path — it slows the editor and adds latency to a click that should be instant.
-
-10. **`_onCfgChanged` only triggers `_recomputeAudio` when `fps` / `smoothing` / `loop_safe` actually changed**, AND the recompute is debounced 200ms. Cached as `_audioParamsKey`. Without this guard, dragging intensity / overlay sliders would re-run the 4-band FFT on every tick — the smoothing slider especially felt sticky before this was added.
-
-11. **`_setImage` MUST re-attach `this.canvas` to `canvasHost` if it's been disconnected** — `_showCanvasMessage` sets `canvasHost.textContent`, which removes the `<canvas>` from the DOM. Without the re-attach, picking an inline image after seeing the "upstream not ready" message renders to an orphaned canvas that's invisible until the editor is closed and re-opened.
-
-12. **`isDirty()` must OR a `_uploadDirty` flag, not just compare cfg JSON** — re-uploading a source replaces bytes at the same path (`audio_studio/<id>/<kind>.<ext>`), so `cfg.image_path` / `audio_path` doesn't change between picks. Without `_uploadDirty`, the SAVE button stays grey after the second image upload. The flag is set on every upload and cleared in `_save()`.
-
-13. **Vue-compat: editor patches `app.loadGraphData` AND `app.graph.configure`** while open (Pattern #6 in Vue Frontend Compatibility) — Ctrl+Z would otherwise tear down the workflow under the editor. `forceClose` restores both. Plus `node.onRemoved` resurrection-close safety net. Plus we cache `node.onConnectionsChange` to react to upstream wire/disconnect mid-edit (re-resolves the affected source) and restore the original handler on close.
-
-14. **Window-level scrub listeners (`mousemove` / `mouseup`) must be cached on the editor instance and detached in `forceClose`** — see `_detachTransportListeners` in `transport.mjs`. Without detach, the closure keeps the editor alive after close (memory leak + stale references on the next open). Same applies to debounced timers (`_recomputeTimer`, `_snapTimer`) — `forceClose` clears both.
-
-15. **Inline-upload wire disconnects are queued, not immediate — committed on Save, discarded on Cancel.** When the user uploads an image / audio inside the editor, the upstream wire is NOT torn down at upload time. Instead `_queueWireDisconnect(name)` records the input on `editor._pendingDisconnects`, and `cfg.<src>_force_inline = true` keeps the inline preview winning over the still-attached upstream during the session. `_save()` calls `_disconnectUpstreamInput(name)` for each queued entry before serializing. If the user picks Discard from the close prompt, `forceClose()` runs without `_save()` and the queued set is garbage-collected with the editor — the graph wire stays intact. The previous "disconnect immediately on upload" design left the user with a permanently disconnected wire whenever they uploaded by accident and discarded; that's the bug this pattern fixes. If you add a new inline-upload path, route through `_queueWireDisconnect` (not `_disconnectUpstreamInput`) and set `force_inline = true` so the in-session preview is correct.
-
-### Note LinuxTechLab Patterns (do not regress)
-
-These patterns were hard-won during Note LinuxTechLab development. Regressing any of them reintroduces specific bugs, some silent.
-
-1. **Sanitizer must UNWRAP on invalid href, not remove** — in `sanitize.mjs` `filterElement`, when `filterHref` returns null the old code called `el.remove()` which deleted the `<a>` *and* its child text. Users lost their typed content silently on save whenever a link had a bad URL (e.g. dialog default `https://` with no host). Unwrap the anchor instead, keep the inner text, recurse into children. Same policy as for unknown wrapper tags.
-
-2. **URL validation must fully parse, not just regex** — `/^https?:\/\//i.test(url)` accepts `"https://"` with no hostname. Use `new URL(url)` + `u.hostname` check so the dialog rejects what the sanitizer would later throw on. Shared `validateUrl()` in `blocks.mjs` returns `{ ok, message }` and is used by Button Design / YouTube / Discord; the link dialog in `toolbar.mjs` has the equivalent inline check.
-
-3. **Python widget default MUST stay in sync with JS DEFAULT_CFG** — `nodes/node_note.py` ships a JSON string `default` for the `note_json` widget. ComfyUI pre-fills this into the widget value BEFORE `nodeCreated` fires, so `parseCfg` merges it on top of the JS defaults and whatever the Python string contains wins. `backgroundColor` and `accentColor` must match between the two files. `parseCfg` also contains a migration that strips the old `backgroundColor:"transparent"` default when content is empty, so users who haven't restarted ComfyUI still get the current default.
-
-4. **Bg picker is a THREE-state override on node.color + node.bgcolor — do NOT go back to the old always-override flow** — `renderContent(node, bodyEl)` in `render.mjs` must respect `cfg.backgroundColor` having three different meanings, or it will clobber ComfyUI's native right-click Colors menu every time the user saves text edits (the original bug that forced this pattern to exist). States: (a) **undefined / key missing** → user has never touched the Bg picker; renderContent must LEAVE `node.color` / `node.bgcolor` alone so the native picker + LiteGraph theme defaults survive. (b) **null OR `"transparent"`** → user clicked Clear in the Bg picker; renderContent must null out `node.color` / `node.bgcolor` so our override reverts. (c) **hex string** → user picked via Bg picker; `node.bgcolor = hex` and `node.color = darken(hex, 0.3)` — the darkened title-bar color is REQUIRED so the title reads visually distinct against the body (same contrast the native Colors menu produces). `.pix-note-body` stays transparent so the frame color flows through as one surface. `node.setDirtyCanvas(true, true)` forces LiteGraph to repaint immediately. Bg picker Clear sets `cfg.backgroundColor = null`, NOT a hex — that's the signal the user explicitly reverted. `DEFAULT_CFG` in `index.js` omits the key entirely; the widget default JSON in `node_note.py` matches. `parseCfg` migrates legacy `"transparent"` / `"#111111"` values (both old widget defaults) to unset when the note has no content.
-
-5. **Ctrl+Z escape fix — patch `app.loadGraphData` AND `app.graph.configure`** — see Vue Frontend Compatibility point 6 above. Note LinuxTechLab is the canonical implementation; `core.mjs` `open()` saves the originals and restores in `_cleanup`. Also neuters `graph.undo`/`graph.redo`, `Comfy.Undo`/`Comfy.Redo` commands, and has a `node.onRemoved` resurrection-close safety net. Missing any of these leaves a path that deletes the note while the editor is open.
-
-6. **Do NOT call `installFocusTrap` with a contenteditable editor** — see Vue Frontend Compatibility point 7 above. The focus trap's mouseup handler steals focus and wipes text selection after drag-selects outside the panel.
-
-7. **Inline errors, not `alert()`, inside editor overlays** — `alert()` context-switches out of the editor, loses focus, and some browsers block it from inside modal overlays entirely. Both `makeDialog` and `makeButtonDesignDialog` in `blocks.mjs` have an inline `.pix-note-linkerr` row; callbacks receive a `ctx.showError(msg)` helper and return `false` to keep the dialog open.
-
-8. **Button pill output structure** — `renderButtonHTML(v)` in `blocks.mjs` wraps pill + folder hint in `<span class="pix-note-btnblock">`. Size hint goes *inside* the `<a>` as `<span class="pix-note-btnsize">` so the `::before` middle-dot separator is a CSS pseudo-element (backspace collapses cleanly). Folder hint goes *outside* the `<a>` as a sibling `<span class="pix-note-folderhint">` — it's a separate visual line with a `::before` folder-icon mask. All four classes (`pix-note-btnblock`, `pix-note-btnsize`, `pix-note-folderhint`, `pix-note-dl`/`vp`/`rm`) are allowlisted in `sanitize.mjs`; adding a new pill class requires adding it there.
-
-9. **Block-insert dialogs: capture the range BEFORE the modal opens** — focus moves to the dialog's first input, `window.getSelection()` loses its range. `saveRange(editArea)` snapshots the cloned range; `insertAtSavedRange` restores it and does the `execCommand("insertHTML", ...)`. Without this, Insert appears to do nothing (the HTML is inserted but nowhere visible).
-
-10. **Code block inserts by direct DOM manipulation + captures block refs BEFORE modal** — `execCommand("insertHTML")` after the code modal closes has unreliable range targeting (Chrome's `intersectsNode` sometimes misses the first block after focus changes). In `toolbar.mjs` the code-block handler grabs `startBlock` / `endBlock` element references from the pre-modal selection, replaces them directly with the new `<pre><code>` + trailing `<p>`, and places the caret in the trailing paragraph. Also: `_normalizeEditArea` wraps any loose text-node root children in `<p>` first, otherwise `findTopBlock` returns null for freshly-typed content on a brand-new note.
-
-11. **Manual undo history — browser native undo doesn't cover direct DOM mutations** — `core.mjs` maintains an innerHTML-snapshot stack (`_undo`, `_redo`) with debounced `_snapBefore`/`_snapAfter` wrappers. All direct-DOM operations (code-block insert, clear-format, list unwrap) must bracket themselves with snap calls. Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y keybindings in `_keyBlock` route through `doUndo`/`doRedo`.
-
-12. **Paste strips formatting + prevents ComfyUI image-drop escape** — window-capture `paste` and `drop`/`dragover` handlers in `core.mjs` `open()` intercept images (prevents ComfyUI from spawning a Load Image node on the canvas) and pasted rich HTML (keeps pasted content as plain text). `stopImmediatePropagation` preempts ComfyUI's listeners.
-
-13. **Swatches shared across pickers** — `SWATCHES` array in `toolbar.mjs` feeds A (text), ■ (highlight), Bg (background), Ac (accent) pickers. CSS grid in `css.mjs` is `repeat(7, 18px)`, so the 28 current swatches (4 rows × 7) render cleanly. Adding colours = edit one array; keep row count a multiple of 7.
-
-14. **Page bg default is `#111111` — but only as a CSS-baseline fallback, NOT as a cfg value** — `.pix-note-editarea` in `css.mjs` has `background: #111111` as the rule's baseline, and `_applyEditAreaBg` in `core.mjs` falls back to `#111111` whenever `cfg.backgroundColor` is anything other than a hex (null, undefined, "transparent"). That guarantees the editor body always has a readable dark surface, regardless of what the canvas node looks like. Do NOT reintroduce `#111111` as the literal value of `DEFAULT_CFG.backgroundColor` or as the widget default in `node_note.py` — that was the old pattern and it clobbered the native Colors menu (see Pattern #4). The cfg value for "no override" is explicitly absent (undefined).
-
-15. **Code view uses <pre>-overlay-under-transparent-<textarea>** — `js/note/codeview.mjs` `buildCodeViewDOM` layers a colored `<pre class="pix-note-hl">` (pointer-events: none) under a transparent `<textarea class="pix-note-raw">` that owns the caret + selection. Both MUST share identical font-family, font-size, line-height, padding, white-space, and word-break, or tokens desync from the caret. `.pix-note-raw { color: transparent; caret-color: ${BRAND}; }` hides the native textarea rendering while keeping the caret visible. Live re-tokenize on every `input` event via `renderTokensColored`. Pretty-print (`prettyFormatHTML`) runs **once on entering Code view** only — never on keystroke, because reformatting fights the caret and is widely disliked. Tokenizer output types live in `codeview.mjs` top comment and map to CSS classes `.pix-note-hl .tk-<type>` in `css.mjs`; adding a new token type requires editing both files.
-
-16. **Edit-in-place pencil uses hover delegation with a single reusable floating button** — `js/note/core.mjs` `_installPencil` creates ONE `<button class="pix-note-pencil" contenteditable="false">` attached to the editor's `.pix-note-main` container, not one-per-block. A `mouseover` listener on `_editArea` uses `e.target.closest(PENCIL_BLOCK_SELECTORS)` to find the nearest editable ancestor and repositions the pencil. A 150 ms grace window on `mouseout` (cleared when the cursor enters the pencil itself) lets the user travel from block to pencil without the pencil disappearing. `contenteditable="false"` is critical — without it, typing can land inside the pencil. Show/hide uses a `.visible` class (CSS baseline `pointer-events: none`, `.visible` state adds `pointer-events: auto` + `opacity: 0.95`) rather than `style.display` — so clicks pass through when the pencil is invisible. The selector list `PENCIL_BLOCK_SELECTORS` in core.mjs MUST stay in sync with `_dispatchBlockEdit` in blocks.mjs: add a new editable block type in BOTH places. Replacements bracket with `_snapBefore` / `_snapAfter`. For Button Design, replace only the `<span class="pix-note-btnblock">` — never the trailing `&nbsp;` — or consecutive edits compound whitespace. Validation (via `validateUrl`) returns `false` + `ctx.showError(msg)` to keep the dialog open on bad URL, same pattern as insert flow (pattern #7 above).
-
-17. **Grid (table) insert uses a dedicated toolbar entry, sanitizer allowlist, and a Tab-intercept for cell navigation** — `js/note/blocks.mjs` `renderGridHTML(cols, rows, header)` emits `<table class="pix-note-grid">` with `<br>` in every cell so `contenteditable` has a caret landing point (empty `<td>`s are unclickable in Chrome). `js/note/sanitize.mjs` must allow the five table tags (`table, thead, tbody, tr, th, td`) AND the `pix-note-grid` marker class — any future table variant needs a new allowed marker class. V1 deliberately omits `colspan` / `rowspan`, per-cell alignment, and pencil-edit (tables are edited by typing into cells, not by replacing a block). `js/note/codeview.mjs` `TOP_LEVEL_BLOCK_TAGS` must include `"table"` or the pretty-printer will fold tables into the preceding `<p>` and make Code view unreadable. `js/note/core.mjs` `_keyBlock` intercepts Tab / Shift+Tab inside a `<td>` / `<th>` to move the caret to the next/previous cell (walks `table.querySelectorAll("th, td")` in document order). The intercept calls `e.stopImmediatePropagation()` so ComfyUI's workflow-tab shortcut doesn't fire. The bracket also swallows Tab at the last cell / Shift+Tab at the first cell so the user never accidentally tabs out of the note editor. `renderGridHTML` appends a trailing `<p><br></p>` after the `</table>` so the caret has somewhere to land when the user wants to continue typing below the table.
-
-18. **Btn / Ln color split + toolbar group colocation** — `js/note/toolbar.mjs` exposes two independent color pickers: **Btn** (drives `--pix-note-btn` CSS var; controls Download / View Page / Read More pill backgrounds via CSS rule consolidation) and **Ln** (drives `--pix-note-line`; controls grid cell borders, grid header underline, HR separator, AND folder-hint text under Button Design pills). YouTube pill (`#ff3838`) and Discord pill (`#5865f2`) stay hardcoded (brand recognition). Btn lives in G6 immediately after Button Design; Ln lives in G5 immediately after Grid. The colocation is intentional — pickers sit next to what they drive. Config schema split from single `accentColor` into `buttonColor` + `lineColor`; `parseCfg` back-compat migrates `accentColor` → `buttonColor` (lineColor falls through to DEFAULT_CFG since accentColor wasn't driving any lines historically). Three sync points for the schema change: `js/note/index.js` DEFAULT_CFG, `parseCfg` migration, and `nodes/node_note.py` widget default — miss one and the canvas node renders with defaults out-of-sync with the editor (same risk class as Pattern #3). Both `render.mjs` and `toolbar.mjs` must write BOTH CSS vars (one on the on-canvas body, one on the editor's contenteditable) — see `_editArea.style.setProperty` sites. Adding a new picker? Use the `makeColorPicker` factory in `toolbar.mjs` — it handles swatch refresh + live preview + openColorPop wiring with a single call.
-
-19. **Toolbar mask-icons: two classes, single-layer vs two-layer** — the 8 toolbar SVG icons (link, code, separator, and the 5 color pickers: text, highlight, bg, button, line) render via CSS `mask-image` + `background-color`. Two helper classes in `css.mjs`:
-    - `.pix-note-tbtn-maskicon` (single-layer). Uses `background-color: var(--pix-note-tbtn-tint, currentColor)` so the whole SVG tints in one color. Used for plain action buttons (link / code / separator) that stay toolbar-default color.
-    - `.pix-note-tbtn-maskicon-multi` (two-layer). Uses `::before` (outline, always `currentColor`) stacked under `::after` (drop, tinted by `var(--pix-note-tbtn-tint, currentColor)`). Used for all 5 color pickers so the outline stays white on the dark toolbar while only the drop follows the picked color. File naming is enforced by CSS: `<name>-outline.svg` + `<name>-drop.svg`. All referenced SVG files MUST be committed (see commit `7cf4ecb` / `4f45436`) — untracked SVGs work locally but break a fresh clone. `pointer-events: none` on both classes keeps clicks flowing to the parent `<button>`.
-
-20. **Color picker icons = last explicit pick, NO selectionchange mirror** — the 5 color pickers set `--pix-note-tbtn-tint` on the button element ONLY when the user picks via the popup (or hits Clear, which `removeProperty`s it so the icon falls back to currentColor). There is NO selectionchange-driven mirror that reads the cursor's context. Every variant tried — `getComputedStyle`, `queryCommandValue`, sticky ancestor-walk on `style.color` — has the same failure mode: `execCommand("foreColor" / "hiliteColor", c)` on a COLLAPSED selection STAGES the color WITHOUT mutating the DOM, so any mirror reading the cursor's current state sees the OLD color and overwrites the just-picked value. The final "sticky" attempt still broke in this scenario: pick orange → type (span has color:orange) → click inside that text → pick white → mirror walks up, finds still-`color:orange` ancestor (execCommand white just staged), overrides the white pick. Matches Notion / Google Docs: icon = most recent pick. The Clear branch of the picker MUST call `removeProperty("--pix-note-tbtn-tint")` (not just clear the applied color), otherwise the icon stays stuck on the previous tint.
-
-21. **Chrome `hiliteColor` on collapsed selection clears staged `foreColor`** — `execCommand("hiliteColor", c)` on a collapsed selection CREATES a `<span style="background-color:...">` in the DOM at the cursor, AND as a side effect clears any previously-staged foreColor. Consequence: user picks text orange → picks highlight green → types → gets WHITE text on green bg (not orange on green). Fix lives in the highlight picker's onPick callback in `toolbar.mjs`: immediately after `execCommand("hiliteColor", ...)`, read `textColorBtn.style.getPropertyValue("--pix-note-tbtn-tint")` and replay `execCommand("foreColor", thatColor)` to restage. Combines cleanly on the next typed character. The reverse direction (foreColor first, no hilite) doesn't need compensation — foreColor on collapsed stages without DOM mutation and doesn't clear hiliteColor staging.
-
-22. **CSS vars on editArea need explicit init after `this._editArea` is assigned** — `_buildToolbar()` runs BEFORE `this._editArea = editArea` in `open()`. The `makeColorPicker` factory's internal `apply()` writes `--pix-note-btn` / `--pix-note-line` via `this._editArea?.style.setProperty(...)` — the optional chain short-circuits at factory construction, so the initial write no-ops. Click-time picker updates still work because editArea is set by then, but on every editor REOPEN the preview falls back to orange (CSS default) even when cfg has saved colors. Fix: `NoteEditor.prototype._applyCfgColorsToEditArea()` in `core.mjs` explicitly writes both CSS vars, called immediately after `this._editArea = editArea`. If a new per-note CSS var is introduced for another picker, wire it into both `makeColorPicker` AND this init helper, or the same class of bug recurs.
-
-23. **`save()` body lookup must be robust against Vue detachment** — Vue can tear down a node's DOM widget while the fullscreen editor overlay is open (Vue-compat #5). Using `this.node._noteBody` directly on save risks writing CSS vars / innerHTML to a stale element that's no longer in the live DOM — canvas-side picker changes (Bg, Btn, Ln) silently fail to reach the visible body. `core.mjs` `save()` does a three-step robust lookup: `this.node._noteBody?.isConnected` → `this.node._noteDOMWrap?.isConnected?.querySelector(".pix-note-body")` → `this.node.widgets?.find(x => x.name === "note_dom")?.element?.querySelector(".pix-note-body")`. Refresh the cached `_noteBody` reference to the live element after finding it so subsequent writes land correctly. Debug tip: a `bodyEl.isConnected` check + `console.log` in `renderContent` is a fast way to confirm the live body is what `save()` hit.
-
-24. **Bold uses `queryCommandState("bold")` — not a B/STRONG tag walk** — a tag walk misses two important cases: (1) cursor inside H1/H2/H3 where the bold rendering comes from CSS `font-weight`, and (2) any point after the user has touched a color picker, because color pickers enable `styleWithCSS=true` globally and `execCommand("bold")` from that point onward produces `<span style="font-weight:bold">` instead of `<b>`. `queryCommandState("bold")` handles all three (B/STRONG, heading default, CSS span) correctly. Users expect the Bold icon to light up inside headings the way Word / Google Docs / Notion do. Italic / Underline / Strikethrough use `queryCmd` already — Bold was the outlier.
-
-25. **Picked text/highlight colors must be restaged on EVERY caret move, not just after block inserts** — Chrome wipes the `execCommand`-staged `foreColor` / `hiliteColor` every time the selection moves, not only on DOM-mutating inserts. Clicking into another table cell, pressing Tab across cells, arrow-keying through blocks, or clicking through any block boundary all drop the stage. Without compensation the user picks orange, clicks elsewhere, types → white text. The durable fix lives in the existing document-level `selectionchange` handler in `toolbar.mjs` (originally added for toolbar active-state refresh) — it now ALSO calls `editor._restageColors?.()` for every collapsed-selection change inside the editArea. `_restageColors()` reads the picker icons' `--pix-note-tbtn-tint` values and replays `hiliteColor` FIRST, `foreColor` SECOND (per Pattern #21). It is GUARDED with `r.collapsed` so drag-selects never accidentally apply the picked color to the user's in-flight range. The two color picker buttons are exposed on the editor instance (`this._textColorBtn`, `this._hiColorBtn`) for the helper. `insertAtSavedRange()` in `blocks.mjs` ALSO calls it right after `execCommand("insertHTML")` as a belt-and-braces — the post-insert caret may not trigger selectionchange if it lands in the same position, so the explicit call guarantees typing immediately after the insert is colored too. Any new block-insert path that does its own DOM manipulation (bypassing `insertAtSavedRange`) should still call `_restageColors()` explicitly after the mutation + caret placement, following the `_insertGridBlock` pattern.
-
-26. **Grid insert bypasses `execCommand("insertHTML")` entirely and manipulates DOM directly** — Chrome's caret placement after block-level insertHTML of a `<table>` is unreliable: the caret often lands inside the last `<td>` instead of the trailing `<p>`, and the table-split leaves the user's surrounding inline formatting in a fragile state. `_insertGridBlock` in `blocks.mjs` mirrors the code-block insert pattern — build the table + trailing `<p><br></p>` in a detached wrapper, insert as a sibling AFTER the anchor block (found via `findTopBlock` walk from the saved range), explicitly position the caret at the start of the trailing `<p>` via `range.selectNodeContents(trailing) + collapse(true)`, then call `_restageColors()` so typing below the grid picks up the staged color. Bracket with `_snapBefore` / `_snapAfter` so the whole insert is one undo step. If you add another block-level insert path (e.g. image, embed), follow THIS pattern — not the `insertHTML` pattern.
-
-27. **Block modals live in `document.body`, not inside the editor panel — overlay close handler must check `hasModal`** — `makeButtonDesignDialog`, `makeGridDialog`, `openColorPop`, and `pix-note-confirm-backdrop` all `appendChild` onto `document.body` (so they can escape `transform` / `overflow` boundaries on the panel). Without compensation, a mousedown outside the dialog but inside the editor backdrop lands on `.pix-note-overlay` and triggers `close()` — popping the unsaved-changes prompt ON TOP of the still-open modal. `core.mjs` overlay mousedown handler runs the same `hasModal` guard as the Escape handler: `document.querySelector(".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop")`. Adding a new document.body-level modal? Add its selector to BOTH guards (Escape + overlay mousedown) or clicking outside it silently closes the editor.
-
-28. **`<a>` clicks inside the edit area must be `preventDefault`ed** — the browser follows `<a href>` on any click inside a contenteditable, so clicking on an inserted Download / View Page / Read More / YouTube / Discord pill (or any plain link) to reposition the caret instead opens the URL in a new tab. `core.mjs` `open()` installs `editArea.addEventListener("click", fn, true)` using capture-phase + `e.target.closest("a") ? e.preventDefault() : …` so caret positioning works but navigation doesn't fire. Without this, users cannot reliably click into a pill to delete or re-edit it (the pencil handles the re-edit path, but simple caret positioning / backspace-through-pill doesn't work). Do NOT reach for `pointer-events: none` on pills — that also blocks the pencil hover delegation.
-
-29. **Inline icons render via `<span data-ic="<slug>" class="pix-note-ic" style="color:...">` with per-icon mask-image rules dynamically injected at editor open** — icons are a THREE-file contract: `server_routes.py` enumerates `assets/icons/note/*.svg` and returns `{id, label, url}` via `/linuxtechlab/api/note/icons/list`; `js/note/icons.mjs` caches the list at module scope and injects one `.pix-note-ic[data-ic="<id>"] { mask-image: url(...) }` rule per icon into a single `<style id="pix-note-icon-css">` at `<head>`; `js/note/sanitize.mjs` allows `pix-note-ic` class + `data-ic` attribute validated against `/^[A-Za-z0-9_-]{1,64}$/`. Any of those three going out of sync with the others breaks the feature silently. Slug case is preserved (CLIP / GGUF / LORA / VAE are intentional acronym filenames). Missing per-icon rule renders the span as a solid 1.2em colored rectangle — deliberately visible so the user notices a broken icon rather than an invisible gap. Color defaults to `#f66744`, lives as inline `style="color:..."`, is recolored by the existing text-color picker via standard `execCommand("foreColor")`. No pencil — delete + re-insert. The picker popup (`.pix-note-iconpop`) must be registered in BOTH `hasModal` selectors in `core.mjs` (Escape handler AND overlay mousedown) per Pattern #27, or clicking outside the popup silently closes the editor. `_insertInlineIcon` in `icons.mjs` deliberately bypasses `insertAtSavedRange` (blocks.mjs) to avoid a circular import; it does its own `execCommand("insertHTML")` + `_restageColors()` call so surrounding text color stays sticky (Pattern #25). If you add a NEW inline-marker class (different kind of inline element), follow this pattern: base class for layout + data-attr for identity + dynamically injected per-value CSS rule — NOT one class per variant (unmanageable with drop-and-discover libraries).
-
-### Security Patterns (do not remove)
+### Security Patterns
 - `_safe_path()` in `server_routes.py` — validates all file paths stay within `LINUXTECHLAB_INPUT_ROOT`
 - IDs validated against `^[a-zA-Z0-9_\-]+$` regex (max 64 chars)
 - Base64 payloads capped at 50 MB
-- Note sanitizer (`js/note/sanitize.mjs`) — allowlist-based. Anything user-reachable (link insert, code-view HTML edit, paste) must round-trip through `sanitize(html)` before being written to the DOM or saved. Class allowlist covers only LinuxTechLab-specific classes; style allowlist covers only `color`, `background-color`, `text-align`; href allowlist is `http:`, `https:`, `mailto:`.
-
-### Offline-first: Vendored Three.js
-The 3D Builder used to `import("https://esm.sh/three@0.170.0/…")` at runtime, which
-broke with `ERR_CONNECTION_RESET` for any user running ComfyUI offline or behind a
-restrictive proxy. Three.js is now vendored inside the plugin.
-
-- **On disk**: `assets/vendor/three/three.mjs` plus every jsm addon the editor
-  touches (controls, postprocessing, loaders, utils, geometries). Each jsm addon
-  only imports `../../../three.mjs`, so copying the esm.sh "es2022" build
-  preserves all relative resolution with zero rewrites.
-- **Served at**: `/linuxtechlab/vendor/{tail}` — route in `server_routes.py`. Accepts
-  arbitrary depth, blocks `..` traversal and any chars outside `[A-Za-z0-9_\-./]`,
-  realpath-checks the result stays under `LINUXTECHLAB_VENDOR_DIR`.
-- **Entry point**: `THREE_VENDOR = "/linuxtechlab/vendor/three"` exported from
-  `js/3d/core.mjs`. All dynamic `import()` calls in `core.mjs`, `importer.mjs`,
-  and `shapes.mjs` go through it.
-- **Upgrading three.js**: re-fetch `https://esm.sh/three@<VERSION>/es2022/*` for
-  each file listed under `assets/vendor/three/`, keeping the relative paths
-  identical. The addons import `../../../three.mjs` so the directory layout must
-  stay `three.mjs` at the root with `examples/jsm/<category>/*.mjs` for addons.
-
-**Do not** reintroduce esm.sh/unpkg/jsdelivr imports for three.js or its addons.
-
-### 3D CSS isolation
-`injectExtraStyles()` in `js/3d/core.mjs` adds global `<style>` rules to `<head>`.
-These must be scoped to a **3D-only** class (`.p3d-workspace`) — NOT the shared
-`.pxf-workspace` framework class — because the stylesheet persists in the DOM
-after the 3D editor closes and bleeds into every other editor.
-
-In particular, `.pxf-workspace canvas { position:relative; z-index:1 }` used to
-override Paint's `.ppx-cursor-canvas { position:absolute }` via selector
-specificity, unstacking the brush-ring cursor overlay canvas so it shifted
-below the display canvas — the brush preview disappeared after a 3D session.
-The 3D `open()` path now adds `.p3d-workspace` to its workspace element, and
-the CSS rule targets that class only.
 
 ## Token-Saving Rules for AI Agents
 
@@ -541,24 +267,19 @@ Follow the existing directory structure:
 ### 5. Do not read framework CSS
 `js/framework/theme.mjs` is ~660 lines but ~580 are a CSS string literal. You almost never need to read it. Only read it if you're adding a new CSS class or changing the color theme.
 
-## Important Note
-After major changes, please update this file (@CLUADE.me). Keep this file up-to-date with the project's status.
+## Git Workflow
 
-## Git Workflow (Ioan branch)
+The user works on the `main` branch of `ComfyUI-LinuxTechLab`.
 
-The user works on the `Ioan` branch. Two commit destinations:
+1. **Local commits** — after any non-trivial working change, create a local commit as a checkpoint. Default — no confirmation needed.
+2. **Push to GitHub** — only when the user explicitly says "push" or "push to github".
 
-1. **Local commits** — after any non-trivial working change, create a local commit on `Ioan` as a checkpoint. This is the **default** — no confirmation needed, just do it. The user relies on these to roll back if something breaks (`git stash`, `git reset --hard HEAD~1`, or `git checkout <sha>`).
-
-2. **Push to Ioan on GitHub** — only when the user **explicitly** says "push to Ioan", "push to github", "commit to Ioan github", or similar. Never push proactively.
-
-**Pattern:**
-- Make the edit → verify it parses / works → `git add -A && git commit -m "scope: description"` LOCAL
 - Keep commits small and focused: one coherent change per commit
-- Never amend a pushed commit; only amend local-only commits if still WIP
-- If work breaks something, the user can roll back to the previous local checkpoint
-
-**Do not** push to origin unless asked. **Do** commit locally after every working change.
+- Never amend a pushed commit
+- Commit message format: `scope: description` (e.g. `feat: add prompt writer node`)
 
 ## Publishing
-CI/CD auto-publishes to the ComfyUI registry when `pyproject.toml` is pushed to `main`. Do not modify `pyproject.toml`, `LICENSE`, or `.clauderules` or `.github/workflows/publish.yml`.
+CI/CD auto-publishes to the ComfyUI registry when `pyproject.toml` is pushed to `main`. Do not modify `pyproject.toml`, `LICENSE`, or `.github/workflows/publish.yml`.
+
+## Important Note
+After major changes, update this file and the relevant subdirectory CLAUDE.md. Keep them in sync with the project's status.
