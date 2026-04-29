@@ -5,8 +5,6 @@ from .nodes.node_3d import NODE_CLASS_MAPPINGS as _MAPS_3D
 from .nodes.node_3d import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_3D
 from .nodes.node_audio_studio import NODE_CLASS_MAPPINGS as _MAPS_AUDIO_STUDIO
 from .nodes.node_audio_studio import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_AUDIO_STUDIO
-from .nodes.node_save_mp4 import NODE_CLASS_MAPPINGS as _MAPS_SAVE_MP4
-from .nodes.node_save_mp4 import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SAVE_MP4
 from .nodes.node_compare import NODE_CLASS_MAPPINGS as _MAPS_COMPARE
 from .nodes.node_compare import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPARE
 from .nodes.node_composition import NODE_CLASS_MAPPINGS as _MAPS_COMPOSITION
@@ -23,6 +21,8 @@ from .nodes.node_preview import NODE_CLASS_MAPPINGS as _MAPS_PREVIEW
 from .nodes.node_preview import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_PREVIEW
 from .nodes.node_resolution import NODE_CLASS_MAPPINGS as _MAPS_RESOLUTION
 from .nodes.node_resolution import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_RESOLUTION
+from .nodes.node_save_mp4 import NODE_CLASS_MAPPINGS as _MAPS_SAVE_MP4
+from .nodes.node_save_mp4 import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SAVE_MP4
 from .nodes.node_show_text import NODE_CLASS_MAPPINGS as _MAPS_SHOW_TEXT
 from .nodes.node_show_text import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SHOW_TEXT
 
@@ -75,10 +75,10 @@ WEB_DIRECTORY = "./js"
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
 
 
-# console print banner
-def display_linuxtechlab_banner(node_mappings, list_all_nodes=False):
+# console print log startup
+def display_linuxtechlab_log_startup(node_mappings, list_all_nodes=False):
     """
-    Displays a styled startup banner in the terminal with version and node info.
+    Displays a styled startup log in the terminal with version and node info.
     """
 
     # --- 1. Get Version from pyproject.toml ---
@@ -116,12 +116,9 @@ def display_linuxtechlab_banner(node_mappings, list_all_nodes=False):
     if current_line:
         lines_to_print.append(current_line.rstrip(", "))
 
-    # --- 4. Print the Banner ---
-    horizontal_bar = f"{CLR_BLUE}{'━' * 120}{CLR_RESET}"
-
-    print(horizontal_bar)
+    # --- 4. Print the log startup ---
     print(
-        f"  {CLR_WHITE_BOLD}LinuxTechLab{CLR_RESET} v{version}  |  "
+        f"[LinuxTechLab] {CLR_WHITE_BOLD}LinuxTechLab{CLR_RESET} v{version}  |  "
         f"{CLR_BLUE}{len(node_mappings)} nodes{CLR_RESET} Loaded"
     )
 
@@ -130,14 +127,10 @@ def display_linuxtechlab_banner(node_mappings, list_all_nodes=False):
             print(f"  {CLR_GREY}{line}{CLR_RESET}")
 
     print(
-        f"  {CLR_GREY}ComfyUI Tutorials: https://www.youtube.com/@LinuxTechLab{CLR_RESET}"
-    )
-    print(
-        f"  {CLR_BLUE}Some LinuxTechLab nodes conflict with Nodes 2.0 — "
+        f"[LinuxTechLab] {CLR_BLUE}Some LinuxTechLab nodes conflict with Nodes 2.0 — "
         f"consider turning it off from ComfyUI Menu.{CLR_RESET}"
     )
-    print(horizontal_bar)
 
 
-# display the banner when the module is loaded
-display_linuxtechlab_banner(NODE_DISPLAY_NAME_MAPPINGS)
+# display the log startup when the module is loaded
+display_linuxtechlab_log_startup(NODE_DISPLAY_NAME_MAPPINGS)
