@@ -1,8 +1,8 @@
 import { app } from "/scripts/app.js";
 import { api } from "/scripts/api.js";
 
-// In-node video preview for Save Mp4 Pixaroma. The Python node returns
-// `{"ui": {"images": [...], "pixaroma_videos": [...]}}` after each encode;
+// In-node video preview for Save Mp4 LinuxTechLab. The Python node returns
+// `{"ui": {"images": [...], "linuxtechlab_videos": [...]}}` after each encode;
 // we listen for the `executed` event, find our entry, and swap the
 // <video> element's src.
 //
@@ -42,28 +42,28 @@ function fitHeight(node) {
 }
 
 // Vue can tear down a node's DOM widget and rebuild it (e.g. when the
-// user switches workflow tabs and back). The cached node._pixaromaVideo
+// user switches workflow tabs and back). The cached node._linuxtechlabVideo
 // then points at the OLD detached element. Look up the live <video> via
 // the widget element and re-cache + re-attach the loadedmetadata
 // listener so subsequent runs work.
 function getLiveVideo(node) {
-  if (node._pixaromaVideo?.isConnected) return node._pixaromaVideo;
-  const w = node.widgets?.find((x) => x.name === "pixaroma_video_preview");
+  if (node._linuxtechlabVideo?.isConnected) return node._linuxtechlabVideo;
+  const w = node.widgets?.find((x) => x.name === "linuxtechlab_video_preview");
   const root = w?.element;
   if (!root || !root.isConnected) return null;
   const vid = root.querySelector("video");
   const placeholder = root.querySelector("div");
   if (!vid?.isConnected) return null;
-  node._pixaromaVideo = vid;
-  node._pixaromaPlaceholder = placeholder;
-  if (!vid._pixaromaMetadataAttached) {
+  node._linuxtechlabVideo = vid;
+  node._linuxtechlabPlaceholder = placeholder;
+  if (!vid._linuxtechlabMetadataAttached) {
     vid.addEventListener("loadedmetadata", () => {
       if (vid.videoWidth > 0 && vid.videoHeight > 0) {
-        node._pixaromaAspect = vid.videoWidth / vid.videoHeight;
+        node._linuxtechlabAspect = vid.videoWidth / vid.videoHeight;
         fitHeight(node);
       }
     });
-    vid._pixaromaMetadataAttached = true;
+    vid._linuxtechlabMetadataAttached = true;
   }
   return vid;
 }
@@ -81,9 +81,9 @@ function buildViewUrl(entry) {
 }
 
 app.registerExtension({
-  name: "Pixaroma.SaveMp4",
+  name: "LinuxTechLab.SaveMp4",
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "PixaromaSaveMp4") return;
+    if (nodeData.name !== "LinuxTechLabSaveMp4") return;
 
     const onNodeCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function () {
@@ -110,7 +110,7 @@ app.registerExtension({
       video.style.cssText = `
         display: none;
         width: 100%;
-        background: #000;
+        background: #11111b;
         border-radius: 4px;
       `;
       wrap.appendChild(video);
@@ -118,7 +118,7 @@ app.registerExtension({
       const placeholder = document.createElement("div");
       placeholder.textContent = "(no video yet — run the workflow)";
       placeholder.style.cssText = `
-        color: #888;
+        color: #6c7086;
         font-size: 12px;
         padding: 16px;
         text-align: center;
@@ -127,37 +127,37 @@ app.registerExtension({
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #1a1a1a;
+        background: #181825;
         border-radius: 4px;
       `;
       wrap.appendChild(placeholder);
 
-      this._pixaromaVideo = video;
-      this._pixaromaPlaceholder = placeholder;
-      this._pixaromaAspect = null;
+      this._linuxtechlabVideo = video;
+      this._linuxtechlabPlaceholder = placeholder;
+      this._linuxtechlabAspect = null;
 
       const node = this;
 
       video.addEventListener("loadedmetadata", () => {
         if (video.videoWidth > 0 && video.videoHeight > 0) {
-          node._pixaromaAspect = video.videoWidth / video.videoHeight;
+          node._linuxtechlabAspect = video.videoWidth / video.videoHeight;
           fitHeight(node);
         }
       });
-      video._pixaromaMetadataAttached = true;
+      video._linuxtechlabMetadataAttached = true;
 
       const widget = this.addDOMWidget(
-        "pixaroma_video_preview",
+        "linuxtechlab_video_preview",
         "video_preview",
         wrap,
-        { serialize: false, hideOnZoom: false }
+        { serialize: false, hideOnZoom: false },
       );
 
       // Vue's layout loop reads `widget.computedHeight` directly, NOT the
       // return value of computeSize. We must SET it here every time the
       // callback fires, and return [w, h] for legacy LiteGraph paths too.
       widget.computeSize = function (width) {
-        const aspect = node._pixaromaAspect;
+        const aspect = node._linuxtechlabAspect;
         if (!aspect) {
           this.computedHeight = PLACEHOLDER_H;
           return [width, PLACEHOLDER_H];
@@ -166,7 +166,10 @@ app.registerExtension({
         // ceil + buffer so we never under-allocate. If the computed area
         // ends up slightly taller than the video, the wrap shows a thin
         // dark strip below — strictly better than clipping the bottom.
-        const h = Math.max(PLACEHOLDER_H, Math.ceil(w / aspect) + HEIGHT_BUFFER);
+        const h = Math.max(
+          PLACEHOLDER_H,
+          Math.ceil(w / aspect) + HEIGHT_BUFFER,
+        );
         this.computedHeight = h;
         return [width, h];
       };
@@ -177,7 +180,7 @@ app.registerExtension({
       const origResize = nodeType.prototype.onResize;
       const onResize = function (size) {
         if (origResize) origResize.apply(this, arguments);
-        if (this._pixaromaAspect) {
+        if (this._linuxtechlabAspect) {
           const desired = this.computeSize([size[0], size[1]]);
           size[1] = desired[1];
         }
@@ -196,7 +199,7 @@ app.registerExtension({
 });
 
 api.addEventListener("executed", ({ detail }) => {
-  const entries = detail?.output?.pixaroma_videos;
+  const entries = detail?.output?.linuxtechlab_videos;
   if (!entries || !entries.length) return;
   let node = app.graph.getNodeById(detail.node);
   if (!node && typeof detail.node === "string") {
@@ -208,8 +211,8 @@ api.addEventListener("executed", ({ detail }) => {
   const url = buildViewUrl(entries[0]);
   video.src = url;
   video.style.display = "block";
-  if (node._pixaromaPlaceholder?.isConnected) {
-    node._pixaromaPlaceholder.style.display = "none";
+  if (node._linuxtechlabPlaceholder?.isConnected) {
+    node._linuxtechlabPlaceholder.style.display = "none";
   }
   video.load();
 });

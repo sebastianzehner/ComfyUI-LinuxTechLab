@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Paint Studio — Entry point (ComfyUI widget registration)
-// ============================================================
+// =====================================================================
+// LinuxTechLab Paint Studio — Entry point (ComfyUI widget registration)
+// =====================================================================
 import { app } from "../../../../scripts/app.js";
 
 // Import core class first, then all mixin files (side-effect imports that add to prototype)
@@ -23,20 +23,20 @@ import {
 } from "../shared/index.mjs";
 
 app.registerExtension({
-  name: "Pixaroma.Paint",
+  name: "LinuxTechLab.Paint",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "PixaromaPaint") return;
+    if (nodeData.name !== "LinuxTechLabPaint") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       originalOnExecuted?.apply(this, arguments);
-      if (allow_debug) console.log("PixaromaPaint executed");
+      if (allow_debug) console.log("LinuxTechLabPaint executed");
     };
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "PixaromaPaint") return;
+    if (node.comfyClass !== "LinuxTechLabPaint") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
@@ -44,7 +44,7 @@ app.registerExtension({
     // ── Shared preview system ──
     const parts = createNodePreview(
       "Paint",
-      "Pixaroma",
+      "LinuxTechLab",
       "Click 'Open Paint' to start",
     );
 
@@ -70,7 +70,7 @@ app.registerExtension({
       };
 
       studio.onSaveToDisk = (dataURL) =>
-        downloadDataURL(dataURL, "pixaroma_paint");
+        downloadDataURL(dataURL, "linuxtechlab_paint");
 
       studio.onClose = () => {
         node.setDirtyCanvas(true, true);

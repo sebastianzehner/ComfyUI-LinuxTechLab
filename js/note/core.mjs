@@ -1099,7 +1099,7 @@ export class NoteEditor {
       </div>
       <div class="pix-note-help-footer">
         Designed by <a href="https://www.youtube.com/@LinuxTechLab" target="_blank" rel="noopener noreferrer">LinuxTechLab</a>
-        &middot; <a href="https://github.com/linuxtechlab/ComfyUI-LinuxTechLab" target="_blank" rel="noopener noreferrer">GitHub</a>
+        &middot; <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     `;
     const close = h.querySelector(".pix-note-help-close");

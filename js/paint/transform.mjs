@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Paint Studio — Transform handles, hit-test, zoom/pan, view math
-// ============================================================
+// ============================================================================
+// LinuxTechLab Paint Studio — Transform handles, hit-test, zoom/pan, view math
+// ============================================================================
 import { PaintStudio } from "./core.mjs";
 
 const proto = PaintStudio.prototype;
@@ -44,7 +44,7 @@ proto._drawTransformHandles = function (ctx, ly) {
 
   // Dashed bounding box
   ctx.save();
-  ctx.strokeStyle = "#f66744";
+  ctx.strokeStyle = "#89b4fa";
   ctx.lineWidth = 2;
   ctx.setLineDash([6, 4]);
   ctx.beginPath();
@@ -53,20 +53,18 @@ proto._drawTransformHandles = function (ctx, ly) {
   ctx.closePath();
   ctx.stroke();
   ctx.setLineDash([]);
-
   // Corner handles (scale)
   const HR = 7;
   corners.forEach((c) => {
     ctx.beginPath();
     ctx.arc(c.x, c.y, HR, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#1e1e2e";
     ctx.fill();
-    ctx.strokeStyle = "#f66744";
+    ctx.strokeStyle = "#89b4fa";
     ctx.lineWidth = 2;
     ctx.stroke();
   });
-
-  // Rotation handle (above top center, direction away from pivot)
+  // Rotation handle
   const topMid = {
     x: (corners[0].x + corners[1].x) / 2,
     y: (corners[0].y + corners[1].y) / 2,
@@ -75,32 +73,30 @@ proto._drawTransformHandles = function (ctx, ly) {
     dy = topMid.y - pivot.y;
   const len = Math.hypot(dx, dy) || 1;
   const rotH = { x: topMid.x + (dx / len) * 30, y: topMid.y + (dy / len) * 30 };
-
   ctx.beginPath();
   ctx.moveTo(topMid.x, topMid.y);
   ctx.lineTo(rotH.x, rotH.y);
-  ctx.strokeStyle = "#f66744";
+  ctx.strokeStyle = "#89b4fa";
   ctx.lineWidth = 1.5;
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(rotH.x, rotH.y, HR, 0, Math.PI * 2);
-  ctx.fillStyle = "#f66744";
+  ctx.fillStyle = "#89b4fa";
   ctx.fill();
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "#1e1e2e";
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#1e1e2e";
   ctx.font = "bold 9px monospace";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("\u21bb", rotH.x, rotH.y);
-
   // Pivot point handle (draggable center)
   ctx.beginPath();
   ctx.arc(pivot.x, pivot.y, 5, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillStyle = "rgba(30,30,46,0.9)";
   ctx.fill();
-  ctx.strokeStyle = "#f66744";
+  ctx.strokeStyle = "#89b4fa";
   ctx.lineWidth = 1.5;
   ctx.stroke();
   // Crosshair lines on pivot
@@ -109,10 +105,9 @@ proto._drawTransformHandles = function (ctx, ly) {
   ctx.lineTo(pivot.x + 8, pivot.y);
   ctx.moveTo(pivot.x, pivot.y - 8);
   ctx.lineTo(pivot.x, pivot.y + 8);
-  ctx.strokeStyle = "#f66744";
+  ctx.strokeStyle = "#89b4fa";
   ctx.lineWidth = 1;
   ctx.stroke();
-
   ctx.restore();
 };
 
@@ -293,13 +288,17 @@ proto._getContentBounds = function (ly) {
     h = this.docH;
   try {
     const data = ly.ctx.getImageData(0, 0, w, h).data;
-    let minY = -1, maxY = -1;
+    let minY = -1,
+      maxY = -1;
 
     // Scan top-down for first non-transparent row
     for (let y = 0; y < h; y++) {
       const rowOff = y * w * 4;
       for (let x = 0; x < w; x++) {
-        if (data[rowOff + x * 4 + 3] > 0) { minY = y; break; }
+        if (data[rowOff + x * 4 + 3] > 0) {
+          minY = y;
+          break;
+        }
       }
       if (minY >= 0) break;
     }
@@ -313,22 +312,32 @@ proto._getContentBounds = function (ly) {
     for (let y = h - 1; y >= minY; y--) {
       const rowOff = y * w * 4;
       for (let x = 0; x < w; x++) {
-        if (data[rowOff + x * 4 + 3] > 0) { maxY = y; break; }
+        if (data[rowOff + x * 4 + 3] > 0) {
+          maxY = y;
+          break;
+        }
       }
       if (maxY >= 0) break;
     }
 
     // Scan only the relevant rows for X bounds
-    let minX = w, maxX = 0;
+    let minX = w,
+      maxX = 0;
     for (let y = minY; y <= maxY; y++) {
       const rowOff = y * w * 4;
       // Scan from left for this row's minX
       for (let x = 0; x < minX; x++) {
-        if (data[rowOff + x * 4 + 3] > 0) { minX = x; break; }
+        if (data[rowOff + x * 4 + 3] > 0) {
+          minX = x;
+          break;
+        }
       }
       // Scan from right for this row's maxX
       for (let x = w - 1; x > maxX; x--) {
-        if (data[rowOff + x * 4 + 3] > 0) { maxX = x; break; }
+        if (data[rowOff + x * 4 + 3] > 0) {
+          maxX = x;
+          break;
+        }
       }
       // Early exit: can't improve further
       if (minX === 0 && maxX === w - 1) break;

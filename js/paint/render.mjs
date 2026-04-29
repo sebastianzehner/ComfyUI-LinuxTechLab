@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Paint Studio — Layer rendering, grid drawing
+// LinuxTechLab Paint Studio — Layer rendering, grid drawing
 // ============================================================
 import { PaintStudio } from "./core.mjs";
 

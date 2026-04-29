@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Paint Studio — Core + Full UI  v4 (Framework)
+// LinuxTechLab Paint Studio — Core + Full UI  v4 (Framework)
 // ============================================================
 import {
   BrushEngine,
@@ -25,13 +25,13 @@ import {
   createRow,
 } from "../framework/index.mjs";
 
-const PAINT_STYLE_ID = "pixaroma-paint-extra-styles-v4";
+const PAINT_STYLE_ID = "linuxtechlab-paint-extra-styles-v4";
 
 function injectPaintExtraStyles() {
   if (document.getElementById(PAINT_STYLE_ID)) return;
   // remove old versions
-  document.getElementById("pixaroma-paint-styles-v3")?.remove();
-  document.getElementById("pixaroma-paint-styles-v2")?.remove();
+  document.getElementById("linuxtechlab-paint-styles-v3")?.remove();
+  document.getElementById("linuxtechlab-paint-styles-v2")?.remove();
   const s = document.createElement("style");
   s.id = PAINT_STYLE_ID;
   s.textContent = `
@@ -39,75 +39,74 @@ function injectPaintExtraStyles() {
 /* Paint-specific: canvas viewport */
 .ppx-canvas-viewport { position:absolute; top:0; left:0; transform-origin:0 0; overflow:visible; }
 .ppx-canvas-viewport canvas { display:block; }
-.ppx-canvas-viewport canvas:first-child { box-shadow:0 4px 32px rgba(0,0,0,.7); border:2px solid rgba(249,115,22,0.45); }
+.ppx-canvas-viewport canvas:first-child { box-shadow:0 4px 32px rgba(0,0,0,.7); border:2px solid rgba(137,180,250,0.45); }
 .ppx-cursor-canvas { position:absolute; top:0; left:0; pointer-events:none; }
-/* (zoom bar now provided by editor framework) */
 .ppx-color-area { display:flex; flex-direction:column; gap:6px; }
 /* Paint-specific: SV/Hue color picker canvases */
-.ppx-sv-canvas { width:100%; cursor:crosshair; border-radius:3px; display:block; border:1px solid #333; flex-shrink:0; }
-.ppx-hue-canvas { width:100%; height:14px; cursor:crosshair; border-radius:3px; display:block; border:1px solid #333; flex-shrink:0; }
+.ppx-sv-canvas { width:100%; cursor:crosshair; border-radius:3px; display:block; border:1px solid #313244; flex-shrink:0; }
+.ppx-hue-canvas { width:100%; height:14px; cursor:crosshair; border-radius:3px; display:block; border:1px solid #313244; flex-shrink:0; }
 /* Paint-specific: FG/BG color swatches */
 .ppx-swatches-fg-bg { display:flex; gap:4px; align-items:center; flex-shrink:0; }
 .ppx-fg-swatch, .ppx-bg-swatch {
-    width:38px; height:38px; border-radius:5px; cursor:pointer; border:2px solid #555;
+    width:38px; height:38px; border-radius:5px; cursor:pointer; border:2px solid #45475a;
     transition:border-color .12s; flex-shrink:0;
 }
-.ppx-fg-swatch { border-color:#f66744; }
-.ppx-fg-swatch:hover, .ppx-bg-swatch:hover { border-color:#f66744; }
-.ppx-swap-btn { background:none; border:none; color:#999; cursor:pointer; font-size:13px; padding:2px; }
-.ppx-swap-btn:hover { color:#f66744; }
+.ppx-fg-swatch { border-color:#89b4fa; }
+.ppx-fg-swatch:hover, .ppx-bg-swatch:hover { border-color:#89b4fa; }
+.ppx-swap-btn { background:none; border:none; color:#6c7086; cursor:pointer; font-size:13px; padding:2px; }
+.ppx-swap-btn:hover { color:#89b4fa; }
 /* Paint-specific: swatch grid */
 .ppx-swatches-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:2px; flex-shrink:0; }
-.ppx-swatch { aspect-ratio:1; border-radius:2px; cursor:pointer; border:1px solid #222; transition:transform .1s; }
-.ppx-swatch:hover { transform:scale(1.25); border-color:#f66744; z-index:2; }
+.ppx-swatch { aspect-ratio:1; border-radius:2px; cursor:pointer; border:1px solid #1e1e2e; transition:transform .1s; }
+.ppx-swatch:hover { transform:scale(1.25); border-color:#89b4fa; z-index:2; }
 /* Paint-specific: hex row */
 .ppx-hex-row { display:flex; align-items:center; gap:4px; }
 .ppx-hex-row input {
-    flex:1; background:#111; color:#e0e0e0; border:1px solid #3a3d40;
+    flex:1; background:#11111b; color:#cdd6f4; border:1px solid #45475a;
     border-radius:3px; padding:2px 5px; font-size:11px; font-family:monospace;
 }
 /* Paint-specific: HSL slider rows */
 .ppx-hsl-row { display:flex; align-items:center; gap:4px; margin-bottom:3px; }
-.ppx-hsl-row label { font-size:9px; color:#888; width:10px; flex-shrink:0; }
+.ppx-hsl-row label { font-size:9px; color:#6c7086; width:10px; flex-shrink:0; }
 .ppx-hsl-row input[type=range] { flex:1; min-width:0; }
 .ppx-hsl-row input[type=number] {
-    width:38px; background:#111; color:#e0e0e0; border:1px solid #3a3d40;
+    width:38px; background:#11111b; color:#cdd6f4; border:1px solid #45475a;
     border-radius:3px; padding:2px 3px; font-size:10px; font-family:monospace;
 }
 /* Paint-specific: shape buttons in top options bar */
 .ppx-shape-btn {
-    width:24px; height:22px; cursor:pointer; border:1px solid #3a3d40;
-    background:#1c1e1f; color:#ccc; border-radius:3px; font-size:12px;
+    width:24px; height:22px; cursor:pointer; border:1px solid #45475a;
+    background:#181825; color:#a6adc8; border-radius:3px; font-size:12px;
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
     transition:all .12s;
 }
-.ppx-shape-btn:hover, .ppx-shape-btn.active { background:#f66744; color:#fff; border-color:#f66744; }
+.ppx-shape-btn:hover, .ppx-shape-btn.active { background:#89b4fa; color:#1e1e2e; border-color:#89b4fa; }
 /* Paint-specific: top options bar extra styling */
-.pxf-top-options label { font-size:10px; color:#999; white-space:nowrap; }
+.pxf-top-options label { font-size:10px; color:#6c7086; white-space:nowrap; }
 .pxf-top-options input[type=range] { width:60px; cursor:pointer; flex-shrink:0; }
 .pxf-top-options input[type=number] {
-    width:40px; background:#111; color:#e0e0e0; border:1px solid #3a3d40;
+    width:40px; background:#11111b; color:#cdd6f4; border:1px solid #45475a;
     border-radius:3px; padding:2px 3px; font-size:11px; font-family:monospace; flex-shrink:0;
 }
 /* Paint-specific: BG preview swatch */
-.ppx-bg-preview { width:20px; height:20px; border-radius:3px; border:1px solid #444; cursor:pointer; flex-shrink:0; }
+.ppx-bg-preview { width:20px; height:20px; border-radius:3px; border:1px solid #45475a; cursor:pointer; flex-shrink:0; }
 /* Paint-specific: transform panel elements */
 .ppx-transform-warn {
-    background:#431407; border:1px solid #c2410c; border-radius:3px;
-    padding:4px 7px; font-size:9px; color:#fca97b; text-align:center;
+    background:#1e1e2e; border:1px solid #f38ba8; border-radius:3px;
+    padding:4px 7px; font-size:9px; color:#f38ba8; text-align:center;
     margin-bottom:4px; line-height:1.4;
 }
-/* Paint-specific: layer item drag states (old class compat) */
-.pxf-layer-item.ppx-drag-over-top    { border-top:2px solid #f66744 !important; }
-.pxf-layer-item.ppx-drag-over-bottom { border-bottom:2px solid #f66744 !important; }
+/* Paint-specific: layer item drag states */
+.pxf-layer-item.ppx-drag-over-top    { border-top:2px solid #89b4fa !important; }
+.pxf-layer-item.ppx-drag-over-bottom { border-bottom:2px solid #89b4fa !important; }
 .pxf-layer-item.ppx-dragging { opacity:0.35; }
-/* Paint-specific: help strip (now uses framework status bar) */
+/* Paint-specific: help strip */
 .ppx-help-strip-unused {
 }
 /* Paint-specific: BG color popup */
 .ppx-color-popup {
-    position:fixed; z-index:20000; background:#1a1c1d;
-    border:1px solid #f66744; border-radius:6px;
+    position:fixed; z-index:20000; background:#1e1e2e;
+    border:1px solid #89b4fa; border-radius:6px;
     padding:8px; display:flex; flex-direction:column; gap:6px;
     box-shadow:0 8px 24px rgba(0,0,0,.6);
 }
@@ -144,7 +143,7 @@ export class PaintStudio {
     };
     this.fillTol = 170;
     // Pen pressure toggles (like Photoshop)
-    this.pressureSize = true;     // pen pressure → brush size
+    this.pressureSize = true; // pen pressure → brush size
     this.pressureOpacity = false; // pen pressure → opacity/flow
     this._currentPointerType = "mouse";
     this.fgColor = "#000000";
@@ -423,7 +422,7 @@ export class PaintStudio {
     const toolbox = document.createElement("div");
     toolbox.style.cssText =
       "display:grid;grid-template-columns:repeat(4,1fr);gap:4px;";
-    const UI_ICON = "/pixaroma/assets/icons/ui/";
+    const UI_ICON = "/linuxtechlab/assets/icons/ui/";
     const TOOLS = [
       {
         id: "transform",
@@ -538,7 +537,7 @@ export class PaintStudio {
     const resetColorBtn = document.createElement("button");
     resetColorBtn.className = "ppx-swap-btn";
     resetColorBtn.title = "Reset to Black/White (D)";
-    resetColorBtn.innerHTML = `<img src="/pixaroma/assets/icons/ui/reset.svg" style="width:14px;height:14px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:2px;"><span style="vertical-align:middle;font-size:11px;">Reset to BW</span>`;
+    resetColorBtn.innerHTML = `<img src="/linuxtechlab/assets/icons/ui/reset.svg" style="width:14px;height:14px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:2px;"><span style="vertical-align:middle;font-size:11px;">Reset to BW</span>`;
     resetColorBtn.addEventListener("click", () => {
       this.fgColor = "#000000";
       this.bgColor2 = "#ffffff";
@@ -582,11 +581,21 @@ export class PaintStudio {
     this._hslBaseColor = this.fgColor;
 
     const captureBase = () => {
-      this._hslBaseColor = this.colorMode === "fg" ? this.fgColor : this.bgColor2;
+      this._hslBaseColor =
+        this.colorMode === "fg" ? this.fgColor : this.bgColor2;
       // Reset all sliders to 0 so deltas start fresh from current color
-      if (this.el.hsl_h) { this.el.hsl_h.slider.value = 0; this.el.hsl_h.num.value = 0; }
-      if (this.el.hsl_s) { this.el.hsl_s.slider.value = 0; this.el.hsl_s.num.value = 0; }
-      if (this.el.hsl_l) { this.el.hsl_l.slider.value = 0; this.el.hsl_l.num.value = 0; }
+      if (this.el.hsl_h) {
+        this.el.hsl_h.slider.value = 0;
+        this.el.hsl_h.num.value = 0;
+      }
+      if (this.el.hsl_s) {
+        this.el.hsl_s.slider.value = 0;
+        this.el.hsl_s.num.value = 0;
+      }
+      if (this.el.hsl_l) {
+        this.el.hsl_l.slider.value = 0;
+        this.el.hsl_l.num.value = 0;
+      }
     };
 
     const mkHslRow = (label, min, max, field) => {
@@ -649,10 +658,38 @@ export class PaintStudio {
     paletteLbl.textContent = "Palette";
     colorArea.appendChild(paletteLbl);
     const paletteColors = [
-      "#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc", "#d9d9d9", "#ffffff",
-      "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#00bcd4", "#009688",
-      "#4caf50", "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#795548",
-      "#ef9a9a", "#ce93d8", "#90caf9", "#80deea", "#a5d6a7", "#fff59d", "#ffcc80", "#bcaaa4",
+      "#000000",
+      "#434343",
+      "#666666",
+      "#999999",
+      "#b7b7b7",
+      "#cccccc",
+      "#d9d9d9",
+      "#ffffff",
+      "#f44336",
+      "#e91e63",
+      "#9c27b0",
+      "#673ab7",
+      "#3f51b5",
+      "#2196f3",
+      "#00bcd4",
+      "#009688",
+      "#4caf50",
+      "#8bc34a",
+      "#cddc39",
+      "#ffeb3b",
+      "#ffc107",
+      "#ff9800",
+      "#ff5722",
+      "#795548",
+      "#ef9a9a",
+      "#ce93d8",
+      "#90caf9",
+      "#80deea",
+      "#a5d6a7",
+      "#fff59d",
+      "#ffcc80",
+      "#bcaaa4",
     ];
     const paletteGrid = document.createElement("div");
     paletteGrid.className = "ppx-swatches-grid";
@@ -1074,11 +1111,15 @@ export class PaintStudio {
         { value: "birefnet-general", label: "Best" },
       ],
       value: "auto",
-      onChange: (val) => { this._bgRemovalQuality = val; },
+      onChange: (val) => {
+        this._bgRemovalQuality = val;
+      },
     });
     select.style.width = "100%";
     this._bgRemovalSelect = select;
-    panel.content.appendChild(createRow("Model", select, { labelWidth: "80px" }));
+    panel.content.appendChild(
+      createRow("Model", select, { labelWidth: "80px" }),
+    );
 
     const statusLine = document.createElement("div");
     statusLine.style.cssText =
@@ -1087,46 +1128,50 @@ export class PaintStudio {
     panel.content.appendChild(statusLine);
     this._bgRemovalStatusLine = statusLine;
 
-    PaintAPI.removeBgInfo().then((info) => {
-      if (!info.rembgInstalled) {
-        statusLine.innerHTML =
-          '<span style="color:#e57">\u2717 rembg not installed</span> \u2014 ' +
-          'run <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">python.exe -m pip install rembg</code> ' +
-          "in ComfyUI's python_embeded folder, then restart.";
-        select.disabled = true;
-        this._bgRemovalUnavailable = true;
-        this._syncBgRemovalButton();
-        return;
-      }
-      const models = Array.isArray(info.models) ? info.models : [];
-      if (models.length) {
-        select.innerHTML = "";
-        for (const m of models) {
-          const opt = document.createElement("option");
-          opt.value = m.id;
-          let label = m.label;
-          if (m.id !== "auto") {
-            const parts = [];
-            if (m.sizeMB) parts.push(`${m.sizeMB} MB`);
-            if (m.downloaded) parts.push("\u2713 downloaded");
-            else if (m.available) parts.push("will download");
-            if (parts.length) label += ` \u2014 ${parts.join(", ")}`;
-          }
-          opt.textContent = label;
-          opt.disabled = !m.available;
-          select.appendChild(opt);
+    PaintAPI.removeBgInfo()
+      .then((info) => {
+        if (!info.rembgInstalled) {
+          statusLine.innerHTML =
+            '<span style="color:#e57">\u2717 rembg not installed</span> \u2014 ' +
+            'run <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">python.exe -m pip install rembg</code> ' +
+            "in ComfyUI's python_embeded folder, then restart.";
+          select.disabled = true;
+          this._bgRemovalUnavailable = true;
+          this._syncBgRemovalButton();
+          return;
         }
-        select.value = "auto";
-      }
-      const firstMissing = models.find((m) => m.available && !m.downloaded && m.id !== "auto");
-      const hint = firstMissing
-        ? `First use of a new model will download to <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>.`
-        : `Models: <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>`;
-      statusLine.innerHTML =
-        `<span style="color:#4a7">\u2713 rembg ${info.rembgVersion || ""}</span> \u00b7 ${hint}`;
-    }).catch(() => {
-      statusLine.textContent = "Couldn't query rembg status \u2014 backend unreachable.";
-    });
+        const models = Array.isArray(info.models) ? info.models : [];
+        if (models.length) {
+          select.innerHTML = "";
+          for (const m of models) {
+            const opt = document.createElement("option");
+            opt.value = m.id;
+            let label = m.label;
+            if (m.id !== "auto") {
+              const parts = [];
+              if (m.sizeMB) parts.push(`${m.sizeMB} MB`);
+              if (m.downloaded) parts.push("\u2713 downloaded");
+              else if (m.available) parts.push("will download");
+              if (parts.length) label += ` \u2014 ${parts.join(", ")}`;
+            }
+            opt.textContent = label;
+            opt.disabled = !m.available;
+            select.appendChild(opt);
+          }
+          select.value = "auto";
+        }
+        const firstMissing = models.find(
+          (m) => m.available && !m.downloaded && m.id !== "auto",
+        );
+        const hint = firstMissing
+          ? `First use of a new model will download to <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>.`
+          : `Models: <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>`;
+        statusLine.innerHTML = `<span style="color:#4a7">\u2713 rembg ${info.rembgVersion || ""}</span> \u00b7 ${hint}`;
+      })
+      .catch(() => {
+        statusLine.textContent =
+          "Couldn't query rembg status \u2014 backend unreachable.";
+      });
 
     container.insertBefore(panel.el, sidebarFooter);
   }
@@ -1136,7 +1181,10 @@ export class PaintStudio {
     if (!btn) return;
     const ly = this.layers[this.activeIdx];
     const enabled =
-      !this._bgRemovalUnavailable && !!ly && !ly.locked && ly.sourceKind === "image";
+      !this._bgRemovalUnavailable &&
+      !!ly &&
+      !ly.locked &&
+      ly.sourceKind === "image";
     btn.style.opacity = enabled ? "1" : "0.3";
     btn.style.pointerEvents = enabled ? "auto" : "none";
     btn.disabled = !enabled;
@@ -1150,7 +1198,10 @@ export class PaintStudio {
     const px = ly.ctx.getImageData(0, 0, this.docW, this.docH).data;
     let hasContent = false;
     for (let i = 3; i < px.length; i += 4) {
-      if (px[i] > 0) { hasContent = true; break; }
+      if (px[i] > 0) {
+        hasContent = true;
+        break;
+      }
     }
     if (!hasContent) {
       this._setStatus("Layer is empty \u2014 nothing to remove");
@@ -1182,7 +1233,7 @@ export class PaintStudio {
         );
       } else if (res.error) {
         this._setStatus("AI Remove Background failed: " + res.error);
-        console.error("[Pixaroma Paint] AI Remove BG error:", res.error);
+        console.error("[LinuxTechLab Paint] AI Remove BG error:", res.error);
       } else if (res.image) {
         const img = new Image();
         img.crossOrigin = "Anonymous";
@@ -1203,7 +1254,7 @@ export class PaintStudio {
       }
     } catch (err) {
       this._setStatus("AI Remove Background failed");
-      console.error("[Pixaroma Paint] AI Remove BG error:", err);
+      console.error("[LinuxTechLab Paint] AI Remove BG error:", err);
     } finally {
       btn.textContent = originalText;
       this._syncBgRemovalButton();

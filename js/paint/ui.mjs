@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Paint Studio — Color panel, tool options bar, layer panel sync,
+// LinuxTechLab Paint Studio — Color panel, tool options bar, layer panel sync,
 //   document properties, cursor overlay, save, BG color popup
 // ============================================================
 import {
@@ -168,9 +168,18 @@ proto._updateColorUI = function (preserveHSV) {
     this.hsv = rgbToHsv(r, g, b);
     // Reset HSL sliders when color changes from a non-HSL source
     this._hslBaseColor = hex;
-    if (this.el.hsl_h) { this.el.hsl_h.slider.value = 0; this.el.hsl_h.num.value = 0; }
-    if (this.el.hsl_s) { this.el.hsl_s.slider.value = 0; this.el.hsl_s.num.value = 0; }
-    if (this.el.hsl_l) { this.el.hsl_l.slider.value = 0; this.el.hsl_l.num.value = 0; }
+    if (this.el.hsl_h) {
+      this.el.hsl_h.slider.value = 0;
+      this.el.hsl_h.num.value = 0;
+    }
+    if (this.el.hsl_s) {
+      this.el.hsl_s.slider.value = 0;
+      this.el.hsl_s.num.value = 0;
+    }
+    if (this.el.hsl_l) {
+      this.el.hsl_l.slider.value = 0;
+      this.el.hsl_l.num.value = 0;
+    }
   }
   this._drawSVGradient();
   this._drawHueBar();
@@ -332,7 +341,9 @@ proto._setTool = function (tool) {
 
   // Clear overlay canvas when leaving transform (handles are drawn there)
   if (prevTool === "transform" && tool !== "transform" && this.el.overlayCvs) {
-    this.el.overlayCvs.getContext("2d").clearRect(0, 0, this.el.overlayCvs.width, this.el.overlayCvs.height);
+    this.el.overlayCvs
+      .getContext("2d")
+      .clearRect(0, 0, this.el.overlayCvs.width, this.el.overlayCvs.height);
   }
 
   // When entering transform mode, auto-set pivot to content center
@@ -455,12 +466,13 @@ proto._updateToolOptions = function () {
     this.tool === "eraser" ||
     this.tool === "smudge"
   ) {
-    const UI = "/pixaroma/assets/icons/ui/";
+    const UI = "/linuxtechlab/assets/icons/ui/";
 
     // Helper: create an SVG icon button (white when inactive, white-on-orange when active)
     const mkIconBtn = (svgName, title, active, extraClass) => {
       const btn = document.createElement("div");
-      btn.className = "ppx-shape-btn " + (extraClass || "") + (active ? " active" : "");
+      btn.className =
+        "ppx-shape-btn " + (extraClass || "") + (active ? " active" : "");
       btn.title = title;
       btn.style.cssText += "padding:3px;user-select:none;";
       const img = document.createElement("img");
@@ -481,11 +493,18 @@ proto._updateToolOptions = function () {
         { id: "flat", svg: "flat.svg" },
       ];
       SHAPES.forEach((sh) => {
-        const btn = mkIconBtn(sh.svg, sh.id, this.brush.shape === sh.id, "ppx-brush-shape");
+        const btn = mkIconBtn(
+          sh.svg,
+          sh.id,
+          this.brush.shape === sh.id,
+          "ppx-brush-shape",
+        );
         btn.addEventListener("click", () => {
           this.brush.shape = sh.id;
           this.engine._stampKey = "";
-          bar.querySelectorAll(".ppx-brush-shape").forEach((b) => b.classList.remove("active"));
+          bar
+            .querySelectorAll(".ppx-brush-shape")
+            .forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
         });
         bar.appendChild(btn);
@@ -504,8 +523,26 @@ proto._updateToolOptions = function () {
         });
         return btn;
       };
-      bar.appendChild(mkPenToggle("pen-size.svg", "Pen pressure \u2192 Size", this.pressureSize, (v) => { this.pressureSize = v; }));
-      bar.appendChild(mkPenToggle("pen-opacity.svg", "Pen pressure \u2192 Opacity", this.pressureOpacity, (v) => { this.pressureOpacity = v; }));
+      bar.appendChild(
+        mkPenToggle(
+          "pen-size.svg",
+          "Pen pressure \u2192 Size",
+          this.pressureSize,
+          (v) => {
+            this.pressureSize = v;
+          },
+        ),
+      );
+      bar.appendChild(
+        mkPenToggle(
+          "pen-opacity.svg",
+          "Pen pressure \u2192 Opacity",
+          this.pressureOpacity,
+          (v) => {
+            this.pressureOpacity = v;
+          },
+        ),
+      );
     }
 
     // ── Reset button ──
@@ -514,13 +551,50 @@ proto._updateToolOptions = function () {
     resetBtn.className = "pxf-btn-sm";
     resetBtn.title = "Reset brush to defaults";
     resetBtn.textContent = "\u21ba";
-    resetBtn.style.cssText = "width:24px;height:22px;font-size:13px;flex-shrink:0;";
+    resetBtn.style.cssText =
+      "width:24px;height:22px;font-size:13px;flex-shrink:0;";
     resetBtn.addEventListener("click", () => {
       const defaults = {
-        brush: { size: 20, opacity: 100, flow: 80, hardness: 80, shape: "round", angle: 0, spacing: 10, scatter: 0 },
-        pencil: { size: 4, opacity: 100, flow: 100, hardness: 100, shape: "square", angle: 0, spacing: 5, scatter: 0 },
-        eraser: { size: 30, opacity: 100, flow: 100, hardness: 80, shape: "round", angle: 0, spacing: 10, scatter: 0 },
-        smudge: { size: 20, opacity: 100, flow: 50, hardness: 80, shape: "round", angle: 0, spacing: 10, scatter: 0 },
+        brush: {
+          size: 20,
+          opacity: 100,
+          flow: 80,
+          hardness: 80,
+          shape: "round",
+          angle: 0,
+          spacing: 10,
+          scatter: 0,
+        },
+        pencil: {
+          size: 4,
+          opacity: 100,
+          flow: 100,
+          hardness: 100,
+          shape: "square",
+          angle: 0,
+          spacing: 5,
+          scatter: 0,
+        },
+        eraser: {
+          size: 30,
+          opacity: 100,
+          flow: 100,
+          hardness: 80,
+          shape: "round",
+          angle: 0,
+          spacing: 10,
+          scatter: 0,
+        },
+        smudge: {
+          size: 20,
+          opacity: 100,
+          flow: 50,
+          hardness: 80,
+          shape: "round",
+          angle: 0,
+          spacing: 10,
+          scatter: 0,
+        },
       };
       this.brush = { ...(defaults[this.tool] || defaults.brush) };
       if (this.tool === "smudge") this.smudgeStrength = 50;
@@ -540,7 +614,12 @@ proto._updateToolOptions = function () {
     add("Size", sz.range);
     bar.appendChild(sz.num);
     if (this.tool !== "smudge") {
-      const op = mkRange(0, 100, this.brush.opacity, (v) => (this.brush.opacity = v));
+      const op = mkRange(
+        0,
+        100,
+        this.brush.opacity,
+        (v) => (this.brush.opacity = v),
+      );
       add("Opacity%", op.range);
       bar.appendChild(op.num);
       const fl = mkRange(0, 100, this.brush.flow, (v) => (this.brush.flow = v));
@@ -555,10 +634,20 @@ proto._updateToolOptions = function () {
     }
 
     if (this.tool === "brush" || this.tool === "pencil") {
-      const sp = mkRange(1, 200, this.brush.spacing, (v) => (this.brush.spacing = v));
+      const sp = mkRange(
+        1,
+        200,
+        this.brush.spacing,
+        (v) => (this.brush.spacing = v),
+      );
       add("Spacing%", sp.range);
       bar.appendChild(sp.num);
-      const sc = mkRange(0, 100, this.brush.scatter, (v) => (this.brush.scatter = v));
+      const sc = mkRange(
+        0,
+        100,
+        this.brush.scatter,
+        (v) => (this.brush.scatter = v),
+      );
       add("Scatter", sc.range);
       bar.appendChild(sc.num);
       // Angle is handcrafted (signed -180..180 range + bidirectional
@@ -572,7 +661,8 @@ proto._updateToolOptions = function () {
       angSlide.min = -180;
       angSlide.max = 180;
       angSlide.value = this.brush.angle;
-      angSlide.style.cssText = "width:100px;max-width:100px;flex:0 0 auto;cursor:pointer;";
+      angSlide.style.cssText =
+        "width:100px;max-width:100px;flex:0 0 auto;cursor:pointer;";
       const angN = document.createElement("input");
       angN.type = "number";
       angN.min = -180;
@@ -958,29 +1048,31 @@ proto._save = async function () {
     const compositeDataURL = finalCvs.toDataURL("image/png");
 
     // Upload all layers in parallel
-    const layersMeta = await Promise.all(this.layers.map(async (ly) => {
-      let src = "";
-      try {
-        const res = await PaintAPI.uploadLayer(
-          ly.id,
-          ly.canvas.toDataURL("image/png"),
-        );
-        src = res.path || "";
-      } catch (e) {
-        console.warn("[Paint] Layer upload failed:", e);
-      }
-      return {
-        id: ly.id,
-        name: ly.name,
-        visible: ly.visible,
-        locked: ly.locked,
-        opacity: ly.opacity,
-        blend_mode: ly.blendMode,
-        source_kind: ly.sourceKind,
-        transform: ly.transform,
-        src,
-      };
-    }));
+    const layersMeta = await Promise.all(
+      this.layers.map(async (ly) => {
+        let src = "";
+        try {
+          const res = await PaintAPI.uploadLayer(
+            ly.id,
+            ly.canvas.toDataURL("image/png"),
+          );
+          src = res.path || "";
+        } catch (e) {
+          console.warn("[Paint] Layer upload failed:", e);
+        }
+        return {
+          id: ly.id,
+          name: ly.name,
+          visible: ly.visible,
+          locked: ly.locked,
+          opacity: ly.opacity,
+          blend_mode: ly.blendMode,
+          source_kind: ly.sourceKind,
+          transform: ly.transform,
+          src,
+        };
+      }),
+    );
 
     let compositePath = "";
     try {

@@ -1,16 +1,15 @@
 import os
-import sys
-import uuid
-import wave
 import shutil
 import subprocess
+import sys
 import threading
+import uuid
+import wave
 
+import comfy.model_management
+import folder_paths
 import numpy as np
 import torch
-
-import folder_paths
-import comfy.model_management
 
 
 def _resolve_ffmpeg():
@@ -19,6 +18,7 @@ def _resolve_ffmpeg():
     back to ffmpeg on PATH."""
     try:
         import imageio_ffmpeg
+
         return imageio_ffmpeg.get_ffmpeg_exe()
     except Exception:
         pass
@@ -26,7 +26,7 @@ def _resolve_ffmpeg():
     if on_path:
         return on_path
     raise RuntimeError(
-        "[Pixaroma] Save Mp4 — ffmpeg binary not found.\n"
+        "[LinuxTechLab] Save Mp4 — ffmpeg binary not found.\n"
         "   Install one of:\n"
         "     pip install imageio-ffmpeg     (recommended, no system install)\n"
         "     https://ffmpeg.org/download.html  (system-wide)\n"
@@ -50,7 +50,7 @@ def _next_mp4_counter(folder, prefix):
     for f in os.listdir(folder):
         if not f.startswith(pat) or not f.endswith(".mp4"):
             continue
-        middle = f[len(pat):-len(".mp4")]
+        middle = f[len(pat) : -len(".mp4")]
         try:
             n = int(middle)
         except ValueError:
@@ -68,7 +68,7 @@ def _write_wav_pcm16(path, waveform, sample_rate):
         waveform = waveform[0]
     n_ch = int(waveform.shape[0])
     if n_ch == 0:
-        raise ValueError("[Pixaroma] Save Mp4 — audio waveform has 0 channels.")
+        raise ValueError("[LinuxTechLab] Save Mp4 — audio waveform has 0 channels.")
     samples = waveform.detach().cpu().numpy()
     samples = np.clip(samples, -1.0, 1.0)
     samples = (samples * 32767.0).astype(np.int16)
@@ -80,7 +80,7 @@ def _write_wav_pcm16(path, waveform, sample_rate):
         f.writeframes(interleaved)
 
 
-class PixaromaSaveMp4:
+class LinuxTechLabSaveMp4:
     """Encode an IMAGE batch (and optional AUDIO) to a single H.264 mp4.
     save_mode=save writes to ComfyUI's output/ folder; save_mode=preview
     writes to ComfyUI's temp/ folder (auto-cleared on restart) so users can
@@ -96,29 +96,66 @@ class PixaromaSaveMp4:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "video_frames": ("IMAGE", {"tooltip": "Frame batch to encode. Wire Audio React Pixaroma's video_frames output here."}),
-                "fps": ("FLOAT", {"default": 24.0, "min": 1.0, "max": 120.0, "step": 1.0,
-                    "tooltip": "Output frame rate. Wire Audio React Pixaroma's fps output here so it always matches what produced the frames."}),
-                "filename_prefix": ("STRING", {"default": "Video",
-                    "tooltip": "Filename stem. The node appends a 5-digit counter and .mp4 (e.g. Video_00001.mp4)."}),
-                "save_mode": (["save", "preview"], {"default": "save",
-                    "tooltip": "save: write to ComfyUI's output/ folder, kept across restarts. preview: write to ComfyUI's temp/ folder, auto-cleared on restart — use while iterating so you don't clutter output/. The in-node video preview works the same in both modes."}),
-                "trim_to_audio": ("BOOLEAN", {"default": True,
-                    "tooltip": "When audio is connected, end the video at the audio's length (uses ffmpeg -shortest). Off = keep all video frames even if longer than audio."}),
+                "video_frames": (
+                    "IMAGE",
+                    {
+                        "tooltip": "Frame batch to encode. Wire Audio React LinuxTechLab's video_frames output here."
+                    },
+                ),
+                "fps": (
+                    "FLOAT",
+                    {
+                        "default": 24.0,
+                        "min": 1.0,
+                        "max": 120.0,
+                        "step": 1.0,
+                        "tooltip": "Output frame rate. Wire Audio React LinuxTechLab's fps output here so it always matches what produced the frames.",
+                    },
+                ),
+                "filename_prefix": (
+                    "STRING",
+                    {
+                        "default": "Video",
+                        "tooltip": "Filename stem. The node appends a 5-digit counter and .mp4 (e.g. Video_00001.mp4).",
+                    },
+                ),
+                "save_mode": (
+                    ["save", "preview"],
+                    {
+                        "default": "save",
+                        "tooltip": "save: write to ComfyUI's output/ folder, kept across restarts. preview: write to ComfyUI's temp/ folder, auto-cleared on restart — use while iterating so you don't clutter output/. The in-node video preview works the same in both modes.",
+                    },
+                ),
+                "trim_to_audio": (
+                    "BOOLEAN",
+                    {
+                        "default": True,
+                        "tooltip": "When audio is connected, end the video at the audio's length (uses ffmpeg -shortest). Off = keep all video frames even if longer than audio.",
+                    },
+                ),
             },
             "optional": {
-                "audio": ("AUDIO", {"tooltip": "Optional audio track to mux into the mp4 as AAC 192k. Connect Audio React Pixaroma's audio output here."}),
+                "audio": (
+                    "AUDIO",
+                    {
+                        "tooltip": "Optional audio track to mux into the mp4 as AAC 192k. Connect Audio React LinuxTechLab's audio output here."
+                    },
+                ),
             },
         }
 
     RETURN_TYPES = ()
     FUNCTION = "save"
     OUTPUT_NODE = True
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
 
-    def save(self, video_frames, fps, filename_prefix, save_mode, trim_to_audio, audio=None):
+    def save(
+        self, video_frames, fps, filename_prefix, save_mode, trim_to_audio, audio=None
+    ):
         if video_frames is None or video_frames.shape[0] == 0:
-            raise ValueError("[Pixaroma] Save Mp4 — input video_frames batch is empty.")
+            raise ValueError(
+                "[LinuxTechLab] Save Mp4 — input video_frames batch is empty."
+            )
 
         ffmpeg_path = _resolve_ffmpeg()
         crf = self._CRF
@@ -132,9 +169,9 @@ class PixaromaSaveMp4:
         # the opaque "height not divisible by 2" ffmpeg crash.
         if pix_fmt == "yuv420p" and (W % 2 != 0 or H % 2 != 0):
             raise ValueError(
-                f"[Pixaroma] Save Mp4 — encoder requires even width and "
+                f"[LinuxTechLab] Save Mp4 — encoder requires even width and "
                 f"height, got {W}x{H}. Resize input frames to even dimensions "
-                f"(Audio React Pixaroma snaps to multiples of 8 automatically)."
+                f"(Audio React LinuxTechLab snaps to multiples of 8 automatically)."
             )
 
         # Resolve subfolder + base filename via folder_paths (handles
@@ -152,7 +189,10 @@ class PixaromaSaveMp4:
             out_dir = folder_paths.get_output_directory()
             file_type = "output"
         full_folder, fname, _ignored, subfolder, _ = folder_paths.get_save_image_path(
-            filename_prefix, out_dir, W, H,
+            filename_prefix,
+            out_dir,
+            W,
+            H,
         )
         os.makedirs(full_folder, exist_ok=True)
         # Hold a lock around scan + claim so two save_mp4 nodes in the
@@ -177,32 +217,48 @@ class PixaromaSaveMp4:
         # If audio is supplied, write it to a temp wav alongside so ffmpeg can
         # mux both inputs in a single pass.
         temp_audio_path = None
-        if audio is not None and audio.get("waveform") is not None and audio["waveform"].numel() > 0:
+        if (
+            audio is not None
+            and audio.get("waveform") is not None
+            and audio["waveform"].numel() > 0
+        ):
             temp_audio_path = os.path.join(
                 folder_paths.get_temp_directory(),
-                f"pixaroma_save_mp4_{uuid.uuid4().hex}.wav",
+                f"linuxtechlab_save_mp4_{uuid.uuid4().hex}.wav",
             )
             os.makedirs(os.path.dirname(temp_audio_path), exist_ok=True)
             _write_wav_pcm16(temp_audio_path, audio["waveform"], audio["sample_rate"])
 
         # Build ffmpeg command. Frames piped on stdin as raw RGB24.
         cmd = [
-            ffmpeg_path, "-y",
-            "-loglevel", "error",
-            "-f", "rawvideo",
-            "-vcodec", "rawvideo",
-            "-pix_fmt", "rgb24",
-            "-s", f"{W}x{H}",
-            "-r", str(fps_int),
-            "-i", "-",
+            ffmpeg_path,
+            "-y",
+            "-loglevel",
+            "error",
+            "-f",
+            "rawvideo",
+            "-vcodec",
+            "rawvideo",
+            "-pix_fmt",
+            "rgb24",
+            "-s",
+            f"{W}x{H}",
+            "-r",
+            str(fps_int),
+            "-i",
+            "-",
         ]
         if temp_audio_path is not None:
             cmd += ["-i", temp_audio_path]
         cmd += [
-            "-c:v", "libx264",
-            "-preset", "medium",
-            "-crf", str(crf),
-            "-pix_fmt", pix_fmt,
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            str(crf),
+            "-pix_fmt",
+            pix_fmt,
         ]
         if temp_audio_path is not None:
             cmd += ["-c:a", "aac", "-b:a", "192k"]
@@ -210,9 +266,11 @@ class PixaromaSaveMp4:
                 cmd += ["-shortest"]
         cmd += [out_path]
 
-        print(f"[Pixaroma] Save Mp4 [{save_mode}] — writing {n_frames} frames @ {fps_int}fps "
-              f"({W}x{H}, crf={crf}, {pix_fmt}"
-              f"{', +audio' if temp_audio_path else ''}) -> {out_filename}")
+        print(
+            f"[LinuxTechLab] Save Mp4 [{save_mode}] — writing {n_frames} frames @ {fps_int}fps "
+            f"({W}x{H}, crf={crf}, {pix_fmt}"
+            f"{', +audio' if temp_audio_path else ''}) -> {out_filename}"
+        )
 
         proc = subprocess.Popen(
             cmd,
@@ -239,8 +297,9 @@ class PixaromaSaveMp4:
         try:
             for i in range(n_frames):
                 comfy.model_management.throw_exception_if_processing_interrupted()
-                frame_u8 = (frames[i].clamp(0.0, 1.0).cpu().numpy() * 255.0
-                            ).astype(np.uint8)
+                frame_u8 = (frames[i].clamp(0.0, 1.0).cpu().numpy() * 255.0).astype(
+                    np.uint8
+                )
                 proc.stdin.write(frame_u8.tobytes())
             proc.stdin.close()
             proc.wait()
@@ -248,7 +307,7 @@ class PixaromaSaveMp4:
             if proc.returncode != 0:
                 stderr = b"".join(stderr_chunks).decode("utf-8", errors="replace")
                 raise RuntimeError(
-                    f"[Pixaroma] Save Mp4 — ffmpeg failed (exit {proc.returncode}):\n"
+                    f"[LinuxTechLab] Save Mp4 — ffmpeg failed (exit {proc.returncode}):\n"
                     f"{stderr}"
                 )
         finally:
@@ -272,26 +331,28 @@ class PixaromaSaveMp4:
                     pass
 
         if save_mode == "preview":
-            print(f"[Pixaroma] Save Mp4 — preview written to temp/ (auto-cleared on restart): {out_path}")
+            print(
+                f"[LinuxTechLab] Save Mp4 — preview written to temp/ (auto-cleared on restart): {out_path}"
+            )
         else:
-            print(f"[Pixaroma] Save Mp4 — saved {out_path}")
+            print(f"[LinuxTechLab] Save Mp4 — saved {out_path}")
 
         # Two output keys so the file is visible BOTH in ComfyUI's standard
         # output panel and in our in-node <video> preview (js/save_mp4/index.js
-        # listens for `pixaroma_videos`).
+        # listens for `linuxtechlab_videos`).
         entry = {
             "filename": out_filename,
             "subfolder": subfolder,
             "type": file_type,
             "format": "video/mp4",
         }
-        return {"ui": {"images": [entry], "pixaroma_videos": [entry]}}
+        return {"ui": {"images": [entry], "linuxtechlab_videos": [entry]}}
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaSaveMp4": PixaromaSaveMp4,
+    "LinuxTechLabSaveMp4": LinuxTechLabSaveMp4,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaSaveMp4": "Save Mp4 Pixaroma",
+    "LinuxTechLabSaveMp4": "Save Mp4 LinuxTechLab",
 }

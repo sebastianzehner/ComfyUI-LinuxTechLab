@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Paint Studio — Tool dispatch: brush, pencil, eraser, smudge, fill, pick, shape
+// LinuxTechLab Paint Studio — Tool dispatch: brush, pencil, eraser, smudge, fill, pick, shape
 // ============================================================
 import { PaintStudio } from "./core.mjs";
 
@@ -121,12 +121,14 @@ proto._toolMouseMove = function (x, y, e) {
   if (this.tool === "smudge") {
     if (this._lastSmudgePt) {
       // Interpolate between last point and current for smooth smudging
-      const lx = this._lastSmudgePt.x, ly2 = this._lastSmudgePt.y;
+      const lx = this._lastSmudgePt.x,
+        ly2 = this._lastSmudgePt.y;
       const dist = Math.hypot(x - lx, y - ly2);
       const step = Math.max(2, this.brush.size * 0.3);
       if (dist > step) {
         const steps = Math.ceil(dist / step);
-        let px = lx, py = ly2;
+        let px = lx,
+          py = ly2;
         for (let i = 1; i <= steps; i++) {
           const t = i / steps;
           const nx = lx + (x - lx) * t;
@@ -229,7 +231,9 @@ proto._toolMouseUp = function (x, y) {
     this._shapeStart = null;
     // Clear cursor canvas preview
     if (this.el.cursorCvs)
-      this.el.cursorCvs.getContext("2d").clearRect(0, 0, this.el.cursorCvs.width, this.el.cursorCvs.height);
+      this.el.cursorCvs
+        .getContext("2d")
+        .clearRect(0, 0, this.el.cursorCvs.width, this.el.cursorCvs.height);
   }
 
   this.engine.endStroke();

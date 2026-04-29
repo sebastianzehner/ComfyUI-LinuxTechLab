@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Paint Studio — Mouse/keyboard event binding & routing
-// ============================================================
+// ==================================================================
+// LinuxTechLab Paint Studio — Mouse/keyboard event binding & routing
+// ==================================================================
 import { PaintStudio } from "./core.mjs";
 
 const proto = PaintStudio.prototype;
@@ -20,7 +20,10 @@ proto._bindEvents = function () {
     e.preventDefault();
     e.stopPropagation();
     // Blur any focused input so keyboard shortcuts work immediately
-    if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "SELECT")
+    if (
+      document.activeElement?.tagName === "INPUT" ||
+      document.activeElement?.tagName === "SELECT"
+    )
       document.activeElement.blur();
     // Safety: clear Alt-eyedropper if it got stuck (missed keyup)
     if (this._altDown && !e.altKey) {
@@ -44,7 +47,9 @@ proto._bindEvents = function () {
     this._handleMouseMove(e);
   };
   this._onPointerUp = (e) => {
-    try { ws.releasePointerCapture(e.pointerId); } catch {}
+    try {
+      ws.releasePointerCapture(e.pointerId);
+    } catch {}
     this._handleMouseUp(e);
   };
   this._onWheel = (e) => this._handleWheel(e);
@@ -78,7 +83,8 @@ proto._unbindEvents = function () {
   window.removeEventListener("pointerup", this._onPointerUp);
   window.removeEventListener("keydown", this._onKeyDown, { capture: true });
   window.removeEventListener("keyup", this._onKeyUp, { capture: true });
-  if (this._onWindowBlur) window.removeEventListener("blur", this._onWindowBlur);
+  if (this._onWindowBlur)
+    window.removeEventListener("blur", this._onWindowBlur);
   if (this._onColorMove)
     window.removeEventListener("pointermove", this._onColorMove);
   if (this._onColorUp) window.removeEventListener("pointerup", this._onColorUp);
@@ -419,7 +425,7 @@ proto._handleKeyDown = function (e) {
     (ae?.tagName === "INPUT" ||
       ae?.tagName === "TEXTAREA" ||
       ae?.tagName === "SELECT") &&
-    !ae?.dataset?.pixaromaTrap
+    !ae?.dataset?.linuxtechlabTrap
   ) {
     if (alwaysAllow.includes(key)) {
       ae.blur();
@@ -440,7 +446,8 @@ proto._handleKeyDown = function (e) {
       const eyedropperSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 64 64'><path fill='white' stroke='black' stroke-width='2' d='M44.344,34.025l-8.3-8.371c-2.259-2.279-4.562-4.364-6.612-6.83-1.947-2.342-1.195-5.903,1.032-7.668,2.424-1.92,5.755-1.59,7.857.732.463-.189.666-.577.987-.896l7.088-7.039c2.095-2.08,5.11-2.749,8.081-2.168,4.555.891,7.864,5.37,7.496,9.833-.176,2.134-.749,4.229-2.278,5.781l-7.874,7.99c1.699,1.471,2.425,3.306,2.185,5.49-.27,2.459-2.329,4.584-4.806,4.814-1.869.174-3.496-.298-4.856-1.669Z'/><path fill='white' stroke='black' stroke-width='2' d='M33.173,38.938l5.163-5.211,3.029,2.982-17.675,18.008c-4.818,4.894-8.077,2.493-10.576,3.721-1.095.538-1.823,1.506-2.627,2.318-1.936,1.953-4.665,2.244-6.73.545-1.978-1.627-2.426-4.755-.633-6.755l1.307-1.458c.724-.807,1.527-1.67,1.585-2.829l.131-2.64c.115-2.306.807-4.496,2.469-6.181l16.783-17.013c.66-.669,1.124-1.33,1.969-1.874l2.856,3.12-17.271,17.482c-.761.769-1.543,1.502-1.976,2.479-1.358,3.064.972,5.329-2.818,9.838l-1.738,2.068c-.079.094.151.431.238.406l.526-.15c1.002-1.042,1.977-1.977,3.112-2.862,1.685-1.045,3.578-1.426,5.587-1.31,1.596.092,3.099-.296,4.267-1.48l13.023-13.204Z'/></svg>`;
       const pickCursor = `url("data:image/svg+xml,${encodeURIComponent(eyedropperSvg)}") 1 23, crosshair`;
       if (this.el.workspace) this.el.workspace.style.cursor = pickCursor;
-      if (this.el.displayCanvas) this.el.displayCanvas.style.cursor = pickCursor;
+      if (this.el.displayCanvas)
+        this.el.displayCanvas.style.cursor = pickCursor;
     }
     return;
   }

@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Paint Studio — Canvas init, layer CRUD
+// LinuxTechLab Paint Studio — Canvas init, layer CRUD
 // ============================================================
 import { PaintStudio } from "./core.mjs";
 
@@ -94,7 +94,9 @@ proto._deleteLayer = function () {
       ? [...this.selectedIndices].sort((a, b) => b - a)
       : [this.activeIdx];
   // Block if any selected layer is locked
-  const lockedName = toDelete.map(i => this.layers[i]).find(l => l?.locked)?.name;
+  const lockedName = toDelete
+    .map((i) => this.layers[i])
+    .find((l) => l?.locked)?.name;
   if (lockedName) {
     this._setStatus(`Cannot delete locked layer "${lockedName}"`);
     return;
@@ -248,7 +250,7 @@ proto._loadLayers = async function (layersData) {
           res();
         };
         const fileNameOnly = ld.src.split(/[\\/]/).pop();
-        img.src = `/view?filename=${encodeURIComponent(fileNameOnly)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+        img.src = `/view?filename=${encodeURIComponent(fileNameOnly)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
       });
     }
     this.layers.push(ly);

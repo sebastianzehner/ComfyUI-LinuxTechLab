@@ -1,6 +1,6 @@
-// ============================================================
-// Pixaroma Paint Engine — Brush, Fill, Color, Smudge utilities
-// ============================================================
+// ================================================================
+// LinuxTechLab Paint Engine — Brush, Fill, Color, Smudge utilities
+// ================================================================
 
 export class BrushEngine {
   constructor() {

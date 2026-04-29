@@ -1,13 +1,15 @@
-import torch
-import numpy as np
-from PIL import Image
-import os
 import json
+import os
+
 import folder_paths
-from .node_ref import any_type, FlexibleOptionalInputType
+import numpy as np
+import torch
+from PIL import Image
+
+from .node_ref import FlexibleOptionalInputType, any_type
 
 
-class PixaromaPaint:
+class LinuxTechLabPaint:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -18,7 +20,7 @@ class PixaromaPaint:
     RETURN_TYPES = ("IMAGE", "INT", "INT")
     RETURN_NAMES = ("image", "width", "height")
     FUNCTION = "load_painting"
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
     OUTPUT_NODE = True
 
     @classmethod
@@ -28,7 +30,11 @@ class PixaromaPaint:
         if not paint_data:
             return ""
         try:
-            paint_json = paint_data.get("paint_json", "{}") if isinstance(paint_data, dict) else str(paint_data)
+            paint_json = (
+                paint_data.get("paint_json", "{}")
+                if isinstance(paint_data, dict)
+                else str(paint_data)
+            )
             meta = json.loads(paint_json)
             composite_path = meta.get("composite_path", "")
             if composite_path:
@@ -47,7 +53,11 @@ class PixaromaPaint:
         if not paint_data:
             return (empty_image, 1024, 1024)
 
-        paint_json = paint_data.get("paint_json", "{}") if isinstance(paint_data, dict) else str(paint_data)
+        paint_json = (
+            paint_data.get("paint_json", "{}")
+            if isinstance(paint_data, dict)
+            else str(paint_data)
+        )
         if not paint_json or paint_json.strip() in ("", "{}"):
             return (empty_image, 1024, 1024)
         try:
@@ -68,7 +78,7 @@ class PixaromaPaint:
 
             if not full_path.startswith(input_dir + os.sep):
                 print(
-                    "[PixaromaPaint] Security: composite_path escapes input directory, blocked."
+                    "[LinuxTechLabPaint] Security: composite_path escapes input directory, blocked."
                 )
                 return (empty_image, doc_w, doc_h)
 
@@ -80,14 +90,14 @@ class PixaromaPaint:
             return (torch.from_numpy(arr)[None,], doc_w, doc_h)
 
         except Exception as e:
-            print(f"[PixaromaPaint] Load error: {e}")
+            print(f"[LinuxTechLabPaint] Load error: {e}")
             return (empty_image, 1024, 1024)
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaPaint": PixaromaPaint,
+    "LinuxTechLabPaint": LinuxTechLabPaint,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaPaint": "Paint Pixaroma",
+    "LinuxTechLabPaint": "Paint LinuxTechLab",
 }

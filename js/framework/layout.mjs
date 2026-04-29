@@ -193,7 +193,7 @@ export function createEditorLayout(config) {
       <div class="pxf-help-content">${helpContent}</div>
       <div class="pxf-help-footer">
         Designed by <a href="https://www.youtube.com/@LinuxTechLab" target="_blank">LinuxTechLab</a>
-        · <a href="https://github.com/linuxtechlab/ComfyUI-LinuxTechLab" target="_blank">GitHub</a><br>
+        · <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab" target="_blank">GitHub</a><br>
       </div>
     `;
     helpPanel

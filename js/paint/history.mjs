@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma Paint Studio — Undo/redo snapshot system
+// LinuxTechLab Paint Studio — Undo/redo snapshot system
 // ============================================================
 import { PaintStudio } from "./core.mjs";
 
