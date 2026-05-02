@@ -1,10 +1,6 @@
 import { app } from "/scripts/app.js";
 import { hideJsonWidget, allow_debug } from "../shared/index.mjs";
-import {
-  createNoteDOMWidget,
-  renderContent,
-  attachEditButton,
-} from "./render.mjs";
+import { createNoteDOMWidget, renderContent, attachEditButton } from "./render.mjs";
 import { NoteEditor } from "./core.mjs";
 import "./toolbar.mjs";
 import "./blocks.mjs";
@@ -44,11 +40,7 @@ function parseCfg(node) {
     // If the note has content, we leave whatever value is there
     // alone; the user may have explicitly picked #1e1e2e, and we
     // shouldn't second-guess that.
-    if (
-      (parsed.backgroundColor === "transparent" ||
-        parsed.backgroundColor === "#1e1e2e") &&
-      !parsed.content
-    ) {
+    if ((parsed.backgroundColor === "transparent" || parsed.backgroundColor === "#1e1e2e") && !parsed.content) {
       delete parsed.backgroundColor;
     }
     // Migration: single accentColor → split buttonColor + lineColor.
@@ -112,6 +104,14 @@ app.registerExtension({
       return false;
     };
 
+    // ── Context Menu → open editor ───────────────────────
+    nodeType.prototype.getExtraMenuOptions = function (_canvas, options) {
+      options.unshift({
+        content: "Open Note Editor",
+        callback: () => openEditor(this),
+      });
+    };
+
     // Workflow reload path: nodeCreated fires BEFORE configure populates
     // widget values, so parseCfg() during setupNote reads empty defaults.
     // Re-parse + re-render after configure has set note_json.value.
@@ -123,7 +123,7 @@ app.registerExtension({
     // `.isConnected` so we only accept a live element; refresh the cached
     // `_noteBody` reference to the live one so subsequent renders are fast.
     const _origCfg = nodeType.prototype.onConfigure;
-    nodeType.prototype.onConfigure = function (data) {
+    nodeType.prototype.onConfigure = function (_data) {
       const r = _origCfg?.apply(this, arguments);
       this._noteCfg = parseCfg(this);
       let body = this._noteBody?.isConnected ? this._noteBody : null;
