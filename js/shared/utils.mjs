@@ -102,8 +102,7 @@ export function installFocusTrap(overlay) {
   const trap = document.createElement("textarea");
   trap.dataset.linuxtechlabTrap = "1";
   trap.setAttribute("aria-hidden", "true");
-  trap.style.cssText =
-    "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;";
+  trap.style.cssText = "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;";
   overlay.appendChild(trap);
   trap.focus();
   const refocus = (e) => {
@@ -111,8 +110,7 @@ export function installFocusTrap(overlay) {
     const tag = t?.tagName;
     // Exempt contenteditable regions (e.g. Note LinuxTechLab editor) — refocusing
     // the hidden trap on mouseup would steal focus mid-typing.
-    if (t?.isContentEditable || t?.closest?.('[contenteditable="true"]'))
-      return;
+    if (t?.isContentEditable || t?.closest?.('[contenteditable="true"]')) return;
     if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") {
       requestAnimationFrame(() => trap.focus());
     }
@@ -228,17 +226,12 @@ export function createPlaceholder(name, buttonLabel, node, app) {
   });
 }
 
-export async function downloadDataURL(
-  dataURL,
-  suggestedName = "linuxtechlab_export.png",
-) {
+export async function downloadDataURL(dataURL, suggestedName = "linuxtechlab_export.png") {
   if (!dataURL) return;
   const mimeMatch = dataURL.match(/^data:([^;]+);/);
   const mime = mimeMatch ? mimeMatch[1] : "image/png";
   const ext = mime === "image/jpeg" ? "jpg" : "png";
-  const name = suggestedName.endsWith(`.${ext}`)
-    ? suggestedName
-    : `${suggestedName}.${ext}`;
+  const name = suggestedName.endsWith(`.${ext}`) ? suggestedName : `${suggestedName}.${ext}`;
 
   if (window.showSaveFilePicker) {
     try {
@@ -253,10 +246,7 @@ export async function downloadDataURL(
       return;
     } catch (e) {
       if (e.name === "AbortError") return;
-      console.warn(
-        "[LinuxTechLab] showSaveFilePicker failed, falling back:",
-        e,
-      );
+      console.warn("[LinuxTechLab] showSaveFilePicker failed, falling back:", e);
     }
   }
   const a = document.createElement("a");
