@@ -6,7 +6,6 @@ import {
   FONT_SHORT,
   TEXT_SWATCHES,
   BG_SWATCHES,
-  fontStr,
   measureLabel,
   renderLabelToCanvas,
   injectCSS,
@@ -205,7 +204,7 @@ export class LabelEditor {
     const sizeLbl = el("span");
     sizeLbl.textContent = "Font Size";
     sizeLbl.style.cssText =
-      "color:#777;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;";
+      "color:#6c7086;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;";
     const sizeRange = document.createElement("input");
     sizeRange.type = "range";
     sizeRange.min = 8;
@@ -234,7 +233,7 @@ export class LabelEditor {
     const bgCol = el("div", "pix-lbl-color-col");
     const bgColLbl = el("div", "pix-lbl-lbl");
     bgColLbl.textContent = "Background";
-    bgColLbl.style.color = "#444";
+    bgColLbl.style.color = "#45475a";
     bgCol.appendChild(bgColLbl);
     const bgSwatches = el("div", "pix-lbl-swatches");
     const transpSw = el("div", "pix-lbl-swatch-transp");
@@ -251,29 +250,21 @@ export class LabelEditor {
       this._updatePreview();
     };
     bgSwatches.appendChild(transpSw);
-    this._buildSwatches(
-      bgSwatches,
-      BG_SWATCHES,
-      c.backgroundColor,
-      (color, swEls) => {
-        c.backgroundColor = color;
-        bgPicker.value = color;
-        bgPicker.disabled = false;
-        bgHex.value = color;
-        bgHex.disabled = false;
-        transpSw.classList.remove("active");
-        swEls.forEach((s) =>
-          s.classList.toggle("active", s.dataset.color === color),
-        );
-        this._updatePreview();
-      },
-    );
+    this._buildSwatches(bgSwatches, BG_SWATCHES, c.backgroundColor, (color, swEls) => {
+      c.backgroundColor = color;
+      bgPicker.value = color;
+      bgPicker.disabled = false;
+      bgHex.value = color;
+      bgHex.disabled = false;
+      transpSw.classList.remove("active");
+      swEls.forEach((s) => s.classList.toggle("active", s.dataset.color === color));
+      this._updatePreview();
+    });
     bgCol.appendChild(bgSwatches);
     const bgRow = el("div", "pix-lbl-color-row");
     const bgPicker = document.createElement("input");
     bgPicker.type = "color";
-    bgPicker.value =
-      c.backgroundColor === "transparent" ? "#333333" : c.backgroundColor;
+    bgPicker.value = c.backgroundColor === "transparent" ? "#313244" : c.backgroundColor;
     bgPicker.disabled = c.backgroundColor === "transparent";
     const bgHex = document.createElement("input");
     bgHex.type = "text";
@@ -307,23 +298,16 @@ export class LabelEditor {
     const tcCol = el("div", "pix-lbl-color-col");
     const tcColLbl = el("div", "pix-lbl-lbl");
     tcColLbl.textContent = "Text";
-    tcColLbl.style.color = "#444";
+    tcColLbl.style.color = "#45475a";
     tcCol.appendChild(tcColLbl);
     const tcSwatches = el("div", "pix-lbl-swatches");
-    this._buildSwatches(
-      tcSwatches,
-      TEXT_SWATCHES,
-      c.fontColor,
-      (color, swEls) => {
-        c.fontColor = color;
-        tcPicker.value = color;
-        tcHex.value = color;
-        swEls.forEach((s) =>
-          s.classList.toggle("active", s.dataset.color === color),
-        );
-        this._updatePreview();
-      },
-    );
+    this._buildSwatches(tcSwatches, TEXT_SWATCHES, c.fontColor, (color, swEls) => {
+      c.fontColor = color;
+      tcPicker.value = color;
+      tcHex.value = color;
+      swEls.forEach((s) => s.classList.toggle("active", s.dataset.color === color));
+      this._updatePreview();
+    });
     tcCol.appendChild(tcSwatches);
     const tcRow = el("div", "pix-lbl-color-row");
     const tcPicker = document.createElement("input");
@@ -448,7 +432,7 @@ export class LabelEditor {
             <p><b>Radius</b> — corner roundness of the background.</p>
             <p><b>Opacity</b> — overall transparency of the label.</p>
             <p><b>Line Height</b> — spacing between lines of text.</p>
-            <p style="margin-top:14px;color:#777">LinuxTechLab &mdash; <a href="https://www.youtube.com/@LinuxTechLab" style="color:${BRAND}">youtube.com/@LinuxTechLab</a></p>
+            <p style="margin-top:14px;color:#6c7086">LinuxTechLab &mdash; <a href="https://www.youtube.com/@LinuxTechLab" style="color:${BRAND}">youtube.com/@LinuxTechLab</a></p>
         `;
     const closeBtn = document.createElement("button");
     closeBtn.className = "pix-lbl-help-close";
@@ -476,11 +460,9 @@ export class LabelEditor {
   }
 
   _clearSwatchActive(container, activeColor) {
-    container
-      .querySelectorAll(".pix-lbl-swatch,.pix-lbl-swatch-transp")
-      .forEach((s) => {
-        s.classList.toggle("active", s.dataset.color === activeColor);
-      });
+    container.querySelectorAll(".pix-lbl-swatch,.pix-lbl-swatch-transp").forEach((s) => {
+      s.classList.toggle("active", s.dataset.color === activeColor);
+    });
   }
 
   // ── Range field ──────────────────────────────────────────

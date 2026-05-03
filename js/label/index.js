@@ -47,7 +47,7 @@ app.registerExtension({
 
     // ── Configure (load from saved workflow) ─────────────
     const _origCfg = nodeType.prototype.onConfigure;
-    nodeType.prototype.onConfigure = function (data) {
+    nodeType.prototype.onConfigure = function (_data) {
       const r = _origCfg?.apply(this, arguments);
       setupLabel(this);
       return r;
@@ -92,12 +92,41 @@ app.registerExtension({
       if (this.inputs && this.inputs.length) this.inputs.length = 0;
     };
 
+    // ── Context Menu → open editor ───────────────────────
+    nodeType.prototype.getExtraMenuOptions = function (_canvas, options) {
+      options.unshift({
+        content: "Open Label Editor",
+        callback: () => {
+          const editor = new LabelEditor(this);
+          editor.open();
+        },
+      });
+    };
+
     // ── Double-click → open editor ───────────────────────
-    const _origDblClick = nodeType.prototype.onDblClick;
-    nodeType.prototype.onDblClick = function (e, pos) {
+    nodeType.prototype.onDblClick = function (_e, _pos) {
       const editor = new LabelEditor(this);
       editor.open();
       return true;
     };
   },
 });
+
+// ─── Patch: Nodes 2.0 rendering ──────────────────────────
+// Nodes 2.0 does not automatically call onDrawForeground for custom nodes.
+// This patch ensures the label is rendered correctly in both legacy and Nodes 2.0 mode.
+if (typeof LGraphCanvas !== "undefined") {
+  const oldDrawNode = LGraphCanvas.prototype.drawNode;
+  LGraphCanvas.prototype.drawNode = function (node, ctx) {
+    if (node.type === "LinuxTechLabLabel") {
+      node.bgcolor = "transparent";
+      node.color = "transparent";
+      const r = oldDrawNode.apply(this, arguments);
+      ctx.save();
+      node.onDrawForeground(ctx);
+      ctx.restore();
+      return r;
+    }
+    return oldDrawNode.apply(this, arguments);
+  };
+}

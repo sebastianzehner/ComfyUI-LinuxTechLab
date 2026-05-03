@@ -9,18 +9,13 @@ export const DEFAULTS = {
   textAlign: "left",
   backgroundColor: "#1e1e2e",
   padding: 10,
-  borderRadius: 6,
-  opacity: 0.8,
+  borderRadius: 10,
+  opacity: 0.85,
   fontWeight: "normal",
   lineHeight: 1,
 };
 
-export const FONT_CHOICES = [
-  "CaskaydiaCove Nerd Font",
-  "DejaVu Sans",
-  "Arial",
-  "Times New Roman",
-];
+export const FONT_CHOICES = ["CaskaydiaCove Nerd Font", "DejaVu Sans", "Arial", "Times New Roman"];
 export const FONT_SHORT = ["CaskaydiaCove", "DejaVu", "Arial", "Times"];
 
 // Color swatches
