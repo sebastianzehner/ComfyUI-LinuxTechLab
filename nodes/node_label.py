@@ -9,7 +9,7 @@ class LinuxTechLabLabel:
                     "STRING",
                     {
                         "default": "{}",
-                        "multiline": True,
+                        "hidden": True,
                     },
                 ),
             }

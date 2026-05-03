@@ -15,7 +15,7 @@ class LinuxTechLabNote:
                         # Colors menu. parseCfg migrates the legacy
                         # "transparent" / "#111111" values on load.
                         "default": '{"version":1,"content":"","buttonColor":"#89b4fa","lineColor":"#89b4fa","width":420,"height":320}',
-                        "multiline": True,
+                        "hidden": True,
                     },
                 ),
             }
