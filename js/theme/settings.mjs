@@ -17,6 +17,8 @@ app.registerExtension({
     document.documentElement.style.setProperty("--ltl-brand-dark", darkenColor(brand, 0.15));
     // Base
     document.documentElement.style.setProperty("--ltl-background", t.background);
+    document.documentElement.style.setProperty("--ltl-background-dark", t.background_dark);
+    document.documentElement.style.setProperty("--ltl-background-darkest", t.background_darkest);
     document.documentElement.style.setProperty("--ltl-surface", t.surface);
     document.documentElement.style.setProperty("--ltl-overlay", t.overlay);
     // Text

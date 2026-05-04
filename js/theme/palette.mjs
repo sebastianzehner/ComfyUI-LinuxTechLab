@@ -41,6 +41,8 @@ export const MOCHA = {
   _name: "Catppuccin Mocha",
   // Base
   background: "#1e1e2e", // base
+  background_dark: "#181825", // mantle
+  background_darkest: "#11111b", // crust
   surface: "#313244", // surface0
   overlay: "#6c7086", // overlay0
   // Text
@@ -59,8 +61,6 @@ export const MOCHA = {
   black: "#585b70", // surface2
 
   // ── Full Palette Reference (unused) ───────────────────
-  // mantle:    "#181825",
-  // crust:     "#11111b",
   // surface1:  "#45475a",
   // surface2:  "#585b70",
   // overlay1:  "#7f849c",
@@ -79,6 +79,8 @@ export const LATTE = {
   _name: "Catppuccin Latte",
   // Base
   background: "#eff1f5", // base
+  background_dark: "#e6e9ef", // mantle
+  background_darkest: "#dce0e8", // crust
   surface: "#ccd0da", // surface0
   overlay: "#9ca0b0", // overlay0
   // Text
@@ -97,8 +99,6 @@ export const LATTE = {
   black: "#acb0be", // surface2
 
   // ── Full Palette Reference (unused) ───────────────────
-  // mantle:    "#e6e9ef",
-  // crust:     "#dce0e8",
   // surface1:  "#bcc0cc",
   // surface2:  "#acb0be",
   // overlay1:  "#8c8fa1",
@@ -117,13 +117,15 @@ export const COMFY_DARK = {
   _name: "ComfyUI Dark",
   // Base
   background: "#353535", // NODE_DEFAULT_BGCOLOR
+  background_dark: "#2a2a2a",
+  background_darkest: "#141414",
   surface: "#222", // WIDGET_BGCOLOR
   overlay: "#666", // NODE_DEFAULT_BOXCOLOR
   // Text
   text: "#DDD", // WIDGET_TEXT_COLOR
   subtext: "#999", // WIDGET_SECONDARY_TEXT_COLOR
   muted: "#666", // WIDGET_DISABLED_TEXT_COLOR
-  // Node Colors (ComfyUI Color Menu)
+  // Node Colors
   red: "#FF6E6E", // VAE
   brown: "#FFA931", // CONDITIONING
   green: "#6EE7B7", // CONTROL_NET
@@ -140,13 +142,15 @@ export const COMFY_LIGHT = {
   _name: "ComfyUI Light",
   // Base
   background: "#F5F5F5", // NODE_DEFAULT_BGCOLOR
+  background_dark: "#E0E0E0",
+  background_darkest: "#C9C9C9",
   surface: "#D4D4D4", // WIDGET_BGCOLOR
   overlay: "#CCC", // NODE_DEFAULT_BOXCOLOR
   // Text
   text: "#222", // WIDGET_TEXT_COLOR
   subtext: "#555", // WIDGET_SECONDARY_TEXT_COLOR
   muted: "#999", // WIDGET_DISABLED_TEXT_COLOR
-  // Node Colors (ComfyUI Color Menu)
+  // Node Colors
   red: "#FF7043", // VAE
   brown: "#FFA726", // CLIP
   green: "#66BB6A", // CONTROL_NET

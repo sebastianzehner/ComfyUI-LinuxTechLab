@@ -34,32 +34,31 @@ export function injectFrameworkStyles() {
   s.textContent = `
 /* ═══════════════════════════════════════════════════════
    LinuxTechLab Editor Framework — Shared Stylesheet
-   Catppuccin Mocha Theme
    ═══════════════════════════════════════════════════════ */
 
 /* ── CSS Custom Properties ──────────────────────────── */
 .pxf-overlay {
-  --pxf-accent: #89b4fa;
-  --pxf-accent-hover: #b9d2fc;
-  --pxf-bg-darkest: #11111b;
-  --pxf-bg-dark: #1e1e2e;
-  --pxf-bg-sidebar: #181825;
-  --pxf-bg-panel: #313244;
-  --pxf-bg-input: #11111b;
-  --pxf-bg-btn: #313244;
-  --pxf-border: #45475a;
-  --pxf-border-subtle: #313244;
-  --pxf-border-titlebar: #313244;
-  --pxf-text: #cdd6f4;
-  --pxf-text-dim: #6c7086;
-  --pxf-text-dimmer: #585b70;
-  --pxf-text-label: #a6adc8;
-  --pxf-select-bg: #1e2a3a;
-  --pxf-select-border: #89b4fa;
-  --pxf-multi-bg: #0a1a2a;
-  --pxf-multi-border: #74c7ec;
-  --pxf-danger: #f38ba8;
-  --pxf-danger-bg: #2a1a1a;
+  --pxf-accent: var(--ltl-brand);
+  --pxf-accent-hover: var(--ltl-brand-hover);
+  --pxf-bg-darkest: var(--ltl-background-darkest);
+  --pxf-bg-dark: var(--ltl-background-dark);
+  --pxf-bg-sidebar: var(--ltl-background-dark);
+  --pxf-bg-panel: var(--ltl-surface);
+  --pxf-bg-input: var(--ltl-background-darkest);
+  --pxf-bg-btn: var(--ltl-surface);
+  --pxf-border: var(--ltl-overlay);
+  --pxf-border-subtle: var(--ltl-surface);
+  --pxf-border-titlebar: var(--ltl-surface);
+  --pxf-text: var(--ltl-text);
+  --pxf-text-dim: var(--ltl-subtext);
+  --pxf-text-dimmer: var(--ltl-muted);
+  --pxf-text-label: var(--ltl-subtext);
+  --pxf-select-bg: var(--ltl-background-dark);
+  --pxf-select-border: var(--ltl-blue);
+  --pxf-multi-bg: var(--ltl-background-darkest);
+  --pxf-multi-border: var(--ltl-cyan);
+  --pxf-danger: var(--ltl-red);
+  --pxf-danger-bg: var(--ltl-background-darkest);
   --pxf-font: 'Segoe UI', system-ui, sans-serif;
   --pxf-font-mono: monospace;
 }
@@ -82,7 +81,7 @@ export function injectFrameworkStyles() {
   flex-shrink: 0; height: 38px;
 }
 .pxf-title {
-  color: #cdd6f4; font-size: 13px; font-weight: bold;
+  color: var(--ltl-text); font-size: 13px; font-weight: bold;
   display: flex; align-items: center; gap: 6px;
   flex-shrink: 0;
 }
@@ -143,7 +142,7 @@ export function injectFrameworkStyles() {
 /* ── Workspace (center canvas area) ─────────────────── */
 .pxf-workspace {
   flex: 1; position: relative; overflow: hidden;
-  background: #11111b;
+  background: var(--ltl-background-darkest);
   display: flex; align-items: center; justify-content: center;
 }
 
@@ -158,7 +157,7 @@ export function injectFrameworkStyles() {
 /* ── Tool info (floating tooltip in workspace, bottom-left) ── */
 .pxf-tool-info {
   position: absolute; bottom: 10px; left: 10px;
-  background: rgba(0,0,0,0.75); color: #a6adc8;
+  background: rgba(0,0,0,0.75); color: var(--ltl-subtext);
   padding: 5px 12px; border-radius: 5px;
   font-size: 10px; font-family: var(--pxf-font-mono);
   pointer-events: none; z-index: 5;
@@ -170,8 +169,8 @@ export function injectFrameworkStyles() {
    overlapped AudioReact's bottom-left transport buttons. :empty hides it
    until an editor actually writes text via setStatusText(). */
 .pxf-tool-info:empty { display: none; }
-.pxf-tool-info.warn { color: #89b4fa; }
-.pxf-tool-info.error { color: #f38ba8; }
+.pxf-tool-info.warn { color: var(--ltl-blue); }
+.pxf-tool-info.error { color: var(--ltl-red); }
 
 /* ── Panel / Section ────────────────────────────────── */
 .pxf-panel {
@@ -190,7 +189,7 @@ export function injectFrameworkStyles() {
 .pxf-panel.collapsed .pxf-panel-title-arrow { transform: rotate(-90deg); }
 .pxf-panel.collapsed .pxf-panel-content { display: none; }
 .pxf-panel-title.clickable { cursor: pointer; }
-.pxf-panel-title.clickable:hover { color: #cdd6f4; }
+.pxf-panel-title.clickable:hover { color: var(--ltl-text); }
 
 /* ── Buttons ────────────────────────────────────────── */
 .pxf-btn, .pxf-btn-full, .pxf-btn-sm {
@@ -211,14 +210,14 @@ export function injectFrameworkStyles() {
 }
 
 .pxf-btn {
-  background: var(--pxf-bg-btn); color: #a6adc8;
+  background: var(--pxf-bg-btn); color: var(--ltl-subtext);
   padding: 6px 14px; font-size: 12px;
 }
-.pxf-btn:hover { background: #313244; color: var(--pxf-accent); border-color: var(--pxf-accent); }
+.pxf-btn:hover { background: var(--ltl-surface); color: var(--pxf-accent); border-color: var(--pxf-accent); }
 
 .pxf-btn.pxf-btn-accent, .pxf-btn-accent {
   background: var(--pxf-accent); border-color: var(--pxf-accent);
-  color: #1e1e2e; font-weight: bold;
+  color: var(--ltl-background); font-weight: bold;
 }
 .pxf-btn.pxf-btn-accent:hover, .pxf-btn-accent:hover {
   background: var(--pxf-accent-hover); border-color: var(--pxf-accent-hover);
@@ -226,12 +225,12 @@ export function injectFrameworkStyles() {
 .pxf-btn-accent img { filter: brightness(0) invert(0); }
 
 .pxf-btn.pxf-btn-danger, .pxf-btn-full.pxf-btn-danger, .pxf-btn-sm.pxf-btn-danger {
-  background: #1e1e2e !important; color: #a6adc8 !important;
-  border-color: #f38ba8 !important;
+  background: var(--ltl-background) !important; color: var(--ltl-subtext) !important;
+  border-color: var(--ltl-red) !important;
 }
 .pxf-btn.pxf-btn-danger:hover, .pxf-btn-full.pxf-btn-danger:hover, .pxf-btn-sm.pxf-btn-danger:hover {
-  background: #f38ba8 !important; color: #1e1e2e !important;
-  border-color: #f38ba8 !important;
+  background: var(--ltl-red) !important; color: var(--ltl-background) !important;
+  border-color: var(--ltl-red) !important;
 }
 .pxf-btn-danger img, .pxf-btn-danger svg {
   filter: none !important;
@@ -242,18 +241,18 @@ export function injectFrameworkStyles() {
 
 .pxf-btn-full {
   width: 100%; padding: 7px 10px; font-size: 11px;
-  background: #181825; color: #a6adc8;
+  background: var(--ltl-background-dark); color: var(--ltl-subtext);
 }
-.pxf-btn-full:hover { background: #313244; color: var(--pxf-accent); border-color: var(--pxf-accent); }
+.pxf-btn-full:hover { background: var(--ltl-surface); color: var(--pxf-accent); border-color: var(--pxf-accent); }
 
 .pxf-btn-sm {
   min-width: 28px; height: 28px; padding: 0 4px; flex-shrink: 0;
-  background: var(--pxf-bg-panel); color: #a6adc8; font-size: 13px;
+  background: var(--pxf-bg-panel); color: var(--ltl-subtext); font-size: 13px;
 }
-.pxf-btn-sm:hover { background: #313244; color: var(--pxf-accent); border-color: var(--pxf-accent); }
+.pxf-btn-sm:hover { background: var(--ltl-surface); color: var(--pxf-accent); border-color: var(--pxf-accent); }
 
 .pxf-btn-icon {
-  background: none; border: none; color: #a6adc8; padding: 4px;
+  background: none; border: none; color: var(--ltl-subtext); padding: 4px;
   cursor: pointer; font-size: 16px; border-radius: 4px; transition: all .15s;
   display: inline-flex; align-items: center; justify-content: center;
 }
@@ -263,18 +262,18 @@ export function injectFrameworkStyles() {
 .pxf-btn-row { display: flex; gap: 6px; }
 .pxf-btn-row > .pxf-btn, .pxf-btn-row > .pxf-btn-full { flex: 1; }
 
-.pxf-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
+.pxf-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: var(--ltl-background); }
 .pxf-btn.active img { filter: brightness(0) invert(0); }
 
 /* ── Pill grid ─────────────────────────────────────── */
 .pxf-pill-grid { display: grid; gap: 4px; }
 .pxf-pill {
-  font-size: 10px; background: #181825; border: 1px solid var(--pxf-border);
-  color: #a6adc8; border-radius: 3px; padding: 4px 0; cursor: pointer;
+  font-size: 10px; background: var(--ltl-background-dark); border: 1px solid var(--pxf-border);
+  color: var(--ltl-subtext); border-radius: 3px; padding: 4px 0; cursor: pointer;
   transition: all .1s; text-align: center; font-family: inherit;
 }
-.pxf-pill:hover { background: #45475a; color: #cdd6f4; }
-.pxf-pill.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
+.pxf-pill:hover { background: #45475a; color: var(--ltl-text); }
+.pxf-pill.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: var(--ltl-background); }
 
 /* ── Slider row ─────────────────────────────────────── */
 .pxf-slider-row {
@@ -363,13 +362,13 @@ export function injectFrameworkStyles() {
 .pxf-tool-btn {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 1px;
-  height: 38px; background: #181825; border: 1px solid var(--pxf-border);
-  color: #a6adc8; border-radius: 4px; cursor: pointer;
+  height: 38px; background: var(--ltl-background-dark); border: 1px solid var(--pxf-border);
+  color: var(--ltl-subtext); border-radius: 4px; cursor: pointer;
   font-family: inherit; font-size: 10px; transition: all .12s;
   padding: 2px;
 }
-.pxf-tool-btn:hover { background: #313244; color: #cdd6f4; border-color: #6c7086; }
-.pxf-tool-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
+.pxf-tool-btn:hover { background: var(--ltl-surface); color: var(--ltl-text); border-color: var(--ltl-muted); }
+.pxf-tool-btn.active { background: var(--pxf-accent); border-color: var(--pxf-accent); color: var(--ltl-background); }
 .pxf-tool-btn-icon { font-size: 14px; line-height: 1; }
 .pxf-tool-btn-label { font-size: 8px; line-height: 1; }
 
@@ -454,13 +453,13 @@ export function injectFrameworkStyles() {
 /* Layer thumbnail */
 .pxf-layer-thumb {
   width: 28px; height: 28px; flex-shrink: 0; border-radius: 3px;
-  background: repeating-conic-gradient(#45475a 0% 25%, #313244 0% 50%) 50% / 8px 8px;
+  background: repeating-conic-gradient(#45475a 0% 25%, var(--ltl-surface) 0% 50%) 50% / 8px 8px;
   overflow: hidden; border: 1px solid rgba(205,214,244,0.06);
 }
 
 /* Layer name */
 .pxf-layer-name {
-  flex: 1; font-size: 11px; color: #a6adc8;
+  flex: 1; font-size: 11px; color: var(--ltl-subtext);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   padding: 2px 4px; min-width: 0;
 }
@@ -484,7 +483,7 @@ export function injectFrameworkStyles() {
   border-radius: 4px; cursor: pointer; transition: all .12s;
 }
 .pxf-layer-action-btn:hover {
-  background: #313244; border-color: var(--pxf-accent);
+  background: var(--ltl-surface); border-color: var(--pxf-accent);
 }
 .pxf-layer-action-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 .pxf-layer-action-btn img {
@@ -492,9 +491,9 @@ export function injectFrameworkStyles() {
   filter: brightness(0) invert(0.7);
 }
 .pxf-layer-action-btn:hover img { filter: brightness(0) invert(1); }
-.pxf-layer-action-btn.danger { border-color: #f38ba8; }
+.pxf-layer-action-btn.danger { border-color: var(--ltl-red); }
 .pxf-layer-action-btn.danger:hover {
-  background: #f38ba8; border-color: #f38ba8;
+  background: var(--ltl-red); border-color: var(--ltl-red);
 }
 .pxf-layer-action-btn.danger:hover img {
   filter: brightness(0) invert(0) !important;
@@ -531,7 +530,7 @@ export function injectFrameworkStyles() {
 .pxf-help-overlay {
   display: none; position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  background: #1e1e2e; border: 1px solid var(--pxf-accent);
+  background: var(--ltl-background); border: 1px solid var(--pxf-accent);
   border-radius: 10px; padding: 0;
   width: 960px; max-width: 95%; max-height: 86vh;
   z-index: 100; overflow: hidden;
@@ -540,13 +539,13 @@ export function injectFrameworkStyles() {
 }
 .pxf-help-header {
   display: flex; align-items: center; padding: 14px 20px;
-  border-bottom: 1px solid #313244;
+  border-bottom: 1px solid var(--ltl-surface);
 }
 .pxf-help-header h3 { flex: 1; color: var(--pxf-accent); font-size: 14px; margin: 0; font-weight: 600; }
 .pxf-help-content {
   padding: 18px 24px; overflow-y: auto;
   max-height: calc(86vh - 110px);
-  font-size: 11px; line-height: 1.7; color: #a6adc8;
+  font-size: 11px; line-height: 1.7; color: var(--ltl-subtext);
   column-count: 2; column-gap: 36px;
 }
 .pxf-help-section {
@@ -562,17 +561,17 @@ export function injectFrameworkStyles() {
   display: grid; grid-template-columns: max-content 1fr;
   gap: 3px 14px;
 }
-.pxf-help-grid b { color: #cdd6f4; white-space: nowrap; font-weight: 600; }
+.pxf-help-grid b { color: var(--ltl-text); white-space: nowrap; font-weight: 600; }
 .pxf-help-grid span { color: #bac2de; }
 .pxf-help-content kbd {
-  background: #313244; border: 1px solid #45475a; border-radius: 3px;
+  background: var(--ltl-surface); border: 1px solid #45475a; border-radius: 3px;
   padding: 1px 5px; font-size: 10px; color: var(--pxf-text);
   font-family: var(--pxf-font-mono, monospace);
 }
-.pxf-help-content b { color: #cdd6f4; }
+.pxf-help-content b { color: var(--ltl-text); }
 .pxf-help-footer {
-  padding: 10px 20px; border-top: 1px solid #313244;
-  font-size: 10px; color: #6c7086; text-align: center; line-height: 1.6;
+  padding: 10px 20px; border-top: 1px solid var(--ltl-surface);
+  font-size: 10px; color: var(--ltl-muted); text-align: center; line-height: 1.6;
   flex-shrink: 0;
 }
 .pxf-help-footer a { color: var(--pxf-accent); text-decoration: none; }
@@ -594,7 +593,7 @@ export function injectFrameworkStyles() {
 /* ── Checkbox ───────────────────────────────────────── */
 .pxf-check-row {
   display: flex; align-items: center; gap: 6px; cursor: pointer;
-  font-size: 11px; color: #a6adc8;
+  font-size: 11px; color: var(--ltl-subtext);
 }
 .pxf-check-row input[type=checkbox] { accent-color: var(--pxf-accent); }
 
@@ -629,14 +628,14 @@ export function injectFrameworkStyles() {
 .pxf-canvas-settings { display: flex; flex-direction: column; gap: 6px; }
 .pxf-ratio-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .pxf-ratio-btn {
-  font-size: 10px; background: #181825; border: 1px solid var(--pxf-border);
-  color: #a6adc8; border-radius: 4px; padding: 5px 0; cursor: pointer;
+  font-size: 10px; background: var(--ltl-background-dark); border: 1px solid var(--pxf-border);
+  color: var(--ltl-subtext); border-radius: 4px; padding: 5px 0; cursor: pointer;
   transition: all .12s; text-align: center; font-family: inherit;
   font-weight: 500;
 }
-.pxf-ratio-btn:hover { background: #45475a; color: #cdd6f4; border-color: #6c7086; }
+.pxf-ratio-btn:hover { background: #45475a; color: var(--ltl-text); border-color: var(--ltl-muted); }
 .pxf-ratio-btn.active {
-  background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e;
+  background: var(--pxf-accent); border-color: var(--pxf-accent); color: var(--ltl-background);
 }
 .pxf-size-row {
   display: flex; align-items: center; gap: 4px;
@@ -654,10 +653,10 @@ export function injectFrameworkStyles() {
 .pxf-size-x { font-size: 10px; color: var(--pxf-text-dimmer); flex-shrink: 0; }
 .pxf-swap-btn {
   width: 100%; padding: 5px; font-size: 11px; text-align: center;
-  background: #181825; border: 1px solid var(--pxf-border); color: #a6adc8;
+  background: var(--ltl-background-dark); border: 1px solid var(--pxf-border); color: var(--ltl-subtext);
   border-radius: 4px; cursor: pointer; transition: all .12s; font-family: inherit;
 }
-.pxf-swap-btn:hover { background: var(--pxf-accent); border-color: var(--pxf-accent); color: #1e1e2e; }
+.pxf-swap-btn:hover { background: var(--pxf-accent); border-color: var(--pxf-accent); color: var(--ltl-background); }
   `;
   document.head.appendChild(s);
 
