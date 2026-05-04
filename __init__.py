@@ -23,8 +23,6 @@ from .nodes.node_resolution import NODE_CLASS_MAPPINGS as _MAPS_RESOLUTION
 from .nodes.node_resolution import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_RESOLUTION
 from .nodes.node_save_mp4 import NODE_CLASS_MAPPINGS as _MAPS_SAVE_MP4
 from .nodes.node_save_mp4 import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SAVE_MP4
-from .nodes.node_show_text import NODE_CLASS_MAPPINGS as _MAPS_SHOW_TEXT
-from .nodes.node_show_text import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_SHOW_TEXT
 
 # development mode for loading additional refrence nodes
 dev_mode = False
@@ -49,7 +47,6 @@ NODE_CLASS_MAPPINGS = {
     **_MAPS_NOTE,
     **_MAPS_SAVE_MP4,
     **_MAPS_UTILS,
-    **_MAPS_SHOW_TEXT,
 }
 
 # combine all node display name mappings
@@ -66,7 +63,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **_NAMES_PAINT,
     **_NAMES_PREVIEW,
     **_NAMES_RESOLUTION,
-    **_NAMES_SHOW_TEXT,
 }
 
 # web directory for loading js files
