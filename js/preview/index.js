@@ -1,5 +1,5 @@
 import { app } from "/scripts/app.js";
-import { BRAND } from "../shared/utils.mjs";
+import { getBrand } from "../shared/utils.mjs";
 
 // ---- button / node sizing ----
 const BTN_H = 26;
@@ -15,9 +15,9 @@ const MIN_H = 260;
 const DEFAULT_W = 320;
 const DEFAULT_H = 380;
 
-const COLOR_ACTIVE_FILL = BRAND;
+const COLOR_ACTIVE_FILL = getBrand();
 const COLOR_ACTIVE_FILL_HOVER = "#b9d2fc";
-const COLOR_ACTIVE_STROKE = BRAND;
+const COLOR_ACTIVE_STROKE = getBrand();
 const COLOR_ACTIVE_TEXT = "#1e1e2e";
 const COLOR_DISABLED_FILL = "#313244";
 const COLOR_DISABLED_STROKE = "#45475a";
@@ -48,23 +48,14 @@ function computeButtonRects(widgetWidth, stripY) {
 }
 
 function hitTest(rect, lx, ly) {
-  return (
-    lx >= rect.x &&
-    lx <= rect.x + rect.w &&
-    ly >= rect.y &&
-    ly <= rect.y + rect.h
-  );
+  return lx >= rect.x && lx <= rect.x + rect.w && ly >= rect.y && ly <= rect.y + rect.h;
 }
 
 // ---- paint ----
 function paintBtn(ctx, rect, active, hovered) {
   const { x, y, w, h, label } = rect;
   ctx.save();
-  ctx.fillStyle = active
-    ? hovered
-      ? COLOR_ACTIVE_FILL_HOVER
-      : COLOR_ACTIVE_FILL
-    : COLOR_DISABLED_FILL;
+  ctx.fillStyle = active ? (hovered ? COLOR_ACTIVE_FILL_HOVER : COLOR_ACTIVE_FILL) : COLOR_DISABLED_FILL;
   ctx.strokeStyle = active ? COLOR_ACTIVE_STROKE : COLOR_DISABLED_STROKE;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -86,7 +77,7 @@ function paintToast(ctx, rects, text) {
   const h = rects[0].h;
   ctx.save();
   ctx.fillStyle = "rgba(17,17,27,0.92)";
-  ctx.strokeStyle = BRAND;
+  ctx.strokeStyle = getBrand();
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 4);
@@ -207,9 +198,7 @@ async function saveToDisk(node) {
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName,
-        types: [
-          { description: "PNG image", accept: { "image/png": [".png"] } },
-        ],
+        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }],
       });
       const writable = await handle.createWritable();
       await writable.write(preparedBlob);

@@ -2,7 +2,6 @@
 // LinuxTechLab Image Crop Editor — Core (constructor, open/close, buildUI)
 // ========================================================================
 import {
-  BRAND,
   createEditorLayout,
   createPanel,
   createButton,
@@ -46,9 +45,6 @@ export const CropAPI = {
     return await res.json();
   },
 };
-
-// Re-export BRAND for use in other mixin files
-export { BRAND };
 
 // ═════════════════════════════════════════════════════════════
 export class CropEditor {
@@ -107,9 +103,7 @@ export class CropEditor {
         // Now update UI to reflect restored state (setRatio triggers onChange,
         // but we re-apply crop values after it)
         const savedCrop =
-          data.crop_x != null
-            ? { x: data.crop_x, y: data.crop_y, w: data.crop_w, h: data.crop_h }
-            : null;
+          data.crop_x != null ? { x: data.crop_x, y: data.crop_y, w: data.crop_w, h: data.crop_h } : null;
         if (data.ratio_idx != null) {
           this._canvasSettings.setRatio(data.ratio_idx);
         }
@@ -188,8 +182,7 @@ export class CropEditor {
     this._bindMouse(cvs);
 
     // Enable drag & drop on workspace
-    if (this._canvasToolbar)
-      this._canvasToolbar.setupDropZone(layout.workspace);
+    if (this._canvasToolbar) this._canvasToolbar.setupDropZone(layout.workspace);
   }
 
   _buildLeftSidebar(sidebar) {
@@ -211,10 +204,7 @@ export class CropEditor {
         this._draw();
         this._updateInfo();
         // Sync back if clamped
-        this._canvasSettings.setSize(
-          Math.round(this.cropW),
-          Math.round(this.cropH),
-        );
+        this._canvasSettings.setSize(Math.round(this.cropW), Math.round(this.cropH));
       },
     });
     sidebar.appendChild(this._canvasSettings.el);
@@ -223,8 +213,7 @@ export class CropEditor {
     this._canvasToolbar = createCanvasToolbar({
       onAddImage: (file) => {
         const reader = new FileReader();
-        reader.onload = (ev) =>
-          this._loadImageFromDataURL(ev.target.result, file.name);
+        reader.onload = (ev) => this._loadImageFromDataURL(ev.target.result, file.name);
         reader.readAsDataURL(file);
       },
       showBgColor: false,
@@ -244,12 +233,7 @@ export class CropEditor {
         this._canvasSettings.setSize(1024, 1024);
         this._snapGrid.setActive(0);
         if (this.el.canvas) {
-          this.el.ctx.clearRect(
-            0,
-            0,
-            this.el.canvas.width,
-            this.el.canvas.height,
-          );
+          this.el.ctx.clearRect(0, 0, this.el.canvas.width, this.el.canvas.height);
         }
         this._updateInfo();
         this._setStatus("Reset to default");
@@ -275,24 +259,11 @@ export class CropEditor {
 
     // -- Crop Size sliders --
     const secSize = createPanel("Crop Size");
-    this.el.sliderW = createSliderRow("W", 1, 4096, 1024, () =>
-      this._onSliderChange("w"),
-    );
-    this.el.sliderH = createSliderRow("H", 1, 4096, 1024, () =>
-      this._onSliderChange("h"),
-    );
-    this.el.sliderX = createSliderRow("X", 0, 4096, 0, () =>
-      this._onSliderChange("x"),
-    );
-    this.el.sliderY = createSliderRow("Y", 0, 4096, 0, () =>
-      this._onSliderChange("y"),
-    );
-    secSize.content.append(
-      this.el.sliderW.el,
-      this.el.sliderH.el,
-      this.el.sliderX.el,
-      this.el.sliderY.el,
-    );
+    this.el.sliderW = createSliderRow("W", 1, 4096, 1024, () => this._onSliderChange("w"));
+    this.el.sliderH = createSliderRow("H", 1, 4096, 1024, () => this._onSliderChange("h"));
+    this.el.sliderX = createSliderRow("X", 0, 4096, 0, () => this._onSliderChange("x"));
+    this.el.sliderY = createSliderRow("Y", 0, 4096, 0, () => this._onSliderChange("y"));
+    secSize.content.append(this.el.sliderW.el, this.el.sliderH.el, this.el.sliderX.el, this.el.sliderY.el);
     sidebar.insertBefore(secSize.el, footer);
 
     // -- Info --

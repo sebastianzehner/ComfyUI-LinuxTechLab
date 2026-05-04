@@ -2,7 +2,9 @@
 // ║  LinuxTechLab Shared — Constants & Utility Functions          ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
-export const allow_debug = false;
+import { getBrand } from "../theme/palette.mjs";
+
+export const allow_debug = true;
 
 export const LINUXTECHLAB_LOGO = `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="264.797 214.493 968.385 1071.832">
@@ -33,7 +35,6 @@ export const LINUXTECHLAB_LOGO = `data:image/svg+xml;utf8,${encodeURIComponent(`
 </svg>
 `)}`;
 
-export const BRAND = "#89b4fa";
 const LOGO_URL = "/linuxtechlab/assets/techlab_logo.png";
 
 export function createDummyWidget(titleText, subtitleText, instructionText) {
@@ -212,7 +213,7 @@ export function createPlaceholder(name, buttonLabel, node, app) {
     ctx.font = "bold 16px 'Segoe UI', system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(name, 240, 128);
-    ctx.fillStyle = BRAND;
+    ctx.fillStyle = getBrand();
     ctx.fillText("LinuxTechLab", 240, 150);
     ctx.fillStyle = "#1e1e2e";
     ctx.font = "11px 'Segoe UI', system-ui, sans-serif";

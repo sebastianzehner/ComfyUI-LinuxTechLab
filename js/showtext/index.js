@@ -1,5 +1,5 @@
 import { app } from "/scripts/app.js";
-import { BRAND } from "../shared/index.mjs";
+import { getBrand } from "../theme/palette.mjs";
 // ─── constants ────────────────────────────────────────────────────────────────
 const MARGIN = 10; // left/right gap between node edge and text box
 const PAD_H = 8; // horizontal text padding inside the box
@@ -67,10 +67,7 @@ app.registerExtension({
     nodeType.prototype.onDrawForeground = function (ctx) {
       if (this.collapsed) return;
 
-      const text =
-        this._pixText !== undefined && this._pixText !== null
-          ? String(this._pixText)
-          : "";
+      const text = this._pixText !== undefined && this._pixText !== null ? String(this._pixText) : "";
       const bW = this.size[0] - MARGIN * 2;
       const maxWidth = bW - PAD_H * 2;
 
@@ -87,8 +84,8 @@ app.registerExtension({
 
       ctx.save();
       // Background
-      ctx.fillStyle = "#111" || BRAND + "10";
-      ctx.strokeStyle = BRAND;
+      ctx.fillStyle = "#111" || getBrand() + "10";
+      ctx.strokeStyle = getBrand();
       ctx.lineWidth = 1.5;
 
       if (ctx.roundRect) {
@@ -108,11 +105,7 @@ app.registerExtension({
       ctx.textBaseline = "top";
       const TEXT_OFFSET_Y = 2; // increase to move text down
       this._displayLines.forEach((line, i) => {
-        ctx.fillText(
-          line,
-          MARGIN + PAD_H,
-          BOX_TOP + PAD_V + i * LINE_H + TEXT_OFFSET_Y,
-        );
+        ctx.fillText(line, MARGIN + PAD_H, BOX_TOP + PAD_V + i * LINE_H + TEXT_OFFSET_Y);
       });
 
       ctx.restore();

@@ -1,5 +1,5 @@
 import { app } from "/scripts/app.js";
-import { BRAND, hideJsonWidget } from "../shared/index.mjs";
+import { hideJsonWidget } from "../shared/index.mjs";
 
 function injectCSS() {
   if (document.getElementById("linuxtechlab-resolution-css")) return;
@@ -36,9 +36,9 @@ function injectCSS() {
     }
     .pix-res-chip:hover { border-color: #6c7086; }
     .pix-res-chip.active {
-      background: ${BRAND};
+      background: var(--ltl-brand);
       color: #1e1e2e;
-      border-color: ${BRAND};
+      border-color: var(--ltl-brand);
     }
     .pix-res-chip.span-3 { grid-column: span 3; }
     .pix-res-list {
@@ -58,7 +58,7 @@ function injectCSS() {
     .pix-res-list::-webkit-scrollbar { width: 6px; }
     .pix-res-list::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
     .pix-res-list::-webkit-scrollbar-track { background: transparent; }
-    .pix-res-list:focus { outline: none; border-color: ${BRAND}; }
+    .pix-res-list:focus { outline: none; border-color: var(--ltl-brand); }
     .pix-res-row {
       flex: 0 0 28px;
       box-sizing: border-box;
@@ -76,7 +76,7 @@ function injectCSS() {
     .pix-res-row:last-child { border-bottom: none; }
     .pix-res-row.active {
       background: rgba(137, 180, 250, 0.15);
-      color: ${BRAND};
+      color: var(--ltl-brand);
       font-weight: 600;
     }
     .pix-res-row.empty {
@@ -108,7 +108,7 @@ function injectCSS() {
       border: 1px solid #45475a;
       border-radius: 4px;
       padding: 6px 8px;
-      color: ${BRAND};
+      color: var(--ltl-brand);
       font-size: 14px;
       font-weight: 600;
       text-align: center;
@@ -118,7 +118,7 @@ function injectCSS() {
     }
     .pix-res-custom-field input:focus {
       outline: none;
-      border-color: ${BRAND};
+      border-color: var(--ltl-brand);
     }
     .pix-res-swap {
       width: 32px;
@@ -141,7 +141,7 @@ function injectCSS() {
               mask: url("/linuxtechlab/assets/icons/ui/swap.svg") center / 16px 16px no-repeat;
       pointer-events: none;
     }
-    .pix-res-swap:hover { color: ${BRAND}; border-color: ${BRAND}; }
+    .pix-res-swap:hover { color: var(--ltl-brand); border-color: var(--ltl-brand); }
     .pix-res-readout {
       display: flex;
       align-items: center;
@@ -151,7 +151,7 @@ function injectCSS() {
       font-size: 10px;
       color: #6c7086;
     }
-    .pix-res-readout .accent { color: ${BRAND}; }
+    .pix-res-readout .accent { color: var(--ltl-brand); }
     .pix-res-preview {
       flex: 1;
       display: flex;
@@ -164,7 +164,7 @@ function injectCSS() {
     }
     .pix-res-preview-rect {
       background: rgba(137, 180, 250, 0.15);
-      border: 1px solid ${BRAND};
+      border: 1px solid var(--ltl-brand);
       border-radius: 2px;
       transition: width 0.15s ease, height 0.15s ease;
     }
@@ -173,7 +173,7 @@ function injectCSS() {
       font-size: 10px;
       color: #6c7086;
     }
-    .pix-res-preview-label .accent { color: ${BRAND}; }
+    .pix-res-preview-label .accent { color: var(--ltl-brand); }
     .pix-res-snap-group {
       display: inline-flex;
       align-items: center;
@@ -206,9 +206,9 @@ function injectCSS() {
     }
     .pix-res-snap-btn:hover { color: #cdd6f4; border-color: #6c7086; }
     .pix-res-snap-btn.active {
-      background: ${BRAND};
+      background: var(--ltl-brand);
       color: #1e1e2e;
-      border-color: ${BRAND};
+      border-color: var(--ltl-brand);
     }
   `;
   const style = document.createElement("style");
@@ -528,8 +528,7 @@ function renderCustomPanel(node, state) {
   for (const v of SNAP_OPTIONS) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className =
-      "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
+    btn.className = "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
     btn.textContent = String(v);
     btn.dataset.v = String(v);
     btn.addEventListener("click", (e) => {
@@ -615,8 +614,7 @@ function renderCustomPanel(node, state) {
   function liveUpdate() {
     const wLive = parseInt(wInput.value, 10);
     const hLive = parseInt(hInput.value, 10);
-    if (Number.isFinite(wLive) && Number.isFinite(hLive))
-      refreshReadout(wLive, hLive);
+    if (Number.isFinite(wLive) && Number.isFinite(hLive)) refreshReadout(wLive, hLive);
   }
   wInput.addEventListener("input", liveUpdate);
   hInput.addEventListener("input", liveUpdate);
@@ -756,9 +754,7 @@ function setupResolutionNode(node) {
       // overlay/canvas and arrows don't reach us.
       const list = root.querySelector(".pix-res-list:not(.pix-res-custom)");
       list?.focus();
-      list
-        ?.querySelector(".pix-res-row.active")
-        ?.scrollIntoView({ block: "nearest" });
+      list?.querySelector(".pix-res-row.active")?.scrollIntoView({ block: "nearest" });
     }
   };
 
@@ -788,9 +784,7 @@ function setupResolutionNode(node) {
     renderUI(node);
     const newList = root.querySelector(".pix-res-list:not(.pix-res-custom)");
     newList?.focus();
-    newList
-      ?.querySelector(".pix-res-row.active")
-      ?.scrollIntoView({ block: "nearest" });
+    newList?.querySelector(".pix-res-row.active")?.scrollIntoView({ block: "nearest" });
   };
 
   // Attach to both root and the widget container so a Vue rebuild still routes events.
@@ -880,10 +874,7 @@ function buildLinuxTechLabNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (
-        n.comfyClass === "LinuxTechLabResolution" ||
-        n.type === "LinuxTechLabResolution"
-      ) {
+      if (n.comfyClass === "LinuxTechLabResolution" || n.type === "LinuxTechLabResolution") {
         index.set(String(n.id), n);
       }
       // ComfyUI subgraph instances expose their inner graph at one of these
@@ -917,8 +908,7 @@ app.graphToPrompt = async function (...args) {
       if (!entry || entry.class_type !== "LinuxTechLabResolution") continue;
       if (!index) index = buildLinuxTechLabNodeIndex();
       const node = findLinuxTechLabNode(index, id);
-      const state =
-        node?.properties?.[STATE_PROP] || JSON.stringify(DEFAULT_STATE);
+      const state = node?.properties?.[STATE_PROP] || JSON.stringify(DEFAULT_STATE);
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = state;
     }

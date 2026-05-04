@@ -1,7 +1,8 @@
 // ==============================================================================
 // LinuxTechLab Image Crop Editor — Render (canvas rendering, aspect ratio, save)
 // ==============================================================================
-import { CropEditor, BRAND, RATIOS, SNAPS, CropAPI } from "./core.mjs";
+import { CropEditor, RATIOS, SNAPS, CropAPI } from "./core.mjs";
+import { getBrand } from "../shared/utils.mjs";
 
 const proto = CropEditor.prototype;
 
@@ -14,8 +15,7 @@ proto._promptLoadImage = function () {
     const file = input.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) =>
-      this._loadImageFromDataURL(ev.target.result, file.name);
+    reader.onload = (ev) => this._loadImageFromDataURL(ev.target.result, file.name);
     reader.readAsDataURL(file);
   };
   input.click();
@@ -28,8 +28,7 @@ proto._loadImageFromDataURL = function (dataURL, filename) {
     this.imgW = img.naturalWidth;
     this.imgH = img.naturalHeight;
     this._pendingSrcDataURL = dataURL;
-    if (this._canvasSettings)
-      this._canvasSettings.setSize(this.imgW, this.imgH);
+    if (this._canvasSettings) this._canvasSettings.setSize(this.imgW, this.imgH);
     this._resetCrop();
     this._setStatus(`Loaded: ${this.imgW}\u00d7${this.imgH}`);
   };
@@ -144,8 +143,7 @@ proto._draw = function () {
     const tw = ctx.measureText(label).width + 12;
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.beginPath();
-    if (ctx.roundRect)
-      ctx.roundRect(cx + cw / 2 - tw / 2, cy + ch / 2 - 10, tw, 20, 4);
+    if (ctx.roundRect) ctx.roundRect(cx + cw / 2 - tw / 2, cy + ch / 2 - 10, tw, 20, 4);
     else ctx.rect(cx + cw / 2 - tw / 2, cy + ch / 2 - 10, tw, 20);
     ctx.fill();
     ctx.fillStyle = "#cdd6f4";
@@ -157,7 +155,7 @@ proto._drawHandles = function (ctx, cx, cy, cw, ch) {
   const sz = 10;
   const positions = this._getHandleDrawPositions(cx, cy, cw, ch, sz);
   for (const h of positions) {
-    ctx.fillStyle = BRAND;
+    ctx.fillStyle = getBrand();
     ctx.fillRect(h.dx, h.dy, sz, sz);
     ctx.strokeStyle = "#1e1e2e";
     ctx.lineWidth = 1.5;
@@ -301,9 +299,7 @@ proto._swapRatio = function () {
   }
   this._draw();
   this._updateInfo();
-  this._setStatus(
-    `Swapped \u2192 ${Math.round(this.cropW)}\u00d7${Math.round(this.cropH)}`,
-  );
+  this._setStatus(`Swapped \u2192 ${Math.round(this.cropW)}\u00d7${Math.round(this.cropH)}`);
 };
 
 proto._applySnap = function () {

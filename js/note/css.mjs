@@ -1,5 +1,3 @@
-import { BRAND } from "../shared/index.mjs";
-
 let _injected = false;
 
 export function injectCSS() {
@@ -29,12 +27,12 @@ export function injectCSS() {
 .pix-note-body::-webkit-scrollbar { width: 6px; }
 .pix-note-body::-webkit-scrollbar-track { background: transparent; }
 .pix-note-body::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
-.pix-note-body::-webkit-scrollbar-thumb:hover { background: ${BRAND}; }
+.pix-note-body::-webkit-scrollbar-thumb:hover { background: var(--ltl-brand); }
 .pix-note-body h1 { font-size: 20px; font-weight: 700; margin: 4px 0 8px; color: #cdd6f4; }
 .pix-note-body h2 { font-size: 16px; font-weight: 700; margin: 10px 0 6px; color: #cdd6f4; }
 .pix-note-body h3 { font-size: 14px; font-weight: 700; margin: 8px 0 4px; color: #cdd6f4; }
 .pix-note-body p  { margin: 6px 0; }
-.pix-note-body hr { border: none; border-top: 1px solid var(--pix-note-line, ${BRAND}); margin: 10px 0; }
+.pix-note-body hr { border: none; border-top: 1px solid var(--pix-note-line, var(--ltl-brand)); margin: 10px 0; }
 .pix-note-body ul, .pix-note-body ol { margin: 4px 0 4px 20px; padding: 0; }
 .pix-note-body li { margin: 2px 0; }
 .pix-note-body code {
@@ -56,13 +54,13 @@ export function injectCSS() {
   cursor: pointer; opacity: 0; transition: opacity 120ms, background 120ms;
 }
 .pix-note-body pre:hover .pix-note-copybtn { opacity: 0.9; }
-.pix-note-copybtn:hover { background: ${BRAND}; border-color: ${BRAND}; opacity: 1; }
+.pix-note-copybtn:hover { background: var(--ltl-brand); border-color: var(--ltl-brand); opacity: 1; }
 .pix-note-copybtn.copied { background: #a6e3a1; border-color: #a6e3a1; opacity: 1; }
 .pix-note-copybtn img {
   width: 12px; height: 12px; pointer-events: none;
   filter: brightness(0) invert(1);
 }
-.pix-note-body a { color: ${BRAND}; text-decoration: underline; cursor: pointer; }
+.pix-note-body a { color: var(--ltl-brand); text-decoration: underline; cursor: pointer; }
 .pix-note-body a:hover { text-decoration: none; }
 .pix-note-body label { display: inline-flex; align-items: center; gap: 6px; cursor: default; }
 
@@ -110,7 +108,7 @@ export function injectCSS() {
 .pix-note-body a.pix-note-rm,
 .pix-note-editarea a.pix-note-rm,
 .pix-note-prevwrap a.pix-note-rm {
-  background: var(--pix-note-btn, ${BRAND});
+  background: var(--pix-note-btn, var(--ltl-brand));
 }
 .pix-note-body a.pix-note-yt,
 .pix-note-editarea a.pix-note-yt,
@@ -249,7 +247,7 @@ export function injectCSS() {
   top: 6px; right: 10px;
   display: inline-flex; align-items: center; gap: 4px;
   padding: 4px 10px;
-  background: ${BRAND};
+  background: var(--ltl-brand);
   color: #1e1e2e;
   border: none;
   border-radius: 4px;
@@ -281,7 +279,7 @@ export function injectCSS() {
   left: 50%;
   transform: translateX(-50%);
   background: #1e1e2e;
-  border: 1px solid ${BRAND};
+  border: 1px solid var(--ltl-brand);
   color: #cdd6f4;
   padding: 8px 14px;
   border-radius: 5px;
@@ -314,7 +312,7 @@ export function injectCSS() {
 }
 .pix-note-title { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
 .pix-note-title-logo { width: 18px; height: 18px; }
-.pix-note-title-brand { color: ${BRAND}; }
+.pix-note-title-brand { color: var(--ltl-brand); }
 .pix-note-close {
   background: none; border: none; color: #a6adc8; font-size: 22px; cursor: pointer;
   width: 28px; height: 28px; line-height: 1; border-radius: 4px;
@@ -329,13 +327,13 @@ export function injectCSS() {
   flex: 1; overflow-y: auto; padding: 14px 18px; color: #cdd6f4; font-size: 13px;
   line-height: 1.55; background: #11111b; outline: none;
 }
-.pix-note-editarea:focus-visible { outline: 1px solid ${BRAND}; outline-offset: -2px; }
+.pix-note-editarea:focus-visible { outline: 1px solid var(--ltl-brand); outline-offset: -2px; }
 .pix-note-editarea p, .pix-note-editarea div { margin: 0 0 6px 0; }
 .pix-note-editarea p:last-child, .pix-note-editarea div:last-child { margin-bottom: 0; }
 .pix-note-editarea h1 { font-size: 22px; font-weight: 700; margin: 4px 0 8px; color: #cdd6f4; }
 .pix-note-editarea h2 { font-size: 17px; font-weight: 700; margin: 10px 0 6px; color: #cdd6f4; }
 .pix-note-editarea h3 { font-size: 15px; font-weight: 700; margin: 8px 0 4px; color: #cdd6f4; }
-.pix-note-editarea hr { border:none; border-top: 1px solid var(--pix-note-line, ${BRAND}); margin: 10px 0; }
+.pix-note-editarea hr { border:none; border-top: 1px solid var(--pix-note-line, var(--ltl-brand)); margin: 10px 0; }
 
 .pix-note-viewtoggle {
   margin-left: auto; display: inline-flex; background: #11111b;
@@ -346,7 +344,7 @@ export function injectCSS() {
   padding: 3px 10px; font-size: 11px; font-weight: 600;
   border-radius: 3px; cursor: pointer;
 }
-.pix-note-viewtoggle button.active { background: ${BRAND}; color: #1e1e2e; }
+.pix-note-viewtoggle button.active { background: var(--ltl-brand); color: #1e1e2e; }
 
 .pix-note-codewrap {
   position: relative;
@@ -383,7 +381,7 @@ export function injectCSS() {
   resize: none;
   color: transparent;
   background: transparent;
-  caret-color: ${BRAND};
+  caret-color: var(--ltl-brand);
   outline: none;
   overflow: auto;
   z-index: 2;
@@ -394,8 +392,8 @@ export function injectCSS() {
 .pix-note-hl .tk-tag-name    { color: #45475a; }
 .pix-note-hl .tk-attr-name   { color: #74c7ec; }
 .pix-note-hl .tk-attr-equals { color: #45475a; }
-.pix-note-hl .tk-attr-value  { color: ${BRAND}; }
-.pix-note-hl .tk-pix-class   { color: ${BRAND}; font-weight: 700; }
+.pix-note-hl .tk-attr-value  { color: var(--ltl-brand); }
+.pix-note-hl .tk-pix-class   { color: var(--ltl-brand); font-weight: 700; }
 .pix-note-hl .tk-text        { color: #cdd6f4; }
 .pix-note-hl .tk-entity      { color: #6c7086; font-style: italic; }
 .pix-note-hl .tk-whitespace  { }
@@ -405,7 +403,7 @@ export function injectCSS() {
 .pix-note-help-overlay {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  background: #1e1e2e; border: 1px solid ${BRAND};
+  background: #1e1e2e; border: 1px solid var(--ltl-brand);
   border-radius: 10px; padding: 0;
   width: 960px; max-width: 95vw; max-height: 86vh;
   z-index: 99995; overflow: hidden;
@@ -417,7 +415,7 @@ export function injectCSS() {
   border-bottom: 1px solid #313244;
 }
 .pix-note-help-header h3 {
-  flex: 1; color: ${BRAND}; font-size: 14px; margin: 0; font-weight: 600;
+  flex: 1; color: var(--ltl-brand); font-size: 14px; margin: 0; font-weight: 600;
 }
 .pix-note-help-close {
   background: #313244; color: #a6adc8; border: 1px solid #45475a;
@@ -436,7 +434,7 @@ export function injectCSS() {
 }
 .pix-note-help-section:last-child { margin-bottom: 0; }
 .pix-note-help-section h4 {
-  color: ${BRAND};
+  color: var(--ltl-brand);
   margin: 0 0 6px 0; font-size: 11px; font-weight: 700;
   letter-spacing: 0.6px; text-transform: uppercase;
 }
@@ -453,7 +451,7 @@ export function injectCSS() {
   margin-right: 2px;
 }
 .pix-note-help-grid .pix-note-tbtn-maskicon-multi {
-  --pix-note-tbtn-tint: ${BRAND};
+  --pix-note-tbtn-tint: var(--ltl-brand);
 }
 .pix-note-help-grid img.pix-note-tbtn-icon {
   width: 14px; height: 14px; vertical-align: -3px;
@@ -470,9 +468,9 @@ export function injectCSS() {
   font-size: 10px; color: #6c7086; text-align: center; line-height: 1.6;
   flex-shrink: 0;
 }
-.pix-note-help-footer a { color: ${BRAND}; text-decoration: none; }
+.pix-note-help-footer a { color: var(--ltl-brand); text-decoration: none; }
 .pix-note-help-footer a:hover { text-decoration: underline; }
-.pix-note-editarea a  { color: ${BRAND}; text-decoration: underline; }
+.pix-note-editarea a  { color: var(--ltl-brand); text-decoration: underline; }
 .pix-note-editarea code { background: #313244; padding: 0 5px; border-radius: 3px; font-family: "Consolas", monospace; font-size: 0.92em; }
 .pix-note-editarea pre  { background: #11111b; border:1px solid #313244; border-radius: 4px; padding: 8px 10px; font-family: "Consolas", monospace; font-size: 12px; }
 .pix-note-editarea pre code { background: transparent; padding: 0; font-size: inherit; }
@@ -488,7 +486,7 @@ export function injectCSS() {
   border: 1px solid #45475a; background: #313244; color: #cdd6f4; cursor: pointer;
 }
 .pix-note-btn:hover { background: #45475a; }
-.pix-note-btn.primary { background: ${BRAND}; border-color: ${BRAND}; color: #1e1e2e; }
+.pix-note-btn.primary { background: var(--ltl-brand); border-color: var(--ltl-brand); color: #1e1e2e; }
 .pix-note-btn.primary:hover { filter: brightness(1.08); }
 .pix-note-btn.ghost { background: transparent; }
 
@@ -530,11 +528,11 @@ export function injectCSS() {
   user-select: none;
 }
 .pix-note-tbtn:hover { background: #45475a; border-color: #585b70; }
-.pix-note-tbtn.active { background: ${BRAND}; color: #1e1e2e; border-color: ${BRAND}; }
+.pix-note-tbtn.active { background: var(--ltl-brand); color: #1e1e2e; border-color: var(--ltl-brand); }
 .pix-note-tbtn.pix-note-tbtn-accent {
-  background: ${BRAND}; color: #1e1e2e; border-color: ${BRAND};
+  background: var(--ltl-brand); color: #1e1e2e; border-color: var(--ltl-brand);
 }
-.pix-note-tbtn.pix-note-tbtn-accent:hover { filter: brightness(1.1); background: ${BRAND}; }
+.pix-note-tbtn.pix-note-tbtn-accent:hover { filter: brightness(1.1); background: var(--ltl-brand); }
 .pix-note-tbtn-icon {
   width: 14px; height: 14px; pointer-events: none;
   filter: brightness(0) invert(1);
@@ -654,7 +652,7 @@ export function injectCSS() {
   width: 18px; height: 18px; border-radius: 3px; cursor: pointer;
   border: 1px solid rgba(205,214,244,.1);
 }
-.pix-note-swatch.active { outline: 2px solid ${BRAND}; outline-offset: 1px; }
+.pix-note-swatch.active { outline: 2px solid var(--ltl-brand); outline-offset: 1px; }
 .pix-note-colorrow { display: flex; gap: 4px; align-items: center; }
 .pix-note-colorrow input[type="color"] { width: 26px; height: 22px; padding: 0; border: 1px solid #45475a; border-radius: 3px; background: #11111b; cursor: pointer; }
 .pix-note-colorrow input[type="text"] {
@@ -738,7 +736,7 @@ export function injectCSS() {
   color: #cdd6f4; font-size: 12px; padding: 6px 8px;
   font-family: "Consolas", monospace;
 }
-.pix-note-linkinput:focus { outline: 1px solid ${BRAND}; outline-offset: -1px; border-color: ${BRAND}; }
+.pix-note-linkinput:focus { outline: 1px solid var(--ltl-brand); outline-offset: -1px; border-color: var(--ltl-brand); }
 .pix-note-linkerr {
   color: #fab387; font-size: 11px; margin-top: 6px; min-height: 14px;
 }
@@ -751,7 +749,7 @@ export function injectCSS() {
   resize: vertical; min-height: 120px;
   white-space: pre; tab-size: 2;
 }
-.pix-note-codeinput:focus { outline: 1px solid ${BRAND}; outline-offset: -1px; border-color: ${BRAND}; }
+.pix-note-codeinput:focus { outline: 1px solid var(--ltl-brand); outline-offset: -1px; border-color: var(--ltl-brand); }
 
 /* ── Block edit dialog ───────────────────────────────────── */
 .pix-note-blockdlg {
@@ -768,7 +766,7 @@ export function injectCSS() {
   background: #11111b; border: 1px solid #313244; border-radius: 3px;
   color: #cdd6f4; font-size: 12px; padding: 5px 8px;
 }
-.pix-note-blockdlg input:focus { outline: 1px solid ${BRAND}; outline-offset: -1px; }
+.pix-note-blockdlg input:focus { outline: 1px solid var(--ltl-brand); outline-offset: -1px; }
 .pix-note-blockdlg .dlgfooter { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
 
 .pix-note-btndesign { min-width: 440px; }
@@ -823,8 +821,8 @@ export function injectCSS() {
 .pix-note-iconpick button:hover { background: rgba(205,214,244,.04); color: #a6adc8; }
 .pix-note-iconpick button.active {
   background: rgba(137,180,250,.15);
-  border-color: ${BRAND};
-  color: ${BRAND};
+  border-color: var(--ltl-brand);
+  color: var(--ltl-brand);
 }
 .pix-note-iconpick button .ico {
   display: inline-block;
@@ -862,7 +860,7 @@ export function injectCSS() {
   transition: background 160ms;
   flex-shrink: 0;
 }
-.pix-note-toggle.on { background: ${BRAND}; }
+.pix-note-toggle.on { background: var(--ltl-brand); }
 .pix-note-toggle::after {
   content: "";
   position: absolute;
@@ -885,7 +883,7 @@ export function injectCSS() {
   color: #cdd6f4; font-size: 12px; padding: 5px 8px;
   font-family: inherit;
 }
-.pix-note-optinput input:focus { outline: 1px solid ${BRAND}; outline-offset: -1px; }
+.pix-note-optinput input:focus { outline: 1px solid var(--ltl-brand); outline-offset: -1px; }
 .pix-note-optinput.disabled { opacity: 0.35; pointer-events: none; }
 .pix-note-optinput .folderico {
   display: inline-block;
@@ -903,7 +901,7 @@ export function injectCSS() {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: ${BRAND};
+  background: var(--ltl-brand);
   color: #1e1e2e;
   cursor: pointer;
   z-index: 30;
@@ -937,7 +935,7 @@ export function injectCSS() {
 .pix-note-body table.pix-note-grid td,
 .pix-note-editarea table.pix-note-grid th,
 .pix-note-editarea table.pix-note-grid td {
-  border: 1px solid var(--pix-note-line, ${BRAND});
+  border: 1px solid var(--pix-note-line, var(--ltl-brand));
   padding: 6px 8px;
   vertical-align: middle;
   word-wrap: break-word;
@@ -949,7 +947,7 @@ export function injectCSS() {
   background: #181825;
   color: #cdd6f4;
   font-weight: 700;
-  border-bottom: 2px solid var(--pix-note-line, ${BRAND});
+  border-bottom: 2px solid var(--pix-note-line, var(--ltl-brand));
 }
 
 /* ── Grid insert dialog ──────────────────────────────────────────── */
@@ -976,7 +974,7 @@ export function injectCSS() {
 }
 .pix-note-gridprevcell.head {
   background: #45475a;
-  border-bottom: 2px solid var(--pix-note-line, ${BRAND});
+  border-bottom: 2px solid var(--pix-note-line, var(--ltl-brand));
 }
 .pix-note-stepper {
   display: inline-flex;
@@ -996,7 +994,7 @@ export function injectCSS() {
   font-size: 14px;
   line-height: 1;
 }
-.pix-note-step:hover:not(:disabled) { background: #45475a; border-color: ${BRAND}; }
+.pix-note-step:hover:not(:disabled) { background: #45475a; border-color: var(--ltl-brand); }
 .pix-note-step:disabled { opacity: 0.4; cursor: not-allowed; }
 .pix-note-stepnum {
   min-width: 20px;

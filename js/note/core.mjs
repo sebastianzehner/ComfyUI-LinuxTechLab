@@ -1,5 +1,4 @@
 import { app } from "/scripts/app.js";
-import { BRAND } from "../shared/index.mjs";
 import { injectCSS } from "./css.mjs";
 import { sanitize } from "./sanitize.mjs";
 import { buildCodeViewDOM } from "./codeview.mjs";
@@ -125,8 +124,7 @@ export class NoteEditor {
           if (this._editArea && document.activeElement !== this._editArea) {
             this._editArea.focus();
           }
-          const cmd =
-            key === "b" ? "bold" : key === "i" ? "italic" : "underline";
+          const cmd = key === "b" ? "bold" : key === "i" ? "italic" : "underline";
           try {
             document.execCommand(cmd);
           } catch (err) {}
@@ -150,10 +148,7 @@ export class NoteEditor {
           let cell = null;
           let n = anchor;
           while (n && n !== this._editArea) {
-            if (
-              n.nodeType === 1 &&
-              (n.tagName === "TD" || n.tagName === "TH")
-            ) {
+            if (n.nodeType === 1 && (n.tagName === "TD" || n.tagName === "TH")) {
               cell = n;
               break;
             }
@@ -162,9 +157,7 @@ export class NoteEditor {
           if (cell) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            const cells = Array.from(
-              cell.closest("table").querySelectorAll("th, td"),
-            );
+            const cells = Array.from(cell.closest("table").querySelectorAll("th, td"));
             const ix = cells.indexOf(cell);
             const next = e.shiftKey ? cells[ix - 1] : cells[ix + 1];
             if (next) {
@@ -195,18 +188,9 @@ export class NoteEditor {
             if (r.collapsed && this._editArea?.contains(r.startContainer)) {
               const node = r.startContainer;
               const off = r.startOffset;
-              if (
-                node.nodeType === 3 &&
-                off === 1 &&
-                node.nodeValue &&
-                node.nodeValue[0] === "\u00A0"
-              ) {
+              if (node.nodeType === 3 && off === 1 && node.nodeValue && node.nodeValue[0] === "\u00A0") {
                 const prev = node.previousSibling;
-                if (
-                  prev &&
-                  prev.nodeType === 1 &&
-                  prev.classList?.contains("pix-note-ic")
-                ) {
+                if (prev && prev.nodeType === 1 && prev.classList?.contains("pix-note-ic")) {
                   e.preventDefault();
                   e.stopImmediatePropagation();
                   this._snapBefore?.();
@@ -221,10 +205,7 @@ export class NoteEditor {
                   if (node.nodeValue.length > 0) {
                     r2.setStart(node, 0);
                   } else {
-                    const idx = Array.prototype.indexOf.call(
-                      parent.childNodes,
-                      node,
-                    );
+                    const idx = Array.prototype.indexOf.call(parent.childNodes, node);
                     parent.removeChild(node);
                     r2.setStart(parent, Math.max(0, idx));
                   }
@@ -246,17 +227,9 @@ export class NoteEditor {
               // refuses to delete an empty inline-block span. Match
               // this caret shape and delete the icon + strip the
               // leading nbsp.
-              if (
-                node.nodeType === 3 &&
-                off === 0 &&
-                node.nodeValue?.[0] === "\u00A0"
-              ) {
+              if (node.nodeType === 3 && off === 0 && node.nodeValue?.[0] === "\u00A0") {
                 const prev = node.previousSibling;
-                if (
-                  prev &&
-                  prev.nodeType === 1 &&
-                  prev.classList?.contains("pix-note-ic")
-                ) {
+                if (prev && prev.nodeType === 1 && prev.classList?.contains("pix-note-ic")) {
                   e.preventDefault();
                   e.stopImmediatePropagation();
                   this._snapBefore?.();
@@ -267,10 +240,7 @@ export class NoteEditor {
                   if (node.nodeValue.length > 0) {
                     r2.setStart(node, 0);
                   } else {
-                    const idx = Array.prototype.indexOf.call(
-                      parent.childNodes,
-                      node,
-                    );
+                    const idx = Array.prototype.indexOf.call(parent.childNodes, node);
                     parent.removeChild(node);
                     r2.setStart(parent, Math.max(0, idx));
                   }
@@ -298,11 +268,7 @@ export class NoteEditor {
               // delete-both semantics.
               if (node.nodeType === 1 && off >= 1) {
                 const prev = node.childNodes[off - 1];
-                if (
-                  prev &&
-                  prev.nodeType === 1 &&
-                  prev.classList?.contains("pix-note-ic")
-                ) {
+                if (prev && prev.nodeType === 1 && prev.classList?.contains("pix-note-ic")) {
                   e.preventDefault();
                   e.stopImmediatePropagation();
                   this._snapBefore?.();
@@ -310,11 +276,7 @@ export class NoteEditor {
                   prev.remove();
                   // Strip leading nbsp from the following text node
                   // if present, matching the text-node branch above.
-                  if (
-                    next &&
-                    next.nodeType === 3 &&
-                    next.nodeValue?.[0] === "\u00A0"
-                  ) {
+                  if (next && next.nodeType === 3 && next.nodeValue?.[0] === "\u00A0") {
                     next.nodeValue = next.nodeValue.slice(1);
                     if (next.nodeValue.length === 0) {
                       next.parentNode?.removeChild(next);
@@ -325,10 +287,7 @@ export class NoteEditor {
                   // 1, so the slot where the icon used to be is now
                   // off-1. Clamp to childNodes.length for safety
                   // (valid Range offset: 0..childNodes.length).
-                  const clamped = Math.min(
-                    Math.max(0, off - 1),
-                    node.childNodes.length,
-                  );
+                  const clamped = Math.min(Math.max(0, off - 1), node.childNodes.length);
                   r2.setStart(node, clamped);
                   r2.collapse(true);
                   sel.removeAllRanges();
@@ -382,8 +341,7 @@ export class NoteEditor {
       if (!inArea) return;
       e.preventDefault();
       e.stopImmediatePropagation();
-      const text =
-        (e.clipboardData || window.clipboardData)?.getData("text/plain") || "";
+      const text = (e.clipboardData || window.clipboardData)?.getData("text/plain") || "";
       if (!text) return;
       if (document.activeElement !== area) area.focus();
       document.execCommand("insertText", false, text);
@@ -437,18 +395,14 @@ export class NoteEditor {
     if (typeof app.loadGraphData === "function") {
       this._savedLoadGraphData = app.loadGraphData.bind(app);
       app.loadGraphData = () => {
-        console.warn(
-          "[pix-note] loadGraphData blocked while note editor is open",
-        );
+        console.warn("[pix-note] loadGraphData blocked while note editor is open");
         return Promise.resolve();
       };
     }
     if (app.graph && typeof app.graph.configure === "function") {
       this._savedGraphConfigure = app.graph.configure.bind(app.graph);
       app.graph.configure = () => {
-        console.warn(
-          "[pix-note] graph.configure blocked while note editor is open",
-        );
+        console.warn("[pix-note] graph.configure blocked while note editor is open");
       };
     }
     // Try to intercept the Vue frontend's command dispatch for Undo/Redo.
@@ -481,9 +435,7 @@ export class NoteEditor {
         self._origOnRemoved?.call(this);
       } catch (e) {}
       if (self._el?.isConnected) {
-        console.warn(
-          "[pix-note] node removed while editor open — closing editor",
-        );
+        console.warn("[pix-note] node removed while editor open — closing editor");
         self._dirty = false;
         self.close(true);
       }
@@ -518,8 +470,7 @@ export class NoteEditor {
       title.textContent = "You have unsaved changes";
       const text = document.createElement("div");
       text.className = "pix-note-confirm-text";
-      text.textContent =
-        "If you close now, your edits will be lost. What do you want to do?";
+      text.textContent = "If you close now, your edits will be lost. What do you want to do?";
       const actions = document.createElement("div");
       actions.className = "pix-note-confirm-actions";
       const cancelBtn = document.createElement("button");
@@ -587,10 +538,7 @@ export class NoteEditor {
       this._origOnRemoved = undefined;
     }
     if (this._selectionChangeHandler) {
-      document.removeEventListener(
-        "selectionchange",
-        this._selectionChangeHandler,
-      );
+      document.removeEventListener("selectionchange", this._selectionChangeHandler);
       this._selectionChangeHandler = null;
     }
     if (this._onWindowResize) {
@@ -613,8 +561,7 @@ export class NoteEditor {
       if (app.graph) app.graph.configure = this._savedGraphConfigure;
       this._savedGraphConfigure = null;
     }
-    if (this._el && this._el.parentNode)
-      this._el.parentNode.removeChild(this._el);
+    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
     this._el = null;
     if (this.node && this.node._noteEditor === this) {
       this.node._noteEditor = null;
@@ -625,19 +572,12 @@ export class NoteEditor {
     // If the user is in Code view, persist what they edited in the textarea,
     // not what's currently in the (hidden) WYSIWYG area. sanitize runs either
     // way so malicious markup added in Code view is stripped before storage.
-    const raw =
-      this._mode === "code"
-        ? this._codeArea?.value || ""
-        : this._editArea?.innerHTML || "";
+    const raw = this._mode === "code" ? this._codeArea?.value || "" : this._editArea?.innerHTML || "";
     let html;
     try {
       html = sanitize(raw);
     } catch (e) {
-      console.error(
-        "[pix-note] sanitize threw during save; keeping raw HTML",
-        e,
-        { raw },
-      );
+      console.error("[pix-note] sanitize threw during save; keeping raw HTML", e, { raw });
       html = raw;
     }
     this.cfg.content = html;
@@ -1402,10 +1342,7 @@ NoteEditor.prototype._installPencil = function (main, editArea) {
   // Recompute position on editArea scroll + window resize so the pencil
   // tracks its target during layout changes.
   editArea.addEventListener("scroll", () => this._repositionPencil());
-  window.addEventListener(
-    "resize",
-    (this._onWindowResize = () => this._repositionPencil()),
-  );
+  window.addEventListener("resize", (this._onWindowResize = () => this._repositionPencil()));
 };
 
 NoteEditor.prototype._repositionPencil = function () {

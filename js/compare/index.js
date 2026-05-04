@@ -1,5 +1,5 @@
 import { app } from "/scripts/app.js";
-import { BRAND } from "../shared/index.mjs";
+import { getBrand } from "../shared/utils.mjs";
 // Buttons: Show 1 | Left Right | Up Down | Overlay | Difference
 // "Show 1" toggles: Show 1 → Show 2 → back to compare (deselects)
 const MODES = ["Left Right", "Right Left", "Up Down", "Overlay", "Difference"];
@@ -11,10 +11,7 @@ const MODE_HINTS = [
   "",
   "Shows pixel differences between images",
 ];
-const SHOW_HINTS = [
-  "Showing image 1  ·  Click again to switch",
-  "Showing image 2  ·  Click again to switch",
-];
+const SHOW_HINTS = ["Showing image 1  ·  Click again to switch", "Showing image 2  ·  Click again to switch"];
 
 // Layout constants
 const BTN_GAP = 3;
@@ -45,13 +42,11 @@ function hintRect() {
   return { x: BTN_X, y: ROW2_Y, w: BTN_W * 6 + BTN_GAP * 5, h: BTN_H };
 }
 function inside(pos, r) {
-  return (
-    pos[0] >= r.x && pos[0] <= r.x + r.w && pos[1] >= r.y && pos[1] <= r.y + r.h
-  );
+  return pos[0] >= r.x && pos[0] <= r.x + r.w && pos[1] >= r.y && pos[1] <= r.y + r.h;
 }
 function paintBtn(ctx, r, label, on) {
-  ctx.fillStyle = on ? BRAND : "#313244";
-  ctx.strokeStyle = on ? BRAND : "#45475a";
+  ctx.fillStyle = on ? getBrand() : "#313244";
+  ctx.strokeStyle = on ? getBrand() : "#45475a";
   ctx.lineWidth = 1;
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(r.x, r.y, r.w, r.h, 3);
@@ -67,15 +62,7 @@ function paintBtn(ctx, r, label, on) {
 
 // Setting ID and option list
 const SETTING_DEFAULT_MODE = "LinuxTechLab.Compare.DefaultMode";
-const DEFAULT_MODE_OPTIONS = [
-  "Show 2",
-  "Show 1",
-  "Left Right",
-  "Right Left",
-  "Up Down",
-  "Overlay",
-  "Difference",
-];
+const DEFAULT_MODE_OPTIONS = ["Show 2", "Show 1", "Left Right", "Right Left", "Up Down", "Overlay", "Difference"];
 
 app.registerExtension({
   name: "LinuxTechLab.Compare",
@@ -99,8 +86,7 @@ app.registerExtension({
       _origCreated?.apply(this, arguments);
 
       // Read user's preferred default mode from settings
-      const pref =
-        app.ui?.settings?.getSettingValue?.(SETTING_DEFAULT_MODE) || "Show 2";
+      const pref = app.ui?.settings?.getSettingValue?.(SETTING_DEFAULT_MODE) || "Show 2";
       const modeIdx = MODES.indexOf(pref);
       if (modeIdx !== -1) {
         this._cmpMode = modeIdx;
@@ -163,20 +149,9 @@ app.registerExtension({
 
       // ── Row 1: Show toggle + mode buttons ──
       ctx.save();
-      const showLabel =
-        this._cmpShowWhich === 1
-          ? "Show 1"
-          : this._cmpShowWhich === 2
-            ? "Show 2"
-            : "Show 1";
+      const showLabel = this._cmpShowWhich === 1 ? "Show 1" : this._cmpShowWhich === 2 ? "Show 2" : "Show 1";
       paintBtn(ctx, showRect(), showLabel, this._cmpShowWhich !== 0);
-      for (let i = 0; i < 5; i++)
-        paintBtn(
-          ctx,
-          modeRect(i),
-          MODES[i],
-          this._cmpShowWhich === 0 && this._cmpMode === i,
-        );
+      for (let i = 0; i < 5; i++) paintBtn(ctx, modeRect(i), MODES[i], this._cmpShowWhich === 0 && this._cmpMode === i);
       ctx.restore();
 
       // ── Row 2: opacity slider or hint text (same height) ──
@@ -206,15 +181,14 @@ app.registerExtension({
         ctx.fill();
 
         // Track fill
-        ctx.fillStyle = BRAND;
+        ctx.fillStyle = getBrand();
         ctx.beginPath();
-        if (ctx.roundRect)
-          ctx.roundRect(trackX, trackY, Math.max(0, trackW * pct), trackH, 3);
+        if (ctx.roundRect) ctx.roundRect(trackX, trackY, Math.max(0, trackW * pct), trackH, 3);
         else ctx.rect(trackX, trackY, trackW * pct, trackH);
         ctx.fill();
 
         // Thumb
-        ctx.fillStyle = BRAND;
+        ctx.fillStyle = getBrand();
         ctx.beginPath();
         ctx.arc(thumbX, r2.y + r2.h / 2, 6, 0, Math.PI * 2);
         ctx.fill();
@@ -227,11 +201,7 @@ app.registerExtension({
         ctx.fillStyle = "#bac2de";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText(
-          `${Math.round(pct * 100)}%`,
-          trackX + trackW + 6,
-          r2.y + r2.h / 2,
-        );
+        ctx.fillText(`${Math.round(pct * 100)}%`, trackX + trackW + 6, r2.y + r2.h / 2);
 
         // Store geometry for hit testing
         this._cmpSliderGeo = {
@@ -246,10 +216,7 @@ app.registerExtension({
         ctx.font = "9px 'Segoe UI',sans-serif";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        const hint =
-          this._cmpShowWhich !== 0
-            ? SHOW_HINTS[this._cmpShowWhich - 1]
-            : MODE_HINTS[this._cmpMode] || "";
+        const hint = this._cmpShowWhich !== 0 ? SHOW_HINTS[this._cmpShowWhich - 1] : MODE_HINTS[this._cmpMode] || "";
         ctx.fillText(hint, r2.x, r2.y + r2.h / 2);
       }
       ctx.restore();
@@ -264,11 +231,7 @@ app.registerExtension({
         ctx.font = "12px 'Segoe UI',sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(
-          "Connect images & run to compare",
-          w / 2,
-          IMG_Y + imgH / 2,
-        );
+        ctx.fillText("Connect images & run to compare", w / 2, IMG_Y + imgH / 2);
         ctx.restore();
         return;
       }
@@ -294,8 +257,7 @@ app.registerExtension({
       // ── Single image override ──
       if (this._cmpShowWhich !== 0) {
         const img = this._cmpShowWhich === 1 ? this._cmpImg1 : this._cmpImg2;
-        if (img)
-          ctx.drawImage(img, fit(img).x, fit(img).y, fit(img).w, fit(img).h);
+        if (img) ctx.drawImage(img, fit(img).x, fit(img).y, fit(img).w, fit(img).h);
         ctx.restore();
         return;
       }
@@ -359,16 +321,14 @@ app.registerExtension({
           ctx.stroke();
         }
       } else if (m === 3) {
-        if (this._cmpImg1)
-          ctx.drawImage(this._cmpImg1, fr1.x, fr1.y, fr1.w, fr1.h);
+        if (this._cmpImg1) ctx.drawImage(this._cmpImg1, fr1.x, fr1.y, fr1.w, fr1.h);
         if (this._cmpImg2) {
           ctx.globalAlpha = this._cmpOpacity;
           ctx.drawImage(this._cmpImg2, fr2.x, fr2.y, fr2.w, fr2.h);
           ctx.globalAlpha = 1;
         }
       } else {
-        if (this._cmpImg1)
-          ctx.drawImage(this._cmpImg1, fr1.x, fr1.y, fr1.w, fr1.h);
+        if (this._cmpImg1) ctx.drawImage(this._cmpImg1, fr1.x, fr1.y, fr1.w, fr1.h);
         if (this._cmpImg2) {
           ctx.globalCompositeOperation = "difference";
           ctx.drawImage(this._cmpImg2, fr2.x, fr2.y, fr2.w, fr2.h);
@@ -400,12 +360,7 @@ app.registerExtension({
       // Opacity slider drag start
       if (this._cmpMode === 3 && this._cmpSliderGeo) {
         const sg = this._cmpSliderGeo;
-        if (
-          pos[0] >= sg.x - 8 &&
-          pos[0] <= sg.x + sg.w + 8 &&
-          pos[1] >= sg.y &&
-          pos[1] <= sg.y + sg.h
-        ) {
+        if (pos[0] >= sg.x - 8 && pos[0] <= sg.x + sg.w + 8 && pos[1] >= sg.y && pos[1] <= sg.y + sg.h) {
           this._cmpOpacity = Math.max(0, Math.min(1, (pos[0] - sg.x) / sg.w));
           this._cmpDragging = true;
           app.graph.setDirtyCanvas(true, true);
@@ -424,17 +379,11 @@ app.registerExtension({
         app.graph.setDirtyCanvas(true, true);
         return;
       }
-      if (
-        this._cmpShowWhich === 0 &&
-        this._cmpMode <= 2 &&
-        (this._cmpImg1 || this._cmpImg2)
-      ) {
+      if (this._cmpShowWhich === 0 && this._cmpMode <= 2 && (this._cmpImg1 || this._cmpImg2)) {
         const imgW = this.size[0],
           imgH = this.size[1] - IMG_Y;
-        if (this._cmpMode <= 1)
-          this._cmpSplitX = Math.max(0, Math.min(1, pos[0] / imgW));
-        else
-          this._cmpSplitY = Math.max(0, Math.min(1, (pos[1] - IMG_Y) / imgH));
+        if (this._cmpMode <= 1) this._cmpSplitX = Math.max(0, Math.min(1, pos[0] / imgW));
+        else this._cmpSplitY = Math.max(0, Math.min(1, (pos[1] - IMG_Y) / imgH));
         app.graph.setDirtyCanvas(true, true);
       }
       if (_origMove) return _origMove.call(this, e, pos);
@@ -449,10 +398,7 @@ app.registerExtension({
     const _origWheel = nodeType.prototype.onMouseWheel;
     nodeType.prototype.onMouseWheel = function (e, pos) {
       if (this._cmpMode === 3 && pos[1] > ROW1_Y) {
-        this._cmpOpacity = Math.max(
-          0,
-          Math.min(1, this._cmpOpacity + (e.deltaY > 0 ? -0.05 : 0.05)),
-        );
+        this._cmpOpacity = Math.max(0, Math.min(1, this._cmpOpacity + (e.deltaY > 0 ? -0.05 : 0.05)));
         app.graph.setDirtyCanvas(true, true);
         return true;
       }

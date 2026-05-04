@@ -3,7 +3,7 @@
 // ║  Re-exports everything for backward-compatible imports        ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
-export { BRAND, UI_ICON, _uiIcon, injectFrameworkStyles } from "./theme.mjs";
+export { UI_ICON, _uiIcon, injectFrameworkStyles } from "./theme.mjs";
 export { createEditorLayout } from "./layout.mjs";
 export {
   createButton,
@@ -23,13 +23,5 @@ export {
   createZoomControls,
   createTransformPanel,
 } from "./components.mjs";
-export {
-  createLayerItem,
-  createLayersList,
-  createLayerPanel,
-} from "./layers.mjs";
-export {
-  createCanvasSettings,
-  createCanvasFrame,
-  createCanvasToolbar,
-} from "./canvas.mjs";
+export { createLayerItem, createLayersList, createLayerPanel } from "./layers.mjs";
+export { createCanvasSettings, createCanvasFrame, createCanvasToolbar } from "./canvas.mjs";

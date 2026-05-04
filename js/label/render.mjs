@@ -1,5 +1,3 @@
-import { BRAND } from "../shared/index.mjs";
-
 // ─── Defaults ────────────────────────────────────────────────
 export const DEFAULTS = {
   text: "Label LinuxTechLab",
@@ -127,7 +125,7 @@ export function injectCSS() {
 }
 .pix-lbl-title { display: flex; align-items: center; gap: 6px; color: #cdd6f4; font-size: 13px; font-weight: 600; letter-spacing: 0.2px; }
 .pix-lbl-title-logo { width: 18px; height: 18px; }
-.pix-lbl-title-brand { color: ${BRAND}; }
+.pix-lbl-title-brand { color: var(--ltl-brand); }
 .pix-lbl-close {
     background: none; border: none; color: #6c7086; font-size: 18px;
     cursor: pointer; padding: 0 2px; line-height: 1;
@@ -144,7 +142,7 @@ export function injectCSS() {
     color: #cdd6f4; padding: 7px 9px; font-size: 13px;
     font-family: inherit; outline: none; resize: vertical; min-height: 46px;
 }
-.pix-lbl-field textarea:focus { border-color: ${BRAND}; }
+.pix-lbl-field textarea:focus { border-color: var(--ltl-brand); }
 .pix-lbl-preview {
     background: #11111b; border-radius: 5px; border: 1px solid #313244;
     padding: 8px; min-height: 28px; display: flex;
@@ -158,10 +156,10 @@ export function injectCSS() {
     transition: all 0.12s; line-height: 1.4;
 }
 .pix-lbl-btn:hover { border-color: #6c7086; color: #cdd6f4; }
-.pix-lbl-btn.active { background: ${BRAND}22; border-color: ${BRAND}; color: ${BRAND}; }
+.pix-lbl-btn.active { background: var(--ltl-brand)22; border-color: var(--ltl-brand); color: var(--ltl-brand); }
 .pix-lbl-bold { font-weight: bold; min-width: 26px; text-align: center; }
 .pix-lbl-range-wrap { display: flex; align-items: center; gap: 6px; }
-.pix-lbl-range-wrap input[type="range"] { flex: 1; accent-color: ${BRAND}; height: 3px; }
+.pix-lbl-range-wrap input[type="range"] { flex: 1; accent-color: var(--ltl-brand); height: 3px; }
 .pix-lbl-range-wrap .pix-lbl-val {
     color: #6c7086; font-size: 11px; min-width: 28px; text-align: right; font-variant-numeric: tabular-nums;
 }
@@ -192,7 +190,7 @@ export function injectCSS() {
     flex: 1; min-width: 0; background: #181825; border: 1px solid #313244; border-radius: 3px;
     color: #a6adc8; padding: 3px 5px; font-size: 11px; font-family: monospace; outline: none;
 }
-.pix-lbl-color-row .pix-lbl-hex:focus { border-color: ${BRAND}; }
+.pix-lbl-color-row .pix-lbl-hex:focus { border-color: var(--ltl-brand); }
 .pix-lbl-spacing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
 .pix-lbl-spacing-field { min-width: 0; }
 .pix-lbl-footer {
@@ -206,7 +204,7 @@ export function injectCSS() {
 }
 .pix-lbl-btn-cancel { background: #313244; color: #a6adc8; border: 1px solid #45475a; }
 .pix-lbl-btn-cancel:hover { background: #45475a; }
-.pix-lbl-btn-save { background: ${BRAND}; color: #1e1e2e; border: 1px solid transparent; }
+.pix-lbl-btn-save { background: var(--ltl-brand); color: #1e1e2e; border: 1px solid transparent; }
 .pix-lbl-btn-save:hover { opacity: 0.88; }
 .pix-lbl-align-icon { display: flex; flex-direction: column; gap: 2px; width: 13px; align-items: flex-start; }
 .pix-lbl-align-icon span { display: block; height: 2px; background: currentColor; border-radius: 1px; }
@@ -226,7 +224,7 @@ export function injectCSS() {
     border-radius: 10px; padding: 22px 20px; overflow-y: auto;
     color: #a6adc8; font-size: 12px; line-height: 1.65; z-index: 10;
 }
-.pix-lbl-help-overlay h3 { color: ${BRAND}; margin: 0 0 10px 0; font-size: 14px; }
+.pix-lbl-help-overlay h3 { color: var(--ltl-brand); margin: 0 0 10px 0; font-size: 14px; }
 .pix-lbl-help-overlay p { margin: 0 0 6px 0; }
 .pix-lbl-help-overlay kbd {
     background: #313244; border: 1px solid #45475a; border-radius: 3px;

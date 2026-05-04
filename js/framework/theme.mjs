@@ -3,9 +3,6 @@
 // ║  Brand colors, CSS custom properties, and shared stylesheet   ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
-/** Brand accent color hex — re-exported for editor-specific use. */
-export const BRAND = "#89b4fa";
-
 /** Base path for UI icon SVGs served by the LinuxTechLab backend. */
 export const UI_ICON = "/linuxtechlab/assets/icons/ui/";
 
@@ -671,24 +668,16 @@ export function injectFrameworkStyles() {
       const mn = parseFloat(input.min) || 0,
         mx = parseFloat(input.max) || 100;
       const v = parseFloat(input.value) || 0;
-      input.style.setProperty(
-        "--pxf-fill",
-        Math.max(0, Math.min(100, ((v - mn) / (mx - mn)) * 100)) + "%",
-      );
+      input.style.setProperty("--pxf-fill", Math.max(0, Math.min(100, ((v - mn) / (mx - mn)) * 100)) + "%");
     };
     document.addEventListener("input", (e) => {
-      if (e.target.type === "range" && e.target.closest(".pxf-overlay"))
-        window._pxfUpdateFill(e.target);
+      if (e.target.type === "range" && e.target.closest(".pxf-overlay")) window._pxfUpdateFill(e.target);
     });
-    const desc = Object.getOwnPropertyDescriptor(
-      HTMLInputElement.prototype,
-      "value",
-    );
+    const desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
     const origSet = desc.set;
     desc.set = function (v) {
       origSet.call(this, v);
-      if (this.type === "range" && this.closest(".pxf-overlay"))
-        window._pxfUpdateFill(this);
+      if (this.type === "range" && this.closest(".pxf-overlay")) window._pxfUpdateFill(this);
     };
     Object.defineProperty(HTMLInputElement.prototype, "value", desc);
   }

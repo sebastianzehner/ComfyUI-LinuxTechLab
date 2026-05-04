@@ -1,5 +1,6 @@
 import { app } from "/scripts/app.js";
-import { BRAND, installFocusTrap } from "../shared/index.mjs";
+import { getBrand } from "../theme/palette.mjs";
+import { installFocusTrap } from "../shared/index.mjs";
 import {
   DEFAULTS,
   FONT_CHOICES,
@@ -210,7 +211,7 @@ export class LabelEditor {
     sizeRange.min = 8;
     sizeRange.max = 64;
     sizeRange.value = c.fontSize;
-    sizeRange.style.cssText = "flex:1;accent-color:" + BRAND + ";";
+    sizeRange.style.cssText = "flex:1;accent-color:" + getBrand() + ";";
     const sizeVal = el("span", "pix-lbl-val");
     sizeVal.textContent = c.fontSize;
     sizeRange.addEventListener("input", () => {
@@ -432,7 +433,7 @@ export class LabelEditor {
             <p><b>Radius</b> — corner roundness of the background.</p>
             <p><b>Opacity</b> — overall transparency of the label.</p>
             <p><b>Line Height</b> — spacing between lines of text.</p>
-            <p style="margin-top:14px;color:#6c7086">LinuxTechLab &mdash; <a href="https://www.youtube.com/@LinuxTechLab" style="color:${BRAND}">youtube.com/@LinuxTechLab</a></p>
+            <p style="margin-top:14px;color:#6c7086">LinuxTechLab &mdash; <a href="https://www.youtube.com/@LinuxTechLab" style="color:var(--ltl-brand)">youtube.com/@LinuxTechLab</a></p>
         `;
     const closeBtn = document.createElement("button");
     closeBtn.className = "pix-lbl-help-close";

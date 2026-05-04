@@ -1,11 +1,13 @@
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║  LinuxTechLab Shared — Barrel Export                          ║
+// ║  LinuxTechLab Shared — Barrel Export & Theme Initialization   ║
 // ╚═══════════════════════════════════════════════════════════════╝
+
+import "../theme/node_colors.mjs";
+import "../theme/settings.mjs";
 
 export {
   allow_debug,
   LINUXTECHLAB_LOGO,
-  BRAND,
   createDummyWidget,
   installFocusTrap,
   hideJsonWidget,
@@ -16,11 +18,6 @@ export {
   downloadDataURL,
 } from "./utils.mjs";
 
-export {
-  createNodePreview,
-  showNodePreview,
-  restoreNodePreview,
-  activateNodePreview,
-} from "./preview.mjs";
+export { createNodePreview, showNodePreview, restoreNodePreview, activateNodePreview } from "./preview.mjs";
 
 export { injectLabelCSS } from "./label_css.mjs";
