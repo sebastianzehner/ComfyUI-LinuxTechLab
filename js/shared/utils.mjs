@@ -2,13 +2,14 @@
 // ║  LinuxTechLab Shared — Constants & Utility Functions          ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
-import { getTheme, getBrand } from "../theme/palette.mjs";
+import { getTheme, getBrand, getBrandBackground } from "../theme/palette.mjs";
 
 export const allow_debug = false;
 
-export function getLogoSVG(color = getBrand()) {
+export function getLogoSVG(color = getBrand(), bg = getBrandBackground(), size = 45) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="264.797 214.493 968.385 1071.832">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1500" width="${size}" height="${size}">
+  <path fill="${bg}" d="M 0 0 L 1500 0 L 1500 1500 L 0 1500 Z"/>
   <path fill="${color}" d="M 118.135696 903.455933 L 206.49971 903.455933 L 206.49971 991.895386 L 118.135696 991.895386 Z"/>
   <path fill="${color}" d="M 263.03775 903.455933 L 351.401672 903.455933 L 351.401672 991.895386 L 263.03775 991.895386 Z"/>
   <path fill="${color}" d="M 411.459137 903.455933 L 499.848389 903.455933 L 499.848389 991.895386 L 411.459137 991.895386 Z"/>
@@ -59,9 +60,9 @@ export function createDummyWidget(titleText, subtitleText, instructionText) {
     `;
 
   const logo = document.createElement("img");
-  logo.src = getLogoSVG() || "";
+  logo.src = getLogoSVG(getBrand(), getBrandBackground(), 75);
   logo.style.cssText = `
-      width: 45px;
+      width: 75px;
       height: auto;
       margin-bottom: 10px;
     `;

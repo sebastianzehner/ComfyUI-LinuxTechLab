@@ -6,6 +6,8 @@
 import { installFocusTrap } from "../shared/utils.mjs";
 import { injectFrameworkStyles, _uiIcon, UI_ICON } from "./theme.mjs";
 import { createButton } from "./components.mjs";
+import { getLogoSVG } from "../shared/utils.mjs";
+import { getBrand, getBrandBackground } from "../theme/palette.mjs";
 
 /**
  * Creates the main editor layout — a fullscreen overlay with titlebar,
@@ -62,7 +64,7 @@ export function createEditorLayout(config) {
   title.className = "pxf-title";
   const logo = document.createElement("img");
   logo.className = "pxf-title-logo";
-  logo.src = "/linuxtechlab/assets/linuxtechlab_logo.svg";
+  logo.src = getLogoSVG(getBrand(), getBrandBackground(), 18);
   title.appendChild(logo);
   title.append(` ${editorName} `);
   const brandSpan = document.createElement("span");
@@ -152,8 +154,7 @@ export function createEditorLayout(config) {
       if (onClose) onClose();
     },
   });
-  headerCloseBtn.style.cssText =
-    "padding:5px 12px;font-size:12px;font-weight:bold;margin-left:8px;";
+  headerCloseBtn.style.cssText = "padding:5px 12px;font-size:12px;font-weight:bold;margin-left:8px;";
   actions.appendChild(headerCloseBtn);
 
   titlebar.appendChild(actions);
@@ -196,11 +197,9 @@ export function createEditorLayout(config) {
         · <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab" target="_blank">GitHub</a><br>
       </div>
     `;
-    helpPanel
-      .querySelector(".pxf-help-header button")
-      .addEventListener("click", () => {
-        helpPanel.style.display = "none";
-      });
+    helpPanel.querySelector(".pxf-help-header button").addEventListener("click", () => {
+      helpPanel.style.display = "none";
+    });
   }
   workspace.appendChild(helpPanel);
 
@@ -260,8 +259,7 @@ export function createEditorLayout(config) {
 
   // ── Methods ──
   function toggleHelp() {
-    helpPanel.style.display =
-      helpPanel.style.display === "block" ? "none" : "block";
+    helpPanel.style.display = helpPanel.style.display === "block" ? "none" : "block";
   }
 
   const layout = {

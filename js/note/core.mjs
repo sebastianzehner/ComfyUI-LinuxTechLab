@@ -3,6 +3,8 @@ import { injectCSS } from "./css.mjs";
 import { sanitize } from "./sanitize.mjs";
 import { buildCodeViewDOM } from "./codeview.mjs";
 import { renderContent } from "./render.mjs";
+import { getLogoSVG } from "../shared/utils.mjs";
+import { getBrand, getBrandBackground } from "../theme/palette.mjs";
 
 export class NoteEditor {
   constructor(node) {
@@ -663,7 +665,7 @@ export class NoteEditor {
     const header = el("div", "pix-note-header");
     const titleSpan = el("div", "pix-note-title");
     const logo = document.createElement("img");
-    logo.src = "/linuxtechlab/assets/linuxtechlab_logo.svg";
+    logo.src = getLogoSVG(getBrand(), getBrandBackground(), 18);
     logo.className = "pix-note-title-logo";
     titleSpan.appendChild(logo);
     titleSpan.append(" Note Editor ");

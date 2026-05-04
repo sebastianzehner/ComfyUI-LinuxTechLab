@@ -1,6 +1,7 @@
 import { app } from "/scripts/app.js";
-import { getBrand } from "../theme/palette.mjs";
 import { installFocusTrap } from "../shared/index.mjs";
+import { getLogoSVG } from "../shared/utils.mjs";
+import { getBrand, getBrandBackground } from "../theme/palette.mjs";
 import {
   DEFAULTS,
   FONT_CHOICES,
@@ -103,7 +104,7 @@ export class LabelEditor {
     const header = el("div", "pix-lbl-header");
     const titleSpan = el("span", "pix-lbl-title");
     const logo = document.createElement("img");
-    logo.src = "/linuxtechlab/assets/linuxtechlab_logo.svg";
+    logo.src = getLogoSVG(getBrand(), getBrandBackground(), 18);
     logo.className = "pix-lbl-title-logo";
     titleSpan.appendChild(logo);
     titleSpan.append(" Label Editor ");
