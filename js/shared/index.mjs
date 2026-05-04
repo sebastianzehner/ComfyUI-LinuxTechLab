@@ -7,7 +7,6 @@ import "../theme/settings.mjs";
 
 export {
   allow_debug,
-  LINUXTECHLAB_LOGO,
   createDummyWidget,
   installFocusTrap,
   hideJsonWidget,

@@ -1,5 +1,5 @@
 import { app } from "/scripts/app.js";
-import { getBrand } from "../shared/utils.mjs";
+import { getBrand } from "../theme/palette.mjs";
 
 // ---- button / node sizing ----
 const BTN_H = 26;

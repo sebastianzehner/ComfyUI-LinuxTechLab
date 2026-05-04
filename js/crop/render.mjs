@@ -2,7 +2,7 @@
 // LinuxTechLab Image Crop Editor — Render (canvas rendering, aspect ratio, save)
 // ==============================================================================
 import { CropEditor, RATIOS, SNAPS, CropAPI } from "./core.mjs";
-import { getBrand } from "../shared/utils.mjs";
+import { getBrand } from "../theme/palette.mjs";
 
 const proto = CropEditor.prototype;
 

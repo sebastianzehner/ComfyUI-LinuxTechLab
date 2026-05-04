@@ -1,5 +1,5 @@
 import { app } from "/scripts/app.js";
-import { getBrand } from "../shared/utils.mjs";
+import { getBrand } from "../theme/palette.mjs";
 // Buttons: Show 1 | Left Right | Up Down | Overlay | Difference
 // "Show 1" toggles: Show 1 → Show 2 → back to compare (deselects)
 const MODES = ["Left Right", "Right Left", "Up Down", "Overlay", "Difference"];
