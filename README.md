@@ -20,8 +20,8 @@ LinuxTechLab turns ComfyUI into a powerful, easy-to-use design space. It brings 
 
 ### 🧊 3D Builder
 A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furniture, or import your own 3D models. You get easy camera controls, realistic lighting, undo/redo, and live previews. Perfect for making reference scenes for ControlNet or depth maps!
-![3D Builder — Node](workflows/3D_Builder_LinuxTechLab_Workflow.jpg)
-![3D Builder — Editor](workflows/3D_Builder_LinuxTechLab_Workflow_v2.jpg)
+![3D Builder — Node](workflows/3D_Builder_Workflow.jpg)
+![3D Builder — Editor](workflows/3D_Builder_Workflow_v2.jpg)
 
 ### 🎚️ AudioReact LinuxTechLab
 Audio-reactive image-to-video. **No extra models needed**, just an image and an audio track. Open the fullscreen editor, scrub the audio, and watch 15 motion modes (Pulse Zoom, Camera Shake, Glitch, Pinch, Wave, Tilt, Pixelate, RGB Split, and more) react to the beat in real time with a live WebGL preview. Stack 8 overlay effects on top: chroma shift, bloom, vignette, hue shift, cinematic teal/orange grade, letterbox, scanlines, and film grain. Pairs with **Save Mp4 LinuxTechLab** to write the clip directly to MP4 with audio muxed in. Requires WebGL2.
@@ -33,34 +33,34 @@ Audio-reactive image-to-video. **No extra models needed**, just an image and an 
 
 ### ✨ Image Composer
 Easily combine and arrange multiple images. Move, scale, and rotate layers using a simple visual editor. Use the eraser to tweak things by hand, or let our AI background removal tool isolate objects for you instantly.
-![Image Composer — Node](workflows/Image_Composer_LinuxTechLab_Workflow.jpg)
-![Image Composer — Editor](workflows/Image_Composer_LinuxTechLab_Workflow_v2.jpg)
+![Image Composer — Node](workflows/Image_Composer_Workflow.jpg)
+![Image Composer — Editor](workflows/Image_Composer_Workflow_v2.jpg)
 
 ### 🖌️ Paint Studio
 A fast, easy-to-use painting tool. It features layers, custom brushes, and a smudge tool for smooth blending. Perfect for fixing details, drawing custom masks, or painting from scratch.
-![Paint — Node](workflows/Paint_LinuxTechLab_Workflow.jpg)
-![Paint — Editor](workflows/Paint_LinuxTechLab_Workflow_v2.jpg)
+![Paint — Node](workflows/Paint_Workflow.jpg)
+![Paint — Editor](workflows/Paint_Workflow_v2.jpg)
 
 ### ✂️ Precision Crop
 No more guessing crop sizes with numbers! Visually draw your crop box. It includes standard presets (like 1:1 or 16:9) so your image is always framed perfectly for social media or video.
-![Image Crop — Node](workflows/Crop_LinuxTechLab_Workflow.jpg)
-![Image Crop — Editor](workflows/Crop_LinuxTechLab_Workflow_v2.jpg)
+![Image Crop — Node](workflows/Crop_Workflow.jpg)
+![Image Crop — Editor](workflows/Crop_Workflow_v2.jpg)
 
 ### 🌓 Interactive Compare
 The best way to see the difference between two images. Easily compare them side-by-side with a slider, overlap them, or highlight exactly what changed between the two versions.
-![Image Compare — Node](workflows/Image_Compare_LinuxTechLab_Workflow.jpg)
-![Image Compare — Editor](workflows/Image_Compare_LinuxTechLab_Workflow_v2.jpg)
+![Image Compare — Node](workflows/Image_Compare_Workflow.jpg)
+![Image Compare — Editor](workflows/Image_Compare_Workflow_v2.jpg)
 
 ### 📝 Note LinuxTechLab
 A beautiful, simple text editor to document your workflows right on the canvas. Write normally using bold, italics, lists, and headings. Add custom colored buttons, icons, or links to YouTube and Discord. You can even color-code your notes to match your style. It perfectly saves and restores exactly how you styled it.
-![Note LinuxTechLab — Node](workflows/Note_LinuxTechLab_Workflow.jpg)
-![Note LinuxTechLab — Editor](workflows/Note_LinuxTechLab_Workflow_v2.jpg)
+![Note LinuxTechLab — Node](workflows/Note_Workflow.jpg)
+![Note LinuxTechLab — Editor](workflows/Note_Workflow_v2.jpg)
 
 ### 🏷️ Label LinuxTechLab
 Keep your workflows tidy with clean, custom labels.
 
-![Labels — Node](workflows/Labels_LinuxTechLab_Workflow.jpg)
-![Labels — Editor](workflows/Labels_LinuxTechLab_Workflow_v2.jpg)
+![Labels — Node](workflows/Labels_Workflow.jpg)
+![Labels — Editor](workflows/Labels_Workflow_v2.jpg)
 
 ### 🎬 Save Mp4 LinuxTechLab
 Encode video frames + optional audio straight to MP4. Built-in `<video>` preview right on the node so you can watch the result without leaving ComfyUI. Pairs with AudioReact, but works with any source that produces frames + AUDIO.
