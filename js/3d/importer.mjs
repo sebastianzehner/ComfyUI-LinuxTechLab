@@ -1,10 +1,10 @@
 // ============================================================
-// Pixaroma 3D Editor — Model importer (GLB / OBJ)
+// LinuxTechLab 3D Editor — Model importer (GLB / OBJ)
 // Lazy-loads GLTFLoader / OBJLoader from the local vendored three.js.
 // Caches models loaded from static asset URLs (e.g. the built-in
 // bunny) so repeat Bunny clicks don't refetch / re-parse.
 // ============================================================
-import { Pixaroma3DEditor, getTHREE, THREE_VENDOR } from "./core.mjs";
+import { LinuxTechLab3DEditor, getTHREE, THREE_VENDOR } from "./core.mjs";
 import { ThreeDAPI } from "./api.mjs";
 
 let _GLTFLoader = null;
@@ -36,9 +36,7 @@ async function getMTLLoader() {
 
 async function getMergeVertices() {
   if (_mergeVertices) return _mergeVertices;
-  const mod = await import(
-    THREE_VENDOR + "/examples/jsm/utils/BufferGeometryUtils.mjs"
-  );
+  const mod = await import(THREE_VENDOR + "/examples/jsm/utils/BufferGeometryUtils.mjs");
   _mergeVertices = mod.mergeVertices;
   return _mergeVertices;
 }
@@ -185,15 +183,20 @@ export async function loadOBJWithCompanions(mainUrl, companions) {
 }
 
 // Build a /view URL from a stored-input relative path like
-// "pixaroma/<proj>/models/foo.jpg". Exposed so the restore path can
+// "linuxtechlab/<proj>/models/foo.jpg". Exposed so the restore path can
 // reconstruct companion URLs from saved paths without re-uploading.
 export function viewURLForStoredPath(path) {
   const parts = path.split("/");
   const fname = parts.pop();
   const subfolder = parts.join("/");
-  return "/view?filename=" + encodeURIComponent(fname)
-       + "&type=input&subfolder=" + encodeURIComponent(subfolder)
-       + "&t=" + Date.now();
+  return (
+    "/view?filename=" +
+    encodeURIComponent(fname) +
+    "&type=input&subfolder=" +
+    encodeURIComponent(subfolder) +
+    "&t=" +
+    Date.now()
+  );
 }
 
 // Read a File as a base64 data URL (used by the upload pipeline).
@@ -219,9 +222,13 @@ async function uploadOne(projectId, file) {
   const parts = res.path.split("/");
   const fname = parts.pop();
   const subfolder = parts.join("/");
-  const url = "/view?filename=" + encodeURIComponent(fname)
-            + "&type=input&subfolder=" + encodeURIComponent(subfolder)
-            + "&t=" + Date.now();
+  const url =
+    "/view?filename=" +
+    encodeURIComponent(fname) +
+    "&type=input&subfolder=" +
+    encodeURIComponent(subfolder) +
+    "&t=" +
+    Date.now();
   return { path: res.path, storedName: res.filename, url, origName: file.name };
 }
 
@@ -237,9 +244,7 @@ export async function importFromFiles(editor, files) {
   const fileArray = Array.from(files);
 
   // Find the primary mesh file (glb / gltf / obj).
-  const mainFile = fileArray.find((f) =>
-    /\.(glb|gltf|obj)$/i.test(f.name),
-  );
+  const mainFile = fileArray.find((f) => /\.(glb|gltf|obj)$/i.test(f.name));
   if (!mainFile) {
     throw new Error("Select a .glb, .gltf or .obj file");
   }
@@ -283,8 +288,7 @@ export async function importFromFiles(editor, files) {
   // OBJ only does if an .mtl companion was supplied. For OBJ-without-MTL
   // the stored "originals" are plain MeshPhongMaterial defaults from
   // OBJLoader, so leave that case on the clay override instead.
-  const hasOwnMaterials = mainExt !== "obj"
-    || fileArray.some((f) => /\.mtl$/i.test(f.name));
+  const hasOwnMaterials = mainExt !== "obj" || fileArray.some((f) => /\.mtl$/i.test(f.name));
   // companionFiles persisted to save JSON — just the name+path pairs.
   const companionFiles = companions.map((c) => ({ name: c.name, path: c.path }));
   editor._addImportedGroup(group, "import", {
@@ -383,7 +387,7 @@ export function wrapImportPivot(innerGroup) {
   return { outer, sizeLocal };
 }
 
-Pixaroma3DEditor.prototype._addImportedGroup = function (innerGroup, typeTag, extraUserData = {}) {
+LinuxTechLab3DEditor.prototype._addImportedGroup = function (innerGroup, typeTag, extraUserData = {}) {
   const THREE = getTHREE();
   this._pushUndo();
   this._id++;

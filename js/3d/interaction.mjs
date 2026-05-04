@@ -1,7 +1,7 @@
 // ============================================================
-// Pixaroma 3D Editor — Tools, camera, keyboard, click, undo
+// LinuxTechLab 3D Editor — Tools, camera, keyboard, click, undo
 // ============================================================
-import { Pixaroma3DEditor, getTHREE } from "./core.mjs";
+import { LinuxTechLab3DEditor, getTHREE } from "./core.mjs";
 import { isCompositeType, buildComposite } from "./composites.mjs";
 import { openShapePicker } from "./picker.mjs";
 // Static import of the SYNCHRONOUS importer helper so the composite
@@ -12,16 +12,11 @@ import { prepareImportedGroup } from "./importer.mjs";
 
 // ─── Tools & Camera ───────────────────────────────────────
 
-Pixaroma3DEditor.prototype._setToolMode = function (mode) {
+LinuxTechLab3DEditor.prototype._setToolMode = function (mode) {
   this.toolMode = mode;
   if (this.transformCtrl)
-    this.transformCtrl.setMode(
-      { move: "translate", rotate: "rotate", scale: "scale" }[mode] ||
-        "translate",
-    );
-  ["move", "rotate", "scale"].forEach((m) =>
-    this.el[`tool_${m}`]?.classList.toggle("active", m === mode),
-  );
+    this.transformCtrl.setMode({ move: "translate", rotate: "rotate", scale: "scale" }[mode] || "translate");
+  ["move", "rotate", "scale"].forEach((m) => this.el[`tool_${m}`]?.classList.toggle("active", m === mode));
   const def = this._toolDefs.find((t) => t.id === mode);
   if (this.el.toolInfo && def) this.el.toolInfo.textContent = def.tip;
   // Reconfigure the X/Y/Z sliders for the newly-active mode (the
@@ -30,7 +25,7 @@ Pixaroma3DEditor.prototype._setToolMode = function (mode) {
   this._updateTransformSliders?.();
 };
 
-Pixaroma3DEditor.prototype._camView = function (id) {
+LinuxTechLab3DEditor.prototype._camView = function (id) {
   const dist = 6;
   // Orthographic-only zoom override — default is 1 (the camera's own
   // frustum bounds), but the iso view needs ~2× zoom so objects
@@ -75,9 +70,7 @@ Pixaroma3DEditor.prototype._camView = function (id) {
     // visible frustum.
     const THREE = getTHREE();
     const p = this.activeObj.position;
-    const offset = new THREE.Vector3()
-      .copy(this.camera.position)
-      .sub(this.orbitCtrl.target);
+    const offset = new THREE.Vector3().copy(this.camera.position).sub(this.orbitCtrl.target);
     // Defensive: if current direction is zero (unlikely) fall back
     // to the classic 3/4 offset so we don't end up with camera
     // coincident with the target.
@@ -102,7 +95,7 @@ Pixaroma3DEditor.prototype._camView = function (id) {
   this.orbitCtrl.update();
 };
 
-Pixaroma3DEditor.prototype._setPerspective = function (persp) {
+LinuxTechLab3DEditor.prototype._setPerspective = function (persp) {
   const THREE = getTHREE();
   if (persp === !this._isOrtho) return; // Already in this mode
   const vp = this.el.viewport,
@@ -114,14 +107,7 @@ Pixaroma3DEditor.prototype._setPerspective = function (persp) {
     this.camera = new THREE.PerspectiveCamera(this._fov, w / h, 0.1, 1000);
     this._isOrtho = false;
   } else {
-    this.camera = new THREE.OrthographicCamera(
-      (-5 * w) / h,
-      (5 * w) / h,
-      5,
-      -5,
-      0.1,
-      1000,
-    );
+    this.camera = new THREE.OrthographicCamera((-5 * w) / h, (5 * w) / h, 5, -5, 0.1, 1000);
     this._isOrtho = true;
   }
   this.camera.position.copy(pos);
@@ -158,7 +144,7 @@ Pixaroma3DEditor.prototype._setPerspective = function (persp) {
 
 // ─── Interaction ──────────────────────────────────────────
 
-Pixaroma3DEditor.prototype._onClick = function (e) {
+LinuxTechLab3DEditor.prototype._onClick = function (e) {
   const THREE = getTHREE();
   const rect = this.renderer.domElement.getBoundingClientRect();
   const mouse = new THREE.Vector2(
@@ -189,12 +175,12 @@ Pixaroma3DEditor.prototype._onClick = function (e) {
   }
 };
 
-Pixaroma3DEditor.prototype._handleKey = function (e) {
+LinuxTechLab3DEditor.prototype._handleKey = function (e) {
   if (!this.el.overlay?.parentNode) return;
   // Check if focus is on an input element inside our overlay
   const ae = document.activeElement;
   const tag = ae?.tagName;
-  const isTrap = ae?.dataset?.pixaromaTrap;
+  const isTrap = ae?.dataset?.linuxtechlabTrap;
   // For Ctrl+A: always handle it if our overlay is open (prevent selecting input text)
   const k = e.key,
     kl = k.toLowerCase(),
@@ -244,8 +230,7 @@ Pixaroma3DEditor.prototype._handleKey = function (e) {
   // so deleting characters in a layer name works as expected.
   if (kl === "delete" || kl === "backspace") {
     const isRange = tag === "INPUT" && ae?.type === "range";
-    const isTypeable =
-      (tag === "INPUT" && ae?.type !== "range") || tag === "TEXTAREA";
+    const isTypeable = (tag === "INPUT" && ae?.type !== "range") || tag === "TEXTAREA";
     if (isRange) ae.blur();
     if (!isTypeable || isTrap) {
       e.preventDefault();
@@ -261,19 +246,19 @@ Pixaroma3DEditor.prototype._handleKey = function (e) {
   // still bail so layer-renames and numeric fields keep native typing.
   const isRange = tag === "INPUT" && ae?.type === "range";
   const isTypeable =
-    (tag === "INPUT" && ae?.type !== "range" &&
-     ae?.type !== "checkbox" && ae?.type !== "radio") ||
-    tag === "TEXTAREA" || tag === "SELECT";
+    (tag === "INPUT" && ae?.type !== "range" && ae?.type !== "checkbox" && ae?.type !== "radio") ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT";
   if (isRange) ae.blur();
   if (isTypeable && !isTrap) return;
   const handled = ctrl
     ? ["d", "s"].includes(kl)
     : [
         "m",
-        "g",       // Blender: Grab = Move
+        "g", // Blender: Grab = Move
         "r",
         "s",
-        ".",       // Blender: Numpad . = Focus on selected
+        ".", // Blender: Numpad . = Focus on selected
         "0",
         "1",
         "2",
@@ -333,18 +318,16 @@ Pixaroma3DEditor.prototype._handleKey = function (e) {
   else if (e.code === "Digit5" || e.code === "Numpad5") {
     this._setPerspective(true);
     this._camView("perspective3q");
-  }
-  else if (e.code === "Digit6" || e.code === "Numpad6") {
+  } else if (e.code === "Digit6" || e.code === "Numpad6") {
     this._setPerspective(false);
     this._camView("iso");
-  }
-  else if (e.code === "Digit7" || e.code === "Numpad7") this._camView("otherside");
+  } else if (e.code === "Digit7" || e.code === "Numpad7") this._camView("otherside");
   else if (e.code === "Digit0" || e.code === "Numpad0") this._camView("focus");
   // Blender uses Numpad . (Period) to frame the active object — alias for 0.
   else if (e.code === "Period" || e.code === "NumpadDecimal") this._camView("focus");
 };
 
-Pixaroma3DEditor.prototype._deselectAll = function () {
+LinuxTechLab3DEditor.prototype._deselectAll = function () {
   this.selectedObjs.clear();
   this.activeObj = null;
   this.transformCtrl?.detach();
@@ -356,12 +339,11 @@ Pixaroma3DEditor.prototype._deselectAll = function () {
   this._setStatus?.("Deselected all");
 };
 
-Pixaroma3DEditor.prototype._selectAll = function () {
+LinuxTechLab3DEditor.prototype._selectAll = function () {
   this.selectedObjs.clear();
   this.objects.forEach((o) => this.selectedObjs.add(o));
   // Set active to first unlocked object for gizmo
-  this.activeObj =
-    this.objects.find((o) => !o.userData.locked) || this.objects[0] || null;
+  this.activeObj = this.objects.find((o) => !o.userData.locked) || this.objects[0] || null;
   if (this.activeObj) {
     this.transformCtrl.attach(this.activeObj);
   }
@@ -374,7 +356,7 @@ Pixaroma3DEditor.prototype._selectAll = function () {
 
 // ─── Undo ─────────────────────────────────────────────────
 
-Pixaroma3DEditor.prototype._snap = function () {
+LinuxTechLab3DEditor.prototype._snap = function () {
   return this.objects.map((o) => {
     // Imported Groups (type:"bunny", "import") don't have a single
     // top-level .material — their material state lives on _overrideMat.
@@ -418,20 +400,20 @@ Pixaroma3DEditor.prototype._snap = function () {
   });
 };
 
-Pixaroma3DEditor.prototype._pushUndo = function () {
+LinuxTechLab3DEditor.prototype._pushUndo = function () {
   if (this._isRestoring) return;
   this._undoStack.push(this._snap());
   if (this._undoStack.length > this.MAX_UNDO) this._undoStack.shift();
   this._redoStack = [];
 };
 
-Pixaroma3DEditor.prototype._undo = function () {
+LinuxTechLab3DEditor.prototype._undo = function () {
   if (!this._undoStack.length) return;
   this._redoStack.push(this._snap());
   this._applySnap(this._undoStack.pop());
 };
 
-Pixaroma3DEditor.prototype._redo = function () {
+LinuxTechLab3DEditor.prototype._redo = function () {
   if (!this._redoStack.length) return;
   this._undoStack.push(this._snap());
   this._applySnap(this._redoStack.pop());
@@ -458,7 +440,7 @@ function disposeObject(o) {
   disposeMat(o.material);
 }
 
-Pixaroma3DEditor.prototype._applySnap = function (state) {
+LinuxTechLab3DEditor.prototype._applySnap = function (state) {
   const THREE = getTHREE();
   this.transformCtrl.detach();
   // Preserve imports/bunnies across undo/redo instead of tearing them
@@ -560,21 +542,20 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
       this.objects.push(ph);
       import("./importer.mjs").then(async (mod) => {
         if (this._closed) return;
-        const {
-          loadGLBFromURL, loadOBJWithCompanions, prepareImportedGroup,
-          wrapImportPivot, viewURLForStoredPath,
-        } = mod;
+        const { loadGLBFromURL, loadOBJWithCompanions, prepareImportedGroup, wrapImportPivot, viewURLForStoredPath } =
+          mod;
         try {
           const url = viewURLForStoredPath(d.importPath);
-          const innerGroup = d.importExt === "obj"
-            ? await loadOBJWithCompanions(
-                url,
-                (d.companionFiles || []).map((c) => ({
-                  name: c.name,
-                  url: viewURLForStoredPath(c.path),
-                })),
-              )
-            : await loadGLBFromURL(url);
+          const innerGroup =
+            d.importExt === "obj"
+              ? await loadOBJWithCompanions(
+                  url,
+                  (d.companionFiles || []).map((c) => ({
+                    name: c.name,
+                    url: viewURLForStoredPath(c.path),
+                  })),
+                )
+              : await loadGLBFromURL(url);
           const idx = this.objects.indexOf(ph);
           if (idx === -1) return;
           const wasAttached = this.transformCtrl?.object === ph;
@@ -583,8 +564,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
           if (wasAttached) this.transformCtrl.detach();
           this.scene.remove(ph);
           disposeObject(ph);
-          const { origMaterials, overrideMat } =
-            prepareImportedGroup(innerGroup, ph.userData.colorHex);
+          const { origMaterials, overrideMat } = prepareImportedGroup(innerGroup, ph.userData.colorHex);
           const { outer: group } = wrapImportPivot(innerGroup);
           group.position.copy(ph.position);
           group.rotation.copy(ph.rotation);
@@ -612,8 +592,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
             this.selectedObjs.add(group);
           }
           if (wasActive) this.activeObj = group;
-          if (wasAttached && !group.userData.locked)
-            this.transformCtrl.attach(group);
+          if (wasAttached && !group.userData.locked) this.transformCtrl.attach(group);
           if (this._syncOutlineSelection) this._syncOutlineSelection();
           this._updateLayers();
           this._updateShadowFrustum?.();
@@ -662,9 +641,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
         if (this._closed) return;
         const { loadGLBFromURL, prepareImportedGroup, wrapImportPivot } = mod;
         try {
-          const innerGroup = await loadGLBFromURL(
-            "/pixaroma/assets/models/bunny.glb",
-          );
+          const innerGroup = await loadGLBFromURL("/linuxtechlab/assets/models/bunny.glb");
           const idx = this.objects.indexOf(ph);
           if (idx === -1) return;
           // Detach the gizmo from the placeholder BEFORE removing it
@@ -679,8 +656,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
           disposeObject(ph);
           // Stash original materials + build override so the Shape-
           // panel toggle still works after undo re-creates the bunny.
-          const { origMaterials, overrideMat } =
-            prepareImportedGroup(innerGroup, ph.userData.colorHex);
+          const { origMaterials, overrideMat } = prepareImportedGroup(innerGroup, ph.userData.colorHex);
           // Wrap pivot at mesh base-center so the gizmo lands on the
           // bunny after undo — same treatment as fresh add/restore.
           const { outer: group } = wrapImportPivot(innerGroup);
@@ -700,8 +676,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
             this.selectedObjs.add(group);
           }
           if (wasActive) this.activeObj = group;
-          if (wasAttached && !group.userData.locked)
-            this.transformCtrl.attach(group);
+          if (wasAttached && !group.userData.locked) this.transformCtrl.attach(group);
           if (this._syncOutlineSelection) this._syncOutlineSelection();
           this._updateLayers();
           this._updateShadowFrustum?.();
@@ -719,8 +694,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
     if (isCompositeType(d.type)) {
       try {
         const inner = buildComposite(d.type, d.gp || undefined);
-        const { origMaterials, overrideMat } =
-          prepareImportedGroup(inner, d.colorHex);
+        const { origMaterials, overrideMat } = prepareImportedGroup(inner, d.colorHex);
         // Composites build with pivot at origin — no wrapImportPivot.
         // Just snap Y to floor as safety, then overlay saved transforms.
         const group = inner;
@@ -737,9 +711,7 @@ Pixaroma3DEditor.prototype._applySnap = function (state) {
           colorHex: d.colorHex,
           locked: d.locked || false,
           geoParams: d.gp ? { ...d.gp } : null,
-          keepOriginalMaterials: d.keepOriginalMaterials !== undefined
-            ? !!d.keepOriginalMaterials
-            : true,
+          keepOriginalMaterials: d.keepOriginalMaterials !== undefined ? !!d.keepOriginalMaterials : true,
           _origMaterials: origMaterials,
           _overrideMat: overrideMat,
         };

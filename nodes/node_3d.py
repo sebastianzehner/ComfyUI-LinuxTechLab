@@ -1,12 +1,15 @@
-import torch
-import numpy as np
-from PIL import Image
-import os
 import json
-import folder_paths
-from .node_ref import any_type, FlexibleOptionalInputType
+import os
 
-class Pixaroma3D:
+import folder_paths
+import numpy as np
+import torch
+from PIL import Image
+
+from .node_ref import FlexibleOptionalInputType, any_type
+
+
+class LinuxTechLab3D:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -14,7 +17,7 @@ class Pixaroma3D:
             "optional": FlexibleOptionalInputType(any_type),
         }
 
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
     RETURN_TYPES = ("IMAGE", "INT", "INT")
     RETURN_NAMES = ("image", "width", "height")
     FUNCTION = "load_render"
@@ -48,7 +51,11 @@ class Pixaroma3D:
         if not scene_data:
             return (empty_image, 1024, 1024)
 
-        scene_json = scene_data.get("scene_json", "{}") if isinstance(scene_data, dict) else str(scene_data)
+        scene_json = (
+            scene_data.get("scene_json", "{}")
+            if isinstance(scene_data, dict)
+            else str(scene_data)
+        )
 
         if not scene_json or scene_json.strip() in ("", "{}"):
             return (empty_image, 1024, 1024)
@@ -71,7 +78,7 @@ class Pixaroma3D:
 
             if not full_path.startswith(input_dir + os.sep):
                 print(
-                    "[Pixaroma3D] Security: composite_path escapes input directory, blocked."
+                    "[LinuxTechLab3D] Security: composite_path escapes input directory, blocked."
                 )
                 return (empty_image, doc_w, doc_h)
 
@@ -83,14 +90,14 @@ class Pixaroma3D:
             return (torch.from_numpy(arr)[None,], doc_w, doc_h)
 
         except Exception as e:
-            print(f"[Pixaroma3D] Load error: {e}")
+            print(f"[LinuxTechLab3D] Load error: {e}")
             return (empty_image, 1024, 1024)
 
 
 NODE_CLASS_MAPPINGS = {
-    "Pixaroma3D": Pixaroma3D,
+    "LinuxTechLab3D": LinuxTechLab3D,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "Pixaroma3D": "3D Builder Pixaroma",
+    "LinuxTechLab3D": "3D Builder",
 }

@@ -1,7 +1,7 @@
-// Rendering, history/undo, restore — mixed into PixaromaEditor.prototype
-import { PixaromaEditor } from "./core.mjs";
+// Rendering, history/undo, restore — mixed into LinuxTechLabEditor.prototype
+import { LinuxTechLabEditor } from "./core.mjs";
 
-PixaromaEditor.prototype.pushHistory = function () {
+LinuxTechLabEditor.prototype.pushHistory = function () {
   if (this.isRestoringHistory) return;
   this.history = this.history.slice(0, this.historyIndex + 1);
   this.history.push(this.captureState());
@@ -16,7 +16,7 @@ PixaromaEditor.prototype.pushHistory = function () {
   this.ui.updateHistoryUI();
 };
 
-PixaromaEditor.prototype.undo = function () {
+LinuxTechLabEditor.prototype.undo = function () {
   if (this.historyIndex > 0) {
     this.historyIndex--;
     this.layers = this.history[this.historyIndex].map((l) => ({ ...l }));
@@ -29,7 +29,7 @@ PixaromaEditor.prototype.undo = function () {
   }
 };
 
-PixaromaEditor.prototype.redo = function () {
+LinuxTechLabEditor.prototype.redo = function () {
   if (this.historyIndex < this.history.length - 1) {
     this.historyIndex++;
     this.layers = this.history[this.historyIndex].map((l) => ({ ...l }));
@@ -64,7 +64,7 @@ const BLEND_MAP = {
 
 // draw() batches calls via rAF so multiple per frame collapse into one render.
 // Pass cleanRender=true (save) for synchronous rendering.
-PixaromaEditor.prototype.draw = function (cleanRender = false) {
+LinuxTechLabEditor.prototype.draw = function (cleanRender = false) {
   if (cleanRender) {
     this._drawImpl(true);
     return;
@@ -82,7 +82,7 @@ PixaromaEditor.prototype.draw = function (cleanRender = false) {
   });
 };
 
-PixaromaEditor.prototype._drawImpl = function (cleanRender) {
+LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
   if (this._transparentExport) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   } else {
@@ -108,8 +108,7 @@ PixaromaEditor.prototype._drawImpl = function (cleanRender) {
     this.ctx.save();
     this.ctx.globalAlpha = layer.opacity;
     // Blend mode support (maps to canvas globalCompositeOperation)
-    if (layer.blendMode && BLEND_MAP[layer.blendMode])
-      this.ctx.globalCompositeOperation = BLEND_MAP[layer.blendMode];
+    if (layer.blendMode && BLEND_MAP[layer.blendMode]) this.ctx.globalCompositeOperation = BLEND_MAP[layer.blendMode];
 
     this.ctx.translate(layer.cx, layer.cy);
     this.ctx.rotate((layer.rotation * Math.PI) / 180);
@@ -123,12 +122,7 @@ PixaromaEditor.prototype._drawImpl = function (cleanRender) {
     if (layer.hasMask_internal && layer.eraserMaskCanvas_internal) {
       this.renderCanvas.width = layer.img.width;
       this.renderCanvas.height = layer.img.height;
-      this.renderCtx.clearRect(
-        0,
-        0,
-        this.renderCanvas.width,
-        this.renderCanvas.height,
-      );
+      this.renderCtx.clearRect(0, 0, this.renderCanvas.width, this.renderCanvas.height);
 
       this.renderCtx.drawImage(layer.img, 0, 0);
       this.renderCtx.globalCompositeOperation = "destination-out";
@@ -149,21 +143,13 @@ PixaromaEditor.prototype._drawImpl = function (cleanRender) {
       oc.translate(layer.cx + pad, layer.cy + pad);
       oc.rotate((layer.rotation * Math.PI) / 180);
 
-      oc.strokeStyle = layer.locked
-        ? "#888"
-        : this.selectedLayerIds.size > 1
-          ? "#0ea5e9"
-          : "#f66744";
+      oc.strokeStyle = layer.locked ? "#888" : this.selectedLayerIds.size > 1 ? "#0ea5e9" : "#f66744";
       oc.lineWidth = 1.5;
       if (layer.isPlaceholder) oc.setLineDash([6, 4]);
       oc.strokeRect(-w / 2, -h / 2, w, h);
       oc.setLineDash([]);
 
-      if (
-        !layer.locked &&
-        this.selectedLayerIds.size === 1 &&
-        this.activeMode !== "eraser"
-      ) {
+      if (!layer.locked && this.selectedLayerIds.size === 1 && this.activeMode !== "eraser") {
         const sz = this.handleSize;
         oc.fillStyle = "#fff";
         oc.strokeStyle = "#f66744";
@@ -221,23 +207,16 @@ PixaromaEditor.prototype._drawImpl = function (cleanRender) {
   this.ctx.globalAlpha = 1.0;
 };
 
-PixaromaEditor.prototype.attemptRestore = async function () {
+LinuxTechLabEditor.prototype.attemptRestore = async function () {
   let savedData = null;
-  const composerWidget = (this.node.widgets || []).find(
-    (w) => w.name === "ComposerWidget",
-  );
-  if (
-    composerWidget &&
-    composerWidget.value &&
-    composerWidget.value.project_json
-  ) {
+  const composerWidget = (this.node.widgets || []).find((w) => w.name === "ComposerWidget");
+  if (composerWidget && composerWidget.value && composerWidget.value.project_json) {
     savedData = composerWidget.value.project_json;
   }
 
   if (!savedData || savedData === "{}" || savedData === "") return;
 
-  if (this.statusText)
-    this.statusText.innerText = "\u23f3 Restoring session...";
+  if (this.statusText) this.statusText.innerText = "\u23f3 Restoring session...";
   this.overlay.style.pointerEvents = "none";
   this.overlay.style.opacity = "0.5";
 
@@ -247,8 +226,7 @@ PixaromaEditor.prototype.attemptRestore = async function () {
 
     this.docWidth = meta.doc_w;
     this.docHeight = meta.doc_h;
-    if (this._canvasSettings)
-      this._canvasSettings.setSize(meta.doc_w, meta.doc_h);
+    if (this._canvasSettings) this._canvasSettings.setSize(meta.doc_w, meta.doc_h);
 
     this.canvasContainer.style.width = this.docWidth + "px";
     this.canvasContainer.style.height = this.docHeight + "px";
@@ -385,19 +363,19 @@ PixaromaEditor.prototype.attemptRestore = async function () {
         };
         placeholder.src = tempCanvas.toDataURL();
       };
-      img.src = `/view?filename=${encodeURIComponent(fileNameOnly)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+      img.src = `/view?filename=${encodeURIComponent(fileNameOnly)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
     });
   } catch (err) {
-    console.error("Pixaroma Restore Error:", err);
+    console.error("LinuxTechLab Restore Error:", err);
     this.finishRestore(true);
   }
 };
 
-PixaromaEditor.prototype.finishRestore = function (hadError = false) {
+LinuxTechLabEditor.prototype.finishRestore = function (hadError = false) {
   this.layers.forEach((l) => {
     if (l.savedMaskPath_internal) {
       const maskFileName = l.savedMaskPath_internal.split(/[\\/]/).pop();
-      const maskUrl = `/view?filename=${encodeURIComponent(maskFileName)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+      const maskUrl = `/view?filename=${encodeURIComponent(maskFileName)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
       this.prepareLayerMask(l, maskUrl);
     }
   });
@@ -406,10 +384,7 @@ PixaromaEditor.prototype.finishRestore = function (hadError = false) {
 
   this.overlay.style.pointerEvents = "auto";
   this.overlay.style.opacity = "1";
-  if (this.statusText)
-    this.statusText.innerText = hadError
-      ? "Ready (Some images missing)."
-      : "Session restored.";
+  if (this.statusText) this.statusText.innerText = hadError ? "Ready (Some images missing)." : "Session restored.";
   this.fitViewToWorkspace();
   this.ui.updateActiveLayerUI();
   this.draw();

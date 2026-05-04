@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma 3D Editor — Shape registry
+// LinuxTechLab 3D Editor — Shape registry
 // Single source of truth for every primitive shape:
 //   id → { icon, label, category, live, params, defaults, build(THREE, p) }
 // Adding a new shape = add one entry here. No other file edits needed
@@ -20,9 +20,7 @@ import { THREE_VENDOR } from "./core.mjs";
 let _TeapotGeometry = null;
 export async function loadTeapotGeometry() {
   if (_TeapotGeometry) return _TeapotGeometry;
-  const mod = await import(
-    THREE_VENDOR + "/examples/jsm/geometries/TeapotGeometry.mjs"
-  );
+  const mod = await import(THREE_VENDOR + "/examples/jsm/geometries/TeapotGeometry.mjs");
   _TeapotGeometry = mod.TeapotGeometry;
   return _TeapotGeometry;
 }
@@ -44,11 +42,11 @@ function thickVesselProfile(outerSilhouette, wall, baseT) {
     .slice(1) // drop the rim; rim-inner is added explicitly
     .map(([x, y]) => [inward(x), Math.max(baseT, y)]);
   return [
-    [0, 0],                    // center of outer base
-    ...outerSilhouette,        // outer wall, bottom → rim
-    [inward(rim[0]), rim[1]],  // rim inner (flat rim top)
-    ...innerReversed,          // inner wall, rim → base
-    [0, baseT],                // center of interior floor
+    [0, 0], // center of outer base
+    ...outerSilhouette, // outer wall, bottom → rim
+    [inward(rim[0]), rim[1]], // rim inner (flat rim top)
+    ...innerReversed, // inner wall, rim → base
+    [0, baseT], // center of interior floor
   ];
 }
 
@@ -84,7 +82,10 @@ function weldSeamByPosition(geo, tolerance = 1e-4, normalThreshold = 0.5) {
     const z = posArr[i * 3 + 2];
     const k = `${Math.round(x * invTol)}|${Math.round(y * invTol)}|${Math.round(z * invTol)}`;
     let list = bucket.get(k);
-    if (!list) { list = []; bucket.set(k, list); }
+    if (!list) {
+      list = [];
+      bucket.set(k, list);
+    }
     list.push(i);
   }
   for (const list of bucket.values()) {
@@ -106,16 +107,20 @@ function weldSeamByPosition(geo, tolerance = 1e-4, normalThreshold = 0.5) {
     const z0 = posArr[firstI * 3 + 2];
     const onAxis = Math.abs(x0) < 0.01 && Math.abs(z0) < 0.01;
     if (onAxis && list.length >= 3) {
-      let nx = 0, ny = 0, nz = 0;
+      let nx = 0,
+        ny = 0,
+        nz = 0;
       for (const i of list) {
         nx += normArr[i * 3];
         ny += normArr[i * 3 + 1];
         nz += normArr[i * 3 + 2];
       }
       const len = Math.hypot(nx, ny, nz) || 1;
-      nx /= len; ny /= len; nz /= len;
+      nx /= len;
+      ny /= len;
+      nz /= len;
       for (const i of list) {
-        normArr[i * 3]     = nx;
+        normArr[i * 3] = nx;
         normArr[i * 3 + 1] = ny;
         normArr[i * 3 + 2] = nz;
       }
@@ -137,7 +142,9 @@ function weldSeamByPosition(geo, tolerance = 1e-4, normalThreshold = 0.5) {
         const dot = (c.nx * nx + c.ny * ny + c.nz * nz) / cLen;
         if (dot >= normalThreshold) {
           c.indices.push(i);
-          c.nx += nx; c.ny += ny; c.nz += nz;
+          c.nx += nx;
+          c.ny += ny;
+          c.nz += nz;
           placed = true;
           break;
         }
@@ -149,9 +156,11 @@ function weldSeamByPosition(geo, tolerance = 1e-4, normalThreshold = 0.5) {
     for (const c of clusters) {
       if (c.indices.length < 2) continue;
       const len = Math.hypot(c.nx, c.ny, c.nz) || 1;
-      const ux = c.nx / len, uy = c.ny / len, uz = c.nz / len;
+      const ux = c.nx / len,
+        uy = c.ny / len,
+        uz = c.nz / len;
       for (const i of c.indices) {
-        normArr[i * 3]     = ux;
+        normArr[i * 3] = ux;
         normArr[i * 3 + 1] = uy;
         normArr[i * 3 + 2] = uz;
       }
@@ -177,12 +186,14 @@ function weldLatheSeam(geo, profileLen, segments) {
   for (let p = 0; p < profileLen; p++) {
     const i0 = (0 * profileLen + p) * 3;
     const iM = (segments * profileLen + p) * 3;
-    const nx = (arr[i0    ] + arr[iM    ]) * 0.5;
+    const nx = (arr[i0] + arr[iM]) * 0.5;
     const ny = (arr[i0 + 1] + arr[iM + 1]) * 0.5;
     const nz = (arr[i0 + 2] + arr[iM + 2]) * 0.5;
     const len = Math.hypot(nx, ny, nz) || 1;
-    const ux = nx / len, uy = ny / len, uz = nz / len;
-    arr[i0    ] = arr[iM    ] = ux;
+    const ux = nx / len,
+      uy = ny / len,
+      uz = nz / len;
+    arr[i0] = arr[iM] = ux;
     arr[i0 + 1] = arr[iM + 1] = uy;
     arr[i0 + 2] = arr[iM + 2] = uz;
   }
@@ -206,40 +217,115 @@ function makeNoise(seed) {
   }
   for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
   const grad3 = [
-    [1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
-    [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
-    [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1],
+    [1, 1, 0],
+    [-1, 1, 0],
+    [1, -1, 0],
+    [-1, -1, 0],
+    [1, 0, 1],
+    [-1, 0, 1],
+    [1, 0, -1],
+    [-1, 0, -1],
+    [0, 1, 1],
+    [0, -1, 1],
+    [0, 1, -1],
+    [0, -1, -1],
   ];
-  const dot = (g, x, y, z) => g[0]*x + g[1]*y + g[2]*z;
+  const dot = (g, x, y, z) => g[0] * x + g[1] * y + g[2] * z;
   return function noise3(x, y, z) {
-    const F3 = 1/3, G3 = 1/6;
+    const F3 = 1 / 3,
+      G3 = 1 / 6;
     const s2 = (x + y + z) * F3;
-    const i = Math.floor(x + s2), j = Math.floor(y + s2), k = Math.floor(z + s2);
+    const i = Math.floor(x + s2),
+      j = Math.floor(y + s2),
+      k = Math.floor(z + s2);
     const t = (i + j + k) * G3;
-    const x0 = x - (i - t), y0 = y - (j - t), z0 = z - (k - t);
+    const x0 = x - (i - t),
+      y0 = y - (j - t),
+      z0 = z - (k - t);
     let i1, j1, k1, i2, j2, k2;
     if (x0 >= y0) {
-      if (y0 >= z0)      { i1=1;j1=0;k1=0; i2=1;j2=1;k2=0; }
-      else if (x0 >= z0) { i1=1;j1=0;k1=0; i2=1;j2=0;k2=1; }
-      else               { i1=0;j1=0;k1=1; i2=1;j2=0;k2=1; }
+      if (y0 >= z0) {
+        i1 = 1;
+        j1 = 0;
+        k1 = 0;
+        i2 = 1;
+        j2 = 1;
+        k2 = 0;
+      } else if (x0 >= z0) {
+        i1 = 1;
+        j1 = 0;
+        k1 = 0;
+        i2 = 1;
+        j2 = 0;
+        k2 = 1;
+      } else {
+        i1 = 0;
+        j1 = 0;
+        k1 = 1;
+        i2 = 1;
+        j2 = 0;
+        k2 = 1;
+      }
     } else {
-      if (y0 < z0)       { i1=0;j1=0;k1=1; i2=0;j2=1;k2=1; }
-      else if (x0 < z0)  { i1=0;j1=1;k1=0; i2=0;j2=1;k2=1; }
-      else               { i1=0;j1=1;k1=0; i2=1;j2=1;k2=0; }
+      if (y0 < z0) {
+        i1 = 0;
+        j1 = 0;
+        k1 = 1;
+        i2 = 0;
+        j2 = 1;
+        k2 = 1;
+      } else if (x0 < z0) {
+        i1 = 0;
+        j1 = 1;
+        k1 = 0;
+        i2 = 0;
+        j2 = 1;
+        k2 = 1;
+      } else {
+        i1 = 0;
+        j1 = 1;
+        k1 = 0;
+        i2 = 1;
+        j2 = 1;
+        k2 = 0;
+      }
     }
-    const x1 = x0 - i1 + G3, y1 = y0 - j1 + G3, z1 = z0 - k1 + G3;
-    const x2 = x0 - i2 + 2*G3, y2 = y0 - j2 + 2*G3, z2 = z0 - k2 + 2*G3;
-    const x3 = x0 - 1 + 3*G3, y3 = y0 - 1 + 3*G3, z3 = z0 - 1 + 3*G3;
-    const ii = i & 255, jj = j & 255, kk = k & 255;
-    let n0=0,n1=0,n2=0,n3=0;
-    let t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
-    if (t0 >= 0) { t0*=t0; n0 = t0*t0*dot(grad3[perm[ii+perm[jj+perm[kk]]]%12], x0,y0,z0); }
-    let t1 = 0.6 - x1*x1 - y1*y1 - z1*z1;
-    if (t1 >= 0) { t1*=t1; n1 = t1*t1*dot(grad3[perm[ii+i1+perm[jj+j1+perm[kk+k1]]]%12], x1,y1,z1); }
-    let t2 = 0.6 - x2*x2 - y2*y2 - z2*z2;
-    if (t2 >= 0) { t2*=t2; n2 = t2*t2*dot(grad3[perm[ii+i2+perm[jj+j2+perm[kk+k2]]]%12], x2,y2,z2); }
-    let t3 = 0.6 - x3*x3 - y3*y3 - z3*z3;
-    if (t3 >= 0) { t3*=t3; n3 = t3*t3*dot(grad3[perm[ii+1+perm[jj+1+perm[kk+1]]]%12], x3,y3,z3); }
+    const x1 = x0 - i1 + G3,
+      y1 = y0 - j1 + G3,
+      z1 = z0 - k1 + G3;
+    const x2 = x0 - i2 + 2 * G3,
+      y2 = y0 - j2 + 2 * G3,
+      z2 = z0 - k2 + 2 * G3;
+    const x3 = x0 - 1 + 3 * G3,
+      y3 = y0 - 1 + 3 * G3,
+      z3 = z0 - 1 + 3 * G3;
+    const ii = i & 255,
+      jj = j & 255,
+      kk = k & 255;
+    let n0 = 0,
+      n1 = 0,
+      n2 = 0,
+      n3 = 0;
+    let t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+    if (t0 >= 0) {
+      t0 *= t0;
+      n0 = t0 * t0 * dot(grad3[perm[ii + perm[jj + perm[kk]]] % 12], x0, y0, z0);
+    }
+    let t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+    if (t1 >= 0) {
+      t1 *= t1;
+      n1 = t1 * t1 * dot(grad3[perm[ii + i1 + perm[jj + j1 + perm[kk + k1]]] % 12], x1, y1, z1);
+    }
+    let t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+    if (t2 >= 0) {
+      t2 *= t2;
+      n2 = t2 * t2 * dot(grad3[perm[ii + i2 + perm[jj + j2 + perm[kk + k2]]] % 12], x2, y2, z2);
+    }
+    let t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+    if (t3 >= 0) {
+      t3 *= t3;
+      n3 = t3 * t3 * dot(grad3[perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]] % 12], x3, y3, z3);
+    }
     return 32 * (n0 + n1 + n2 + n3);
   };
 }
@@ -251,9 +337,9 @@ export const SHAPES = {
     category: "boxy",
     live: true,
     params: [
-      { key: "width",  label: "Width",  min: 0.1, max: 5, step: 0.1 },
+      { key: "width", label: "Width", min: 0.1, max: 5, step: 0.1 },
       { key: "height", label: "Height", min: 0.1, max: 5, step: 0.1 },
-      { key: "depth",  label: "Depth",  min: 0.1, max: 5, step: 0.1 },
+      { key: "depth", label: "Depth", min: 0.1, max: 5, step: 0.1 },
     ],
     defaults: { width: 1, height: 1, depth: 1 },
     build: (THREE, p) => {
@@ -270,7 +356,7 @@ export const SHAPES = {
     params: [
       { key: "radius", label: "Radius", min: 0.1, max: 3, step: 0.1 },
       { key: "length", label: "Length", min: 0.1, max: 5, step: 0.1 },
-      { key: "sides",  label: "Sides",  min: 3,   max: 8, step: 1 },
+      { key: "sides", label: "Sides", min: 3, max: 8, step: 1 },
     ],
     defaults: { radius: 0.5, length: 1.5, sides: 3 },
     build: (THREE, p) => {
@@ -287,10 +373,13 @@ export const SHAPES = {
       // In both cases we translate after extrusion so the lowest vertex
       // sits at local y=0 — the prism's flat bottom stays planted on
       // the floor when the params panel changes radius.
-      const r = p.radius, h = p.length, n = p.sides | 0;
-      const startAngle = (n % 2 === 0)
-        ? (Math.PI / 2 - Math.PI / n) // flat top+bottom
-        : (Math.PI / 2);              // peak up
+      const r = p.radius,
+        h = p.length,
+        n = p.sides | 0;
+      const startAngle =
+        n % 2 === 0
+          ? Math.PI / 2 - Math.PI / n // flat top+bottom
+          : Math.PI / 2; // peak up
       const shape = new THREE.Shape();
       for (let i = 0; i < n; i++) {
         const a = startAngle + (i * 2 * Math.PI) / n;
@@ -320,7 +409,7 @@ export const SHAPES = {
     category: "boxy",
     live: true,
     params: [
-      { key: "base",   label: "Base",   min: 0.1, max: 3, step: 0.1 },
+      { key: "base", label: "Base", min: 0.1, max: 3, step: 0.1 },
       { key: "height", label: "Height", min: 0.1, max: 5, step: 0.1 },
     ],
     defaults: { base: 0.7, height: 1.0 },
@@ -342,9 +431,9 @@ export const SHAPES = {
     category: "rounded",
     live: true,
     params: [
-      { key: "radius",     label: "Radius",   min: 0.1, max: 3,   step: 0.1 },
-      { key: "widthSegs",  label: "Segments", min: 3,   max: 128, step: 1 },
-      { key: "heightSegs", label: "Rings",    min: 2,   max: 128, step: 1 },
+      { key: "radius", label: "Radius", min: 0.1, max: 3, step: 0.1 },
+      { key: "widthSegs", label: "Segments", min: 3, max: 128, step: 1 },
+      { key: "heightSegs", label: "Rings", min: 2, max: 128, step: 1 },
     ],
     defaults: { radius: 0.6, widthSegs: 16, heightSegs: 16 },
     build: (THREE, p) => {
@@ -360,18 +449,17 @@ export const SHAPES = {
     category: "rounded",
     live: true,
     params: [
-      { key: "radius",     label: "Radius",       min: 0.1, max: 2,  step: 0.05 },
-      { key: "length",     label: "Length",       min: 0.1, max: 5,  step: 0.1 },
-      { key: "capSegs",    label: "Cap Segments", min: 2,   max: 32, step: 1 },
-      { key: "radialSegs", label: "Radial Segs",  min: 3,   max: 64, step: 1 },
+      { key: "radius", label: "Radius", min: 0.1, max: 2, step: 0.05 },
+      { key: "length", label: "Length", min: 0.1, max: 5, step: 0.1 },
+      { key: "capSegs", label: "Cap Segments", min: 2, max: 32, step: 1 },
+      { key: "radialSegs", label: "Radial Segs", min: 3, max: 64, step: 1 },
     ],
     defaults: { radius: 0.3, length: 0.8, capSegs: 6, radialSegs: 16 },
     build: (THREE, p) => {
       // CapsuleGeometry is centered on origin; bottom cap ends up at
       // y = -(radius + length/2). _addObject re-snaps to the floor via
       // bounding box, so no translate needed here.
-      const g = new THREE.CapsuleGeometry(
-        p.radius, p.length, p.capSegs, p.radialSegs);
+      const g = new THREE.CapsuleGeometry(p.radius, p.length, p.capSegs, p.radialSegs);
       g.computeVertexNormals();
       weldSeamByPosition(g);
       return g;
@@ -383,10 +471,10 @@ export const SHAPES = {
     category: "rounded",
     live: true,
     params: [
-      { key: "radius",  label: "Radius",    min: 0.1, max: 2,  step: 0.05 },
-      { key: "topH",    label: "Top H",     min: 0.1, max: 3,  step: 0.05 },
-      { key: "bottomH", label: "Bottom H",  min: 0.1, max: 3,  step: 0.05 },
-      { key: "sides",   label: "Sides",     min: 4,   max: 16, step: 1 },
+      { key: "radius", label: "Radius", min: 0.1, max: 2, step: 0.05 },
+      { key: "topH", label: "Top H", min: 0.1, max: 3, step: 0.05 },
+      { key: "bottomH", label: "Bottom H", min: 0.1, max: 3, step: 0.05 },
+      { key: "sides", label: "Sides", min: 4, max: 16, step: 1 },
     ],
     defaults: { radius: 0.4, topH: 0.9, bottomH: 0.4, sides: 6 },
     build: (THREE, p) => {
@@ -394,11 +482,7 @@ export const SHAPES = {
       // 3 points (bottom tip → middle ring → top tip) yields a bipyramid
       // a.k.a. a faceted crystal / gemstone shape. `sides` controls the
       // facet count around the revolution.
-      const pts = [
-        new THREE.Vector2(0,        -p.bottomH),
-        new THREE.Vector2(p.radius,  0),
-        new THREE.Vector2(0,         p.topH),
-      ];
+      const pts = [new THREE.Vector2(0, -p.bottomH), new THREE.Vector2(p.radius, 0), new THREE.Vector2(0, p.topH)];
       // toNonIndexed() splits shared vertices into per-triangle copies
       // so computeVertexNormals gives each face its own normal instead
       // of smoothly blending across adjacent ones. Result: crisp
@@ -415,15 +499,14 @@ export const SHAPES = {
     category: "cylindrical",
     live: true,
     params: [
-      { key: "radiusTop",    label: "Top Radius", min: 0,    max: 3, step: 0.05 },
+      { key: "radiusTop", label: "Top Radius", min: 0, max: 3, step: 0.05 },
       { key: "radiusBottom", label: "Btm Radius", min: 0.05, max: 3, step: 0.05 },
-      { key: "height",       label: "Height",     min: 0.1,  max: 5, step: 0.1 },
-      { key: "sides",        label: "Sides",      min: 3,    max: 128, step: 1 },
+      { key: "height", label: "Height", min: 0.1, max: 5, step: 0.1 },
+      { key: "sides", label: "Sides", min: 3, max: 128, step: 1 },
     ],
     defaults: { radiusTop: 0.5, radiusBottom: 0.5, height: 1.2, sides: 16 },
     build: (THREE, p) => {
-      const g = new THREE.CylinderGeometry(
-        p.radiusTop, p.radiusBottom, p.height, p.sides);
+      const g = new THREE.CylinderGeometry(p.radiusTop, p.radiusBottom, p.height, p.sides);
       g.computeVertexNormals();
       weldSeamByPosition(g);
       return g;
@@ -435,10 +518,10 @@ export const SHAPES = {
     category: "cylindrical",
     live: true,
     params: [
-      { key: "outerRadius", label: "Outer R", min: 0.15, max: 3,   step: 0.05 },
+      { key: "outerRadius", label: "Outer R", min: 0.15, max: 3, step: 0.05 },
       { key: "innerRadius", label: "Inner R", min: 0.05, max: 2.8, step: 0.05 },
-      { key: "height",      label: "Height",  min: 0.1,  max: 5,   step: 0.1 },
-      { key: "sides",       label: "Sides",   min: 8,    max: 96,  step: 1 },
+      { key: "height", label: "Height", min: 0.1, max: 5, step: 0.1 },
+      { key: "sides", label: "Sides", min: 8, max: 96, step: 1 },
     ],
     defaults: { outerRadius: 0.5, innerRadius: 0.35, height: 1.0, sides: 32 },
     // Slider-input constraint: the param panel calls this BEFORE writing
@@ -495,9 +578,9 @@ export const SHAPES = {
     category: "cylindrical",
     live: true,
     params: [
-      { key: "radius", label: "Radius", min: 0.1, max: 3,   step: 0.1 },
-      { key: "height", label: "Height", min: 0.1, max: 5,   step: 0.1 },
-      { key: "sides",  label: "Sides",  min: 3,   max: 128, step: 1 },
+      { key: "radius", label: "Radius", min: 0.1, max: 3, step: 0.1 },
+      { key: "height", label: "Height", min: 0.1, max: 5, step: 0.1 },
+      { key: "sides", label: "Sides", min: 3, max: 128, step: 1 },
     ],
     defaults: { radius: 0.5, height: 1.2, sides: 16 },
     build: (THREE, p) => {
@@ -519,10 +602,10 @@ export const SHAPES = {
     category: "toroidal",
     live: true,
     params: [
-      { key: "radius",     label: "Radius",      min: 0.1,  max: 3,   step: 0.1 },
-      { key: "tube",       label: "Tube",        min: 0.01, max: 1.5, step: 0.01 },
-      { key: "radialSegs", label: "Radial Segs", min: 3,    max: 64,  step: 1 },
-      { key: "tubeSegs",   label: "Tube Segs",   min: 3,    max: 128, step: 1 },
+      { key: "radius", label: "Radius", min: 0.1, max: 3, step: 0.1 },
+      { key: "tube", label: "Tube", min: 0.01, max: 1.5, step: 0.01 },
+      { key: "radialSegs", label: "Radial Segs", min: 3, max: 64, step: 1 },
+      { key: "tubeSegs", label: "Tube Segs", min: 3, max: 128, step: 1 },
     ],
     defaults: { radius: 0.5, tube: 0.2, radialSegs: 12, tubeSegs: 32 },
     // Standard torus rule: tube radius < ring radius. Once tube >= radius
@@ -531,12 +614,12 @@ export const SHAPES = {
     // can't drag past that visual cliff. (For sphere-like shapes the
     // user has the actual Sphere primitive.)
     constraint: (p, key, v) => {
-      if (key === "tube")   return Math.min(v, p.radius - 0.01);
+      if (key === "tube") return Math.min(v, p.radius - 0.01);
       if (key === "radius") return Math.max(v, p.tube + 0.01);
       return v;
     },
     bounds: (p, key) => {
-      if (key === "tube")   return { max: p.radius - 0.01 };
+      if (key === "tube") return { max: p.radius - 0.01 };
       if (key === "radius") return { min: p.tube + 0.01 };
       return {};
     },
@@ -558,10 +641,10 @@ export const SHAPES = {
     category: "toroidal",
     live: true,
     params: [
-      { key: "outerRadius", label: "Outer R",   min: 0.1,  max: 3,   step: 0.05 },
-      { key: "innerRadius", label: "Inner R",   min: 0.05, max: 2.8, step: 0.05 },
-      { key: "thickness",   label: "Thickness", min: 0.01, max: 1,   step: 0.01 },
-      { key: "segments",    label: "Segments",  min: 8,    max: 128, step: 1 },
+      { key: "outerRadius", label: "Outer R", min: 0.1, max: 3, step: 0.05 },
+      { key: "innerRadius", label: "Inner R", min: 0.05, max: 2.8, step: 0.05 },
+      { key: "thickness", label: "Thickness", min: 0.01, max: 1, step: 0.01 },
+      { key: "segments", label: "Segments", min: 8, max: 128, step: 1 },
     ],
     defaults: { outerRadius: 0.5, innerRadius: 0.3, thickness: 0.05, segments: 32 },
     // Same constraint as tube — keep Inner R below Outer R, no collapse.
@@ -608,18 +691,22 @@ export const SHAPES = {
     category: "toroidal",
     live: false, // toothed ExtrudeGeometry is expensive — debounce
     params: [
-      { key: "outerRadius", label: "Outer R",     min: 0.3,  max: 3,    step: 0.05 },
-      { key: "innerRadius", label: "Inner Hole",  min: 0.05, max: 2,    step: 0.05 },
-      { key: "teeth",       label: "Teeth",       min: 4,    max: 48,   step: 1 },
-      { key: "gap",         label: "Gap",         min: 0.1,  max: 0.7,  step: 0.05 },
-      { key: "holeSides",   label: "Hole Sides",  min: 3,    max: 32,   step: 1 },
-      { key: "thickness",   label: "Thickness",   min: 0.05, max: 2,    step: 0.05 },
-      { key: "toothDepth",  label: "Tooth Depth", min: 0.02, max: 0.5,  step: 0.01 },
+      { key: "outerRadius", label: "Outer R", min: 0.3, max: 3, step: 0.05 },
+      { key: "innerRadius", label: "Inner Hole", min: 0.05, max: 2, step: 0.05 },
+      { key: "teeth", label: "Teeth", min: 4, max: 48, step: 1 },
+      { key: "gap", label: "Gap", min: 0.1, max: 0.7, step: 0.05 },
+      { key: "holeSides", label: "Hole Sides", min: 3, max: 32, step: 1 },
+      { key: "thickness", label: "Thickness", min: 0.05, max: 2, step: 0.05 },
+      { key: "toothDepth", label: "Tooth Depth", min: 0.02, max: 0.5, step: 0.01 },
     ],
     defaults: {
-      outerRadius: 0.8, innerRadius: 0.2, teeth: 12,
-      gap: 0.4, holeSides: 32,
-      thickness: 0.3, toothDepth: 0.12,
+      outerRadius: 0.8,
+      innerRadius: 0.2,
+      teeth: 12,
+      gap: 0.4,
+      holeSides: 32,
+      thickness: 0.3,
+      toothDepth: 0.12,
     },
     // Three constraints to keep the gear geometrically valid:
     //   - Tooth Depth must leave room for the inner hole and a wall.
@@ -670,26 +757,27 @@ export const SHAPES = {
       // itself uses the remaining (1-gap) of the step, with two short
       // ramps (base→tip→tip→base) shaping its profile.
       const teeth = Math.max(4, Math.round(p.teeth));
-      const tipR  = p.outerRadius;
+      const tipR = p.outerRadius;
       const baseR = Math.max(p.outerRadius - p.toothDepth, p.innerRadius + 0.02);
       const shape = new THREE.Shape();
       const stepAngle = (Math.PI * 2) / teeth;
       const gap = Math.max(0, Math.min(0.9, p.gap ?? 0.4));
       const toothFrac = 1 - gap;
       // Tooth profile within its step: ramp up, plateau, ramp down.
-      const f1 = toothFrac * 0.3;     // base → tip ramp end
-      const f2 = toothFrac * 0.7;     // tip plateau end
-      const f3 = toothFrac;           // tip → base ramp end
+      const f1 = toothFrac * 0.3; // base → tip ramp end
+      const f2 = toothFrac * 0.7; // tip plateau end
+      const f3 = toothFrac; // tip → base ramp end
       for (let i = 0; i < teeth; i++) {
         const a0 = i * stepAngle;
         const pts = [
           [baseR, a0],
-          [tipR,  a0 + stepAngle * f1],
-          [tipR,  a0 + stepAngle * f2],
+          [tipR, a0 + stepAngle * f1],
+          [tipR, a0 + stepAngle * f2],
           [baseR, a0 + stepAngle * f3],
         ];
         pts.forEach(([r, a], idx) => {
-          const x = Math.cos(a) * r, y = Math.sin(a) * r;
+          const x = Math.cos(a) * r,
+            y = Math.sin(a) * r;
           if (i === 0 && idx === 0) shape.moveTo(x, y);
           else shape.lineTo(x, y);
         });
@@ -707,8 +795,9 @@ export const SHAPES = {
       const holeR = Math.min(p.innerRadius, baseR - 0.02);
       const hole = new THREE.Path();
       for (let i = 0; i < holeSides; i++) {
-        const a = -i * (Math.PI * 2) / holeSides;
-        const x = Math.cos(a) * holeR, y = Math.sin(a) * holeR;
+        const a = (-i * (Math.PI * 2)) / holeSides;
+        const x = Math.cos(a) * holeR,
+          y = Math.sin(a) * holeR;
         if (i === 0) hole.moveTo(x, y);
         else hole.lineTo(x, y);
       }
@@ -745,24 +834,34 @@ export const SHAPES = {
     // optional — missing params (from older saves) fall back to sensible
     // defaults inside the build so existing scenes keep working.
     params: [
-      { key: "size",        label: "Size",        min: 1,    max: 20,   step: 0.5 },
-      { key: "detail",      label: "Detail",      min: 16,   max: 180,  step: 2 },
-      { key: "heightScale", label: "Height",      min: 0.02, max: 6,    step: 0.02 },
-      { key: "scale",       label: "Scale",       min: 0.1,  max: 4,    step: 0.05 },
-      { key: "octaves",     label: "Octaves",     min: 1,    max: 6,    step: 1 },
-      { key: "persistence", label: "Persistence", min: 0.2,  max: 0.8,  step: 0.02 },
-      { key: "lacunarity",  label: "Lacunarity",  min: 1.5,  max: 3,    step: 0.05 },
-      { key: "ridge",       label: "Ridge",       min: 0,    max: 1,    step: 0.05 },
-      { key: "power",       label: "Power",       min: 0.5,  max: 3,    step: 0.05 },
-      { key: "flatness",    label: "Flatness",    min: 0,    max: 1,    step: 0.02 },
-      { key: "edgeFalloff", label: "Edge Fall",   min: 0,    max: 1,    step: 0.05 },
-      { key: "warp",        label: "Warp",        min: 0,    max: 0.8,  step: 0.02 },
-      { key: "seed",        label: "Seed",        min: 1,    max: 9999, step: 1 },
+      { key: "size", label: "Size", min: 1, max: 20, step: 0.5 },
+      { key: "detail", label: "Detail", min: 16, max: 180, step: 2 },
+      { key: "heightScale", label: "Height", min: 0.02, max: 6, step: 0.02 },
+      { key: "scale", label: "Scale", min: 0.1, max: 4, step: 0.05 },
+      { key: "octaves", label: "Octaves", min: 1, max: 6, step: 1 },
+      { key: "persistence", label: "Persistence", min: 0.2, max: 0.8, step: 0.02 },
+      { key: "lacunarity", label: "Lacunarity", min: 1.5, max: 3, step: 0.05 },
+      { key: "ridge", label: "Ridge", min: 0, max: 1, step: 0.05 },
+      { key: "power", label: "Power", min: 0.5, max: 3, step: 0.05 },
+      { key: "flatness", label: "Flatness", min: 0, max: 1, step: 0.02 },
+      { key: "edgeFalloff", label: "Edge Fall", min: 0, max: 1, step: 0.05 },
+      { key: "warp", label: "Warp", min: 0, max: 0.8, step: 0.02 },
+      { key: "seed", label: "Seed", min: 1, max: 9999, step: 1 },
     ],
     defaults: {
-      size: 4.5, detail: 116, heightScale: 0.32, scale: 0.9,
-      octaves: 3, persistence: 0.48, lacunarity: 1.7,
-      ridge: 0.65, power: 1, flatness: 0.72, edgeFalloff: 0.65, warp: 0.06, seed: 3,
+      size: 4.5,
+      detail: 116,
+      heightScale: 0.32,
+      scale: 0.9,
+      octaves: 3,
+      persistence: 0.48,
+      lacunarity: 1.7,
+      ridge: 0.65,
+      power: 1,
+      flatness: 0.72,
+      edgeFalloff: 0.65,
+      warp: 0.06,
+      seed: 3,
     },
     build: (THREE, p) => {
       // Full fBm pipeline with ridge blend, power curve, flatness, edge
@@ -784,8 +883,12 @@ export const SHAPES = {
       const half = size * 0.5;
 
       // Normalize fBm so the sum of octave amplitudes collapses to ~[-1,1]
-      let ampSum = 0, aa = 1;
-      for (let k = 0; k < octs; k++) { ampSum += aa; aa *= pers; }
+      let ampSum = 0,
+        aa = 1;
+      for (let k = 0; k < octs; k++) {
+        ampSum += aa;
+        aa *= pers;
+      }
       ampSum = ampSum || 1;
 
       const g = new THREE.PlaneGeometry(size, size, detail, detail);
@@ -797,7 +900,8 @@ export const SHAPES = {
         // Domain warp — offset sampling coords with another noise lookup
         // so the terrain gets curvy, natural-looking ridges instead of
         // grid-aligned streaks.
-        let wx = x, wy = y;
+        let wx = x,
+          wy = y;
         if (warp > 0) {
           const wn1 = noise(x * scale * 0.5 + 13.37, y * scale * 0.5 + 7.11, 0);
           const wn2 = noise(x * scale * 0.5 - 7.11, y * scale * 0.5 - 13.37, 0);
@@ -807,7 +911,9 @@ export const SHAPES = {
 
         // fBm with optional ridge blend. Ridge = 0 → classic rolling noise,
         // Ridge = 1 → |n|-inverted ridges for sharp mountain crests.
-        let n = 0, amp = 1, freq = scale;
+        let n = 0,
+          amp = 1,
+          freq = scale;
         for (let k = 0; k < octs; k++) {
           let s = noise(wx * freq, wy * freq, 0);
           if (ridge > 0) {
@@ -832,7 +938,7 @@ export const SHAPES = {
         if (flatness > 0) {
           const thresh = flatness * 0.6;
           const na = Math.abs(n);
-          if (na < thresh) n *= (na / thresh);
+          if (na < thresh) n *= na / thresh;
         }
 
         // Edge falloff — smoothstep push the square boundary down to 0
@@ -859,13 +965,13 @@ export const SHAPES = {
     category: "rounded",
     live: false,
     params: [
-      { key: "radius",     label: "Radius",     min: 0.2, max: 2,    step: 0.05 },
-      { key: "detail",     label: "Detail",     min: 1,   max: 5,    step: 1 },
-      { key: "strength",   label: "Strength",   min: 0,   max: 0.8,  step: 0.01 },
-      { key: "smoothness", label: "Smoothness", min: 0.5, max: 4,    step: 0.1 },
-      { key: "octaves",    label: "Octaves",    min: 1,   max: 4,    step: 1 },
-      { key: "stretchY",   label: "Stretch Y",  min: 0.3, max: 2.5,  step: 0.05 },
-      { key: "seed",       label: "Seed",       min: 1,   max: 9999, step: 1 },
+      { key: "radius", label: "Radius", min: 0.2, max: 2, step: 0.05 },
+      { key: "detail", label: "Detail", min: 1, max: 5, step: 1 },
+      { key: "strength", label: "Strength", min: 0, max: 0.8, step: 0.01 },
+      { key: "smoothness", label: "Smoothness", min: 0.5, max: 4, step: 0.1 },
+      { key: "octaves", label: "Octaves", min: 1, max: 4, step: 1 },
+      { key: "stretchY", label: "Stretch Y", min: 0.3, max: 2.5, step: 0.05 },
+      { key: "seed", label: "Seed", min: 1, max: 9999, step: 1 },
     ],
     defaults: { radius: 0.6, detail: 4, strength: 0.3, smoothness: 1.5, octaves: 2, stretchY: 1.0, seed: 7 },
     build: (THREE, p) => {
@@ -887,14 +993,18 @@ export const SHAPES = {
       for (let i = 0; i < pos.count; i++) {
         v.set(pos.getX(i), pos.getY(i), pos.getZ(i));
         const len = v.length();
-        let n = 0, amp = 1, freq = 1, norm = 0;
+        let n = 0,
+          amp = 1,
+          freq = 1,
+          norm = 0;
         for (let k = 0; k < octs; k++) {
           const sx = (v.x / p.smoothness) * freq;
           const sy = (v.y / p.smoothness) * freq;
           const sz = (v.z / p.smoothness) * freq;
           n += noise(sx, sy, sz) * amp;
           norm += amp;
-          amp *= 0.5; freq *= 2;
+          amp *= 0.5;
+          freq *= 2;
         }
         n /= norm; // normalize so adding octaves doesn't blow up displacement
         v.setLength(len * (1 + n * p.strength));
@@ -911,17 +1021,22 @@ export const SHAPES = {
     category: "complex",
     live: false,
     params: [
-      { key: "size",       label: "Size",       min: 0.2, max: 2,    step: 0.05 },
-      { key: "detail",     label: "Detail",     min: 1,   max: 5,    step: 1 },
-      { key: "roughness",  label: "Roughness",  min: 0.1, max: 0.7,  step: 0.02 },
-      { key: "sharpness",  label: "Sharpness",  min: 0.5, max: 3,    step: 0.1 },
-      { key: "stretchY",   label: "Stretch Y",  min: 0.3, max: 2.5,  step: 0.05 },
-      { key: "smoothness", label: "Smoothness", min: 0,   max: 1,    step: 0.05 },
-      { key: "seed",       label: "Seed",       min: 1,   max: 9999, step: 1 },
+      { key: "size", label: "Size", min: 0.2, max: 2, step: 0.05 },
+      { key: "detail", label: "Detail", min: 1, max: 5, step: 1 },
+      { key: "roughness", label: "Roughness", min: 0.1, max: 0.7, step: 0.02 },
+      { key: "sharpness", label: "Sharpness", min: 0.5, max: 3, step: 0.1 },
+      { key: "stretchY", label: "Stretch Y", min: 0.3, max: 2.5, step: 0.05 },
+      { key: "smoothness", label: "Smoothness", min: 0, max: 1, step: 0.05 },
+      { key: "seed", label: "Seed", min: 1, max: 9999, step: 1 },
     ],
     defaults: {
-      size: 0.6, detail: 3, roughness: 0.22, sharpness: 1.0,
-      stretchY: 0.7, smoothness: 0.8, seed: 22,
+      size: 0.6,
+      detail: 3,
+      roughness: 0.22,
+      sharpness: 1.0,
+      stretchY: 0.7,
+      smoothness: 0.8,
+      seed: 22,
     },
     build: (THREE, p) => {
       // Low-poly rock: icosahedron with modest single-octave noise
@@ -981,19 +1096,26 @@ export const SHAPES = {
           const z = posArr[i * 3 + 2];
           const k = `${Math.round(x * invTol)}|${Math.round(y * invTol)}|${Math.round(z * invTol)}`;
           let list = bucket.get(k);
-          if (!list) { list = []; bucket.set(k, list); }
+          if (!list) {
+            list = [];
+            bucket.set(k, list);
+          }
           list.push(i);
         }
         for (const list of bucket.values()) {
           if (list.length < 2) continue;
-          let nx = 0, ny = 0, nz = 0;
+          let nx = 0,
+            ny = 0,
+            nz = 0;
           for (const i of list) {
             nx += normArr[i * 3];
             ny += normArr[i * 3 + 1];
             nz += normArr[i * 3 + 2];
           }
           const m = Math.hypot(nx, ny, nz) || 1;
-          nx /= m; ny /= m; nz /= m;
+          nx /= m;
+          ny /= m;
+          nz /= m;
           for (const i of list) {
             const fx = normArr[i * 3];
             const fy = normArr[i * 3 + 1];
@@ -1003,7 +1125,7 @@ export const SHAPES = {
             let by = fy * (1 - smooth) + ny * smooth;
             let bz = fz * (1 - smooth) + nz * smooth;
             const bm = Math.hypot(bx, by, bz) || 1;
-            normArr[i * 3]     = bx / bm;
+            normArr[i * 3] = bx / bm;
             normArr[i * 3 + 1] = by / bm;
             normArr[i * 3 + 2] = bz / bm;
           }
@@ -1019,12 +1141,12 @@ export const SHAPES = {
     category: "complex",
     live: false,
     params: [
-      { key: "size",     label: "Size",     min: 0.2, max: 2,  step: 0.05 },
-      { key: "segments", label: "Segments", min: 3,   max: 16, step: 1 },
-      { key: "lid",      label: "Lid",      min: 0,   max: 1,  step: 1 },
-      { key: "body",     label: "Body",     min: 0,   max: 1,  step: 1 },
-      { key: "spout",    label: "Spout",    min: 0,   max: 1,  step: 1 },
-      { key: "bottom",   label: "Bottom",   min: 0,   max: 1,  step: 1 },
+      { key: "size", label: "Size", min: 0.2, max: 2, step: 0.05 },
+      { key: "segments", label: "Segments", min: 3, max: 16, step: 1 },
+      { key: "lid", label: "Lid", min: 0, max: 1, step: 1 },
+      { key: "body", label: "Body", min: 0, max: 1, step: 1 },
+      { key: "spout", label: "Spout", min: 0, max: 1, step: 1 },
+      { key: "bottom", label: "Bottom", min: 0, max: 1, step: 1 },
     ],
     defaults: { size: 0.5, segments: 8, lid: 1, body: 1, spout: 1, bottom: 1 },
     build: (THREE, p) => {
@@ -1034,10 +1156,7 @@ export const SHAPES = {
       // before _restoreScene rebuilds saved teapots — so this fallback
       // is only a safety net for edge cases.
       if (!_TeapotGeometry) return new THREE.SphereGeometry(p.size, 16, 16);
-      const g = new _TeapotGeometry(
-        p.size, p.segments,
-        !!p.bottom, !!p.lid, !!p.body, false, !!p.spout,
-      );
+      const g = new _TeapotGeometry(p.size, p.segments, !!p.bottom, !!p.lid, !!p.body, false, !!p.spout);
       // Rotate 180° on Y so the spout points the same way as the
       // shape-grid icon (handle on the right, spout on the left).
       g.rotateY(Math.PI);
@@ -1052,7 +1171,7 @@ export const SHAPES = {
     category: "flat",
     live: true,
     params: [
-      { key: "width",  label: "Width",  min: 0.1, max: 10, step: 0.1 },
+      { key: "width", label: "Width", min: 0.1, max: 10, step: 0.1 },
       { key: "height", label: "Height", min: 0.1, max: 10, step: 0.1 },
     ],
     defaults: { width: 2, height: 2 },
@@ -1069,19 +1188,15 @@ export const SHAPES = {
     category: "rounded",
     live: true,
     params: [
-      { key: "radius",     label: "Radius",   min: 0.1, max: 3,   step: 0.05 },
-      { key: "widthSegs",  label: "Segments", min: 6,   max: 64,  step: 1 },
-      { key: "heightSegs", label: "Rings",    min: 3,   max: 32,  step: 1 },
+      { key: "radius", label: "Radius", min: 0.1, max: 3, step: 0.05 },
+      { key: "widthSegs", label: "Segments", min: 6, max: 64, step: 1 },
+      { key: "heightSegs", label: "Rings", min: 3, max: 32, step: 1 },
     ],
     defaults: { radius: 0.8, widthSegs: 24, heightSegs: 12 },
     build: (THREE, p) => {
       // Top half of a sphere: phiLength full circle, thetaLength π/2.
       // Default orientation puts the hemisphere pointing up.
-      const g = new THREE.SphereGeometry(
-        p.radius, p.widthSegs, p.heightSegs,
-        0, Math.PI * 2,
-        0, Math.PI / 2,
-      );
+      const g = new THREE.SphereGeometry(p.radius, p.widthSegs, p.heightSegs, 0, Math.PI * 2, 0, Math.PI / 2);
       g.computeVertexNormals();
       weldSeamByPosition(g);
       return g;
@@ -1097,9 +1212,9 @@ export const SHAPES = {
     category: "lathe",
     live: true,
     params: [
-      { key: "height",  label: "Height",  min: 0.3, max: 3,  step: 0.05 },
-      { key: "radius",  label: "Width",   min: 0.1, max: 1.5, step: 0.05 },
-      { key: "wall",    label: "Thickness", min: 0.01, max: 0.15, step: 0.005 },
+      { key: "height", label: "Height", min: 0.3, max: 3, step: 0.05 },
+      { key: "radius", label: "Width", min: 0.1, max: 1.5, step: 0.05 },
+      { key: "wall", label: "Thickness", min: 0.01, max: 0.15, step: 0.005 },
       { key: "segments", label: "Smoothness", min: 8, max: 64, step: 1 },
     ],
     defaults: { height: 1.0, radius: 0.35, wall: 0.05, segments: 32 },
@@ -1112,15 +1227,15 @@ export const SHAPES = {
       const R = p.radius;
       const w = Math.max(0.005, Math.min(0.18, p.wall ?? 0.05));
       const outer = [
-        [0.60 * R, 0.00],
-        [0.70 * R, 0.08 * h],
+        [0.6 * R, 0.0],
+        [0.7 * R, 0.08 * h],
         [0.98 * R, 0.25 * h],
-        [1.00 * R, 0.40 * h],
+        [1.0 * R, 0.4 * h],
         [0.85 * R, 0.55 * h],
         [0.55 * R, 0.72 * h],
         [0.45 * R, 0.85 * h],
         [0.55 * R, 0.95 * h],
-        [0.65 * R, 1.00 * h],
+        [0.65 * R, 1.0 * h],
       ];
       const profile = thickVesselProfile(outer, w, Math.max(0.02, w * 0.9));
       const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
@@ -1136,9 +1251,9 @@ export const SHAPES = {
     category: "lathe",
     live: true,
     params: [
-      { key: "height",  label: "Height",  min: 0.3, max: 3,  step: 0.05 },
-      { key: "radius",  label: "Width",   min: 0.1, max: 1.2, step: 0.05 },
-      { key: "wall",    label: "Thickness", min: 0.01, max: 0.12, step: 0.005 },
+      { key: "height", label: "Height", min: 0.3, max: 3, step: 0.05 },
+      { key: "radius", label: "Width", min: 0.1, max: 1.2, step: 0.05 },
+      { key: "wall", label: "Thickness", min: 0.01, max: 0.12, step: 0.005 },
       { key: "segments", label: "Smoothness", min: 8, max: 64, step: 1 },
     ],
     defaults: { height: 1.2, radius: 0.3, wall: 0.04, segments: 32 },
@@ -1152,14 +1267,14 @@ export const SHAPES = {
       // sub-2% of R so the neck stays a real hole.
       const w = Math.max(0.005, Math.min(0.26 * R - 0.02, p.wall ?? 0.04));
       const outer = [
-        [0.95 * R, 0.00],
-        [1.00 * R, 0.08 * h],
-        [1.00 * R, 0.50 * h],
-        [0.90 * R, 0.58 * h],
-        [0.40 * R, 0.65 * h],
+        [0.95 * R, 0.0],
+        [1.0 * R, 0.08 * h],
+        [1.0 * R, 0.5 * h],
+        [0.9 * R, 0.58 * h],
+        [0.4 * R, 0.65 * h],
         [0.28 * R, 0.75 * h],
         [0.28 * R, 0.95 * h],
-        [0.35 * R, 1.00 * h],
+        [0.35 * R, 1.0 * h],
       ];
       const profile = thickVesselProfile(outer, w, Math.max(0.02, w * 1.1));
       const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
@@ -1175,9 +1290,9 @@ export const SHAPES = {
     category: "lathe",
     live: true,
     params: [
-      { key: "height",  label: "Height",  min: 0.3, max: 2.5, step: 0.05 },
-      { key: "radius",  label: "Width",   min: 0.15, max: 1.2, step: 0.05 },
-      { key: "wall",    label: "Thickness", min: 0.01, max: 0.12, step: 0.005 },
+      { key: "height", label: "Height", min: 0.3, max: 2.5, step: 0.05 },
+      { key: "radius", label: "Width", min: 0.15, max: 1.2, step: 0.05 },
+      { key: "wall", label: "Thickness", min: 0.01, max: 0.12, step: 0.005 },
       { key: "segments", label: "Smoothness", min: 8, max: 64, step: 1 },
     ],
     defaults: { height: 1.0, radius: 0.35, wall: 0.04, segments: 32 },
@@ -1191,27 +1306,27 @@ export const SHAPES = {
       const R = p.radius;
       const w = Math.max(0.005, Math.min(0.15, p.wall ?? 0.04));
       // Inner cup radii (outer radii minus wall, clamped positive).
-      const innerRim   = Math.max(0.02, 1.00 * R - w);
+      const innerRim = Math.max(0.02, 1.0 * R - w);
       const innerUpper = Math.max(0.02, 0.95 * R - w);
       const innerBelly = Math.max(0.02, 0.78 * R - w);
-      const innerBase  = Math.max(0.04, 0.26 * R - w * 0.5);
-      const cupFloorY  = 0.55 * h + Math.max(0.02, w * 1.5);
+      const innerBase = Math.max(0.04, 0.26 * R - w * 0.5);
+      const cupFloorY = 0.55 * h + Math.max(0.02, w * 1.5);
       const profile = [
-        [0.00,       0.00],         // center of foot bottom
-        [1.00 * R,   0.00],         // foot edge bottom
-        [1.00 * R,   0.04 * h],     // foot edge top
-        [0.25 * R,   0.09 * h],     // curve into stem
-        [0.18 * R,   0.18 * h],     // stem bottom
-        [0.18 * R,   0.50 * h],     // stem top
-        [0.26 * R,   0.55 * h],     // widen into cup outer base
-        [0.78 * R,   0.72 * h],     // cup outer belly
-        [0.95 * R,   0.90 * h],     // cup outer upper
-        [1.00 * R,   1.00 * h],     // outer rim
-        [innerRim,   1.00 * h],     // inner rim (flat rim top)
-        [innerUpper, 0.90 * h],     // inner cup upper
-        [innerBelly, 0.72 * h],     // inner cup belly
-        [innerBase,  0.58 * h],     // inner cup base edge
-        [0.00,       cupFloorY],    // center of interior floor
+        [0.0, 0.0], // center of foot bottom
+        [1.0 * R, 0.0], // foot edge bottom
+        [1.0 * R, 0.04 * h], // foot edge top
+        [0.25 * R, 0.09 * h], // curve into stem
+        [0.18 * R, 0.18 * h], // stem bottom
+        [0.18 * R, 0.5 * h], // stem top
+        [0.26 * R, 0.55 * h], // widen into cup outer base
+        [0.78 * R, 0.72 * h], // cup outer belly
+        [0.95 * R, 0.9 * h], // cup outer upper
+        [1.0 * R, 1.0 * h], // outer rim
+        [innerRim, 1.0 * h], // inner rim (flat rim top)
+        [innerUpper, 0.9 * h], // inner cup upper
+        [innerBelly, 0.72 * h], // inner cup belly
+        [innerBase, 0.58 * h], // inner cup base edge
+        [0.0, cupFloorY], // center of interior floor
       ];
       const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
       const g = new THREE.LatheGeometry(points, p.segments);
@@ -1226,9 +1341,9 @@ export const SHAPES = {
     category: "lathe",
     live: true,
     params: [
-      { key: "radius",  label: "Radius",  min: 0.2, max: 2.5, step: 0.05 },
-      { key: "height",  label: "Depth",   min: 0.1, max: 1.5, step: 0.05 },
-      { key: "wall",    label: "Thickness", min: 0.01, max: 0.2, step: 0.005 },
+      { key: "radius", label: "Radius", min: 0.2, max: 2.5, step: 0.05 },
+      { key: "height", label: "Depth", min: 0.1, max: 1.5, step: 0.05 },
+      { key: "wall", label: "Thickness", min: 0.01, max: 0.2, step: 0.005 },
       { key: "segments", label: "Smoothness", min: 8, max: 64, step: 1 },
     ],
     defaults: { radius: 0.7, height: 0.35, wall: 0.05, segments: 32 },
@@ -1241,11 +1356,11 @@ export const SHAPES = {
       const h = p.height;
       const w = Math.max(0.005, Math.min(0.22, p.wall ?? 0.05));
       const outer = [
-        [0.15 * R, 0.00],
+        [0.15 * R, 0.0],
         [0.45 * R, 0.08 * h],
-        [0.80 * R, 0.38 * h],
+        [0.8 * R, 0.38 * h],
         [0.96 * R, 0.75 * h],
-        [1.00 * R, 1.00 * h],
+        [1.0 * R, 1.0 * h],
       ];
       const profile = thickVesselProfile(outer, w, Math.max(0.02, w * 0.8));
       const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
@@ -1261,10 +1376,10 @@ export const SHAPES = {
     category: "lathe",
     live: true,
     params: [
-      { key: "height",  label: "Height",  min: 0.2, max: 2.5, step: 0.05 },
-      { key: "radius",  label: "Top R",   min: 0.2, max: 1.5, step: 0.05 },
+      { key: "height", label: "Height", min: 0.2, max: 2.5, step: 0.05 },
+      { key: "radius", label: "Top R", min: 0.2, max: 1.5, step: 0.05 },
       { key: "baseRatio", label: "Base %", min: 0.4, max: 1, step: 0.02 },
-      { key: "wall",    label: "Thickness", min: 0.01, max: 0.15, step: 0.005 },
+      { key: "wall", label: "Thickness", min: 0.01, max: 0.15, step: 0.005 },
       { key: "segments", label: "Smoothness", min: 8, max: 64, step: 1 },
     ],
     defaults: { height: 0.7, radius: 0.55, baseRatio: 0.7, wall: 0.05, segments: 32 },
@@ -1276,12 +1391,12 @@ export const SHAPES = {
       const w = Math.max(0.005, Math.min(0.18, p.wall ?? 0.05));
       const bR = R * p.baseRatio;
       const outer = [
-        [bR,        0.00],
+        [bR, 0.0],
         [bR * 1.02, 0.02 * h],
-        [R * 0.95,  0.85 * h],
-        [R * 1.00,  0.88 * h],
-        [R * 1.02,  0.95 * h],
-        [R * 0.96,  1.00 * h],
+        [R * 0.95, 0.85 * h],
+        [R * 1.0, 0.88 * h],
+        [R * 1.02, 0.95 * h],
+        [R * 0.96, 1.0 * h],
       ];
       const profile = thickVesselProfile(outer, w, Math.max(0.02, w));
       const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
@@ -1296,12 +1411,24 @@ export const SHAPES = {
 // Full 18-shape grid order (6 rows x 3 columns). Shapes not yet
 // implemented fall back to cube + console warning via buildGeometry().
 export const SHAPE_GRID = [
-  "cube",     "prism",    "pyramid",
-  "sphere",   "capsule",  "crystal",
-  "cylinder", "tube",     "cone",
-  "torus",    "ring",     "gear",
-  "plane",    "terrain",  "blob",
-  "rock",     "teapot",   "bunny",
+  "cube",
+  "prism",
+  "pyramid",
+  "sphere",
+  "capsule",
+  "crystal",
+  "cylinder",
+  "tube",
+  "cone",
+  "torus",
+  "ring",
+  "gear",
+  "plane",
+  "terrain",
+  "blob",
+  "rock",
+  "teapot",
+  "bunny",
 ];
 
 export function getShape(id) {

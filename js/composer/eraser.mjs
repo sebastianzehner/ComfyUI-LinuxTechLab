@@ -1,22 +1,18 @@
-// Eraser mode methods — mixed into PixaromaEditor.prototype
-import { PixaromaEditor } from "./core.mjs";
+// Eraser mode methods — mixed into LinuxTechLabEditor.prototype
+import { LinuxTechLabEditor } from "./core.mjs";
 
-PixaromaEditor.prototype.setupEraserOnSelection = function () {
+LinuxTechLabEditor.prototype.setupEraserOnSelection = function () {
   const layer = this.getActiveLayer();
   if (layer && !layer.eraserMaskCanvas_internal) {
     this.prepareLayerMask(layer);
   }
 };
 
-PixaromaEditor.prototype.prepareLayerMask = function (
-  layer,
-  existingMaskUrl = null,
-) {
+LinuxTechLabEditor.prototype.prepareLayerMask = function (layer, existingMaskUrl = null) {
   layer.eraserMaskCanvas_internal = document.createElement("canvas");
   layer.eraserMaskCanvas_internal.width = layer.img.width;
   layer.eraserMaskCanvas_internal.height = layer.img.height;
-  layer.eraserMaskCtx_internal =
-    layer.eraserMaskCanvas_internal.getContext("2d");
+  layer.eraserMaskCtx_internal = layer.eraserMaskCanvas_internal.getContext("2d");
   layer.eraserMaskCtx_internal.fillStyle = "black";
   layer.hasMask_internal = false;
 
@@ -33,7 +29,7 @@ PixaromaEditor.prototype.prepareLayerMask = function (
   }
 };
 
-PixaromaEditor.prototype.clearEraserMask = function (layer, skipRefresh) {
+LinuxTechLabEditor.prototype.clearEraserMask = function (layer, skipRefresh) {
   if (layer.eraserMaskCtx_internal) {
     layer.eraserMaskCtx_internal.clearRect(
       0,
@@ -51,7 +47,7 @@ PixaromaEditor.prototype.clearEraserMask = function (layer, skipRefresh) {
   }
 };
 
-PixaromaEditor.prototype.drawEraserLine = function (layer, start, end) {
+LinuxTechLabEditor.prototype.drawEraserLine = function (layer, start, end) {
   const ctx = layer.eraserMaskCtx_internal;
   ctx.save();
   ctx.beginPath();
@@ -64,9 +60,7 @@ PixaromaEditor.prototype.drawEraserLine = function (layer, start, end) {
 
   // BUG FIX: Cap the blur radius to prevent canvas crashing at extreme distances or tiny scales
   if (this.brushHardness < 0.95) {
-    let blurRad =
-      (this.brushSize * (1 - this.brushHardness)) /
-      Math.max(0.01, Math.abs(layer.scaleX));
+    let blurRad = (this.brushSize * (1 - this.brushHardness)) / Math.max(0.01, Math.abs(layer.scaleX));
     blurRad = Math.min(blurRad, 100);
     ctx.filter = `blur(${blurRad}px)`;
   }
@@ -79,7 +73,7 @@ PixaromaEditor.prototype.drawEraserLine = function (layer, start, end) {
   }
 };
 
-PixaromaEditor.prototype.drawEraserPreview = function (coords) {
+LinuxTechLabEditor.prototype.drawEraserPreview = function (coords) {
   this.ctx.save();
   this.ctx.translate(coords.x, coords.y);
   this.ctx.beginPath();
@@ -89,14 +83,7 @@ PixaromaEditor.prototype.drawEraserPreview = function (coords) {
   this.ctx.stroke();
 
   if (this.isMouseDown && this.activeMode === "eraser") {
-    const radGrad = this.ctx.createRadialGradient(
-      0,
-      0,
-      0,
-      0,
-      0,
-      this.brushSize,
-    );
+    const radGrad = this.ctx.createRadialGradient(0, 0, 0, 0, 0, this.brushSize);
     radGrad.addColorStop(this.brushHardness, "rgba(0,0,0,0.6)");
     radGrad.addColorStop(1, "rgba(0,0,0,0)");
     this.ctx.fillStyle = radGrad;

@@ -6,10 +6,10 @@ import { createEditorLayout, createButton } from "../framework/index.mjs";
 import { UI_ICON } from "../framework/theme.mjs";
 
 const BRAND_ORANGE = "#f66744";
-const BRAND_RED    = "#e74c3c";
+const BRAND_RED = "#e74c3c";
 
 /**
- * AudioReact specific styles. The Pixaroma framework (createEditorLayout)
+ * AudioReact specific styles. The LinuxTechLab framework (createEditorLayout)
  * supplies the overlay / titlebar / sidebars / footer / discard prompt CSS;
  * we only inject what's unique to this editor: the source-row in the top
  * options bar, the canvas + transport bar inside the workspace, and the
@@ -121,7 +121,6 @@ function injectAudioStudioCSS() {
   document.head.appendChild(style);
 }
 
-
 export class AudioStudioEditor {
   constructor(node, cfg, defaults) {
     this.node = node;
@@ -130,7 +129,7 @@ export class AudioStudioEditor {
     // Frozen reference to the original defaults, used by the per-section
     // Reset buttons. Cloned so caller mutations to DEFAULT_CFG can't reach us.
     this._defaults = defaults ? JSON.parse(JSON.stringify(defaults)) : {};
-    this.savedSnapshot = JSON.stringify(cfg);   // for dirty detection
+    this.savedSnapshot = JSON.stringify(cfg); // for dirty detection
     this.overlay = null;
     this.onSave = null;
     this.onClose = null;
@@ -162,8 +161,8 @@ export class AudioStudioEditor {
     this._savedGraphConfigure = app.graph.configure.bind(app.graph);
     app.graph.configure = () => {};
 
-    // Build the standard Pixaroma editor shell. This gives us:
-    //   * .pxf-titlebar with logo + "AudioReact Pixaroma" + undo/redo + close
+    // Build the standard LinuxTechLab editor shell. This gives us:
+    //   * .pxf-titlebar with logo + "AudioReact LinuxTechLab" + undo/redo + close
     //   * .pxf-top-options bar (we put image/audio source row here)
     //   * .pxf-workspace (canvas + transport go here, stacked vertically)
     //   * .pxf-sidebar-right (our tabbed controls go here)
@@ -172,10 +171,10 @@ export class AudioStudioEditor {
     // users get consistent close/save/undo positions across all editors.
     const layout = createEditorLayout({
       editorName: "AudioReact",
-      editorId: "pixaroma-audio-studio-editor",
-      leftWidth: 0,                  // no left sidebar — controls live on the right
+      editorId: "linuxtechlab-audio-studio-editor",
+      leftWidth: 0, // no left sidebar — controls live on the right
       rightWidth: 280,
-      showZoomBar: false,            // canvas autosizes, no zoom needed
+      showZoomBar: false, // canvas autosizes, no zoom needed
       showUndoRedo: true,
       showStatusBar: false,
       showTopOptionsBar: true,
@@ -233,7 +232,7 @@ export class AudioStudioEditor {
     layout.mount();
 
     // AudioReact doesn't have a "Save to Disk" path (workflow output is
-    // an MP4 produced by Save Mp4 Pixaroma downstream, not a flat image).
+    // an MP4 produced by Save Mp4 LinuxTechLab downstream, not a flat image).
     // Hide the framework's secondary footer button so the Save button gets
     // the full footer width.
     if (layout.closeBtn) {
@@ -245,7 +244,7 @@ export class AudioStudioEditor {
     // that swallows Space / arrows. Replace it with our own that only
     // blocks Ctrl+Z escape paths and routes our shortcuts to the editor.
     layout._kbBlock && window.removeEventListener("keydown", layout._kbBlock, { capture: true });
-    layout._kbBlock && window.removeEventListener("keyup",   layout._kbBlock, { capture: true });
+    layout._kbBlock && window.removeEventListener("keyup", layout._kbBlock, { capture: true });
     layout._kbBlock && window.removeEventListener("keypress", layout._kbBlock, { capture: true });
     layout._kbBlock = null;
 
@@ -259,7 +258,9 @@ export class AudioStudioEditor {
     this._resolveAudioSource();
 
     // Drag-drop image / audio onto the canvas (or anywhere in the workspace).
-    layout.workspace.addEventListener("dragover", (e) => { e.preventDefault(); });
+    layout.workspace.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
     layout.workspace.addEventListener("drop", async (e) => {
       e.preventDefault();
       const file = e.dataTransfer?.files?.[0];
@@ -278,7 +279,9 @@ export class AudioStudioEditor {
           this._snapForUndo(true);
           this._refreshSaveBtnState();
           await this._resolveImageSource();
-        } catch (err) { alert("Image upload failed: " + err.message); }
+        } catch (err) {
+          alert("Image upload failed: " + err.message);
+        }
       } else if (file.type.startsWith("audio/") || /\.(wav|mp3|ogg|aac|flac|m4a)$/i.test(file.name)) {
         await this._handleAudioFile(file);
       }
@@ -288,7 +291,7 @@ export class AudioStudioEditor {
     this._origOnConnectionsChange = this.node.onConnectionsChange?.bind(this.node);
     this.node.onConnectionsChange = (type, slotIndex, connected) => {
       this._origOnConnectionsChange?.(type, slotIndex, connected);
-      if (type !== 1) return;   // LiteGraph.INPUT === 1
+      if (type !== 1) return; // LiteGraph.INPUT === 1
       const inputName = this.node.inputs?.[slotIndex]?.name;
       if (inputName === "image") this._resolveImageSource();
       else if (inputName === "audio") this._resolveAudioSource();
@@ -300,32 +303,38 @@ export class AudioStudioEditor {
       // Skip when a discard / native modal is open
       if (document.querySelector(".pxf-confirm-backdrop, .pix-as-confirm-backdrop")) return;
       const t = e.target;
-      // The framework installs a hidden <textarea data-pixaroma-trap="1">
+      // The framework installs a hidden <textarea data-linuxtechlab-trap="1">
       // for keyboard-shortcut isolation; it grabs focus when the user
       // clicks on the workspace background. Don't treat it as a real text
       // field or Space / arrows / Ctrl+Z would all be swallowed.
-      const isTrap = t && t.dataset?.pixaromaTrap === "1";
+      const isTrap = t && t.dataset?.linuxtechlabTrap === "1";
       const inField = !isTrap && t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT");
 
       if (e.key === "Escape") {
-        e.preventDefault(); e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
         this.close();
       } else if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault(); e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
         this._save();
       } else if (e.code === "Space" && !inField) {
-        e.preventDefault(); e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
         this._togglePlay?.();
       } else if ((e.code === "ArrowLeft" || e.code === "ArrowRight") && !inField) {
-        e.preventDefault(); e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
         const sign = e.code === "ArrowLeft" ? -1 : 1;
         const stepFrames = e.shiftKey ? Math.max(1, this.cfg.fps) : 1;
         this._stepFrame?.(sign * stepFrames);
       } else if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
-        e.preventDefault(); e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
         this._undo?.();
       } else if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.shiftKey && (e.key === "Z" || e.key === "z")))) {
-        e.preventDefault(); e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
         this._redo?.();
       }
     };
@@ -358,7 +367,7 @@ export class AudioStudioEditor {
     imgStatus.className = "pix-as-source-cell-status";
     imgStatus.textContent = "—";
     imgCell.append(imgBtn, imgStatus);
-    this.imgPill = imgStatus;   // legacy name still used by source resolution
+    this.imgPill = imgStatus; // legacy name still used by source resolution
 
     // Divider
     const sep = document.createElement("div");
@@ -481,7 +490,7 @@ export class AudioStudioEditor {
       this._undoStack.push(this._lastSnapshot ?? snapshot);
       this._lastSnapshot = JSON.stringify(this.cfg);
       if (this._undoStack.length > 50) this._undoStack.shift();
-      this._redoStack.length = 0;   // any new edit invalidates redo branch
+      this._redoStack.length = 0; // any new edit invalidates redo branch
       this._snapTimer = null;
       this._refreshUndoButtonsState();
     };
@@ -576,8 +585,14 @@ export class AudioStudioEditor {
     this._pausePlayback?.();
     this._detachTransportListeners?.();
     // Cancel any in-flight debounced timers.
-    if (this._recomputeTimer) { clearTimeout(this._recomputeTimer); this._recomputeTimer = null; }
-    if (this._snapTimer)      { clearTimeout(this._snapTimer);      this._snapTimer = null; }
+    if (this._recomputeTimer) {
+      clearTimeout(this._recomputeTimer);
+      this._recomputeTimer = null;
+    }
+    if (this._snapTimer) {
+      clearTimeout(this._snapTimer);
+      this._snapTimer = null;
+    }
     // Restore node.onConnectionsChange.
     if (this._origOnConnectionsChange !== undefined) {
       this.node.onConnectionsChange = this._origOnConnectionsChange;
@@ -587,7 +602,9 @@ export class AudioStudioEditor {
     this._destroyRenderer?.();
     // Framework unmount removes the overlay and runs onCleanup.
     if (this._layout) {
-      try { this._layout.unmount(); } catch {}
+      try {
+        this._layout.unmount();
+      } catch {}
       this._layout = null;
     }
     this.overlay = null;
@@ -619,7 +636,7 @@ AudioStudioEditor.prototype.loadAudioBlob = async function (blob) {
 //
 // Both image and audio support two sources: "upstream" (walk node.inputs[].link
 // to a Load Image / Load Audio node) and "inline" (file uploaded by the user
-// via the source pill picker or drag-drop, served from input/pixaroma/...).
+// via the source pill picker or drag-drop, served from input/linuxtechlab/...).
 // Pill click toggles between them; if upstream isn't wired, click opens the
 // file picker.
 // ---------------------------------------------------------------------------
@@ -654,8 +671,10 @@ AudioStudioEditor.prototype._disconnectUpstreamInput = function (inputName) {
   // LiteGraph's standard disconnect API. Triggers onConnectionsChange,
   // which the editor's handler re-resolves the affected source for —
   // harmless here since we're called from _save() right before close.
-  try { this.node.disconnectInput(idx); } catch (e) {
-    console.warn(`[Pixaroma] AudioReact: disconnectInput(${inputName}) failed:`, e);
+  try {
+    this.node.disconnectInput(idx);
+  } catch (e) {
+    console.warn(`[LinuxTechLab] AudioReact: disconnectInput(${inputName}) failed:`, e);
   }
 };
 
@@ -668,8 +687,14 @@ AudioStudioEditor.prototype._loadImageFromUrl = function (url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "Anonymous";
-    img.onload = () => { this._setImage(img); resolve(); };
-    img.onerror = () => { this._showCanvasMessage("Image load failed: " + url); reject(); };
+    img.onload = () => {
+      this._setImage(img);
+      resolve();
+    };
+    img.onerror = () => {
+      this._showCanvasMessage("Image load failed: " + url);
+      reject();
+    };
     img.src = url;
   });
 };
@@ -693,11 +718,7 @@ AudioStudioEditor.prototype._resolveImageSource = async function () {
     const url = getInlineSourceUrl(this.cfg.image_path);
     try {
       await this._loadImageFromUrl(url);
-      this._updatePill(
-        this.imgPill,
-        wired ? `Image: Inline override (${fname})` : `Image: Inline (${fname})`,
-        false,
-      );
+      this._updatePill(this.imgPill, wired ? `Image: Inline override (${fname})` : `Image: Inline (${fname})`, false);
       return;
     } catch {}
   }
@@ -716,9 +737,7 @@ AudioStudioEditor.prototype._resolveImageSource = async function () {
       return;
     } catch {}
   }
-  this._showCanvasMessage(
-    "No image — wire an IMAGE input or click the Image pill to load inline.",
-  );
+  this._showCanvasMessage("No image — wire an IMAGE input or click the Image pill to load inline.");
   this._updatePill(this.imgPill, "Image: not loaded", false);
 };
 
@@ -745,7 +764,7 @@ AudioStudioEditor.prototype._pickInlineImage = function () {
       // extension overwrites in place). Without this, ComfyUI's prompt
       // cache hits the prior result and shows the old MP4 unchanged.
       this.cfg.image_uploaded_at = Date.now();
-      this._uploadDirty = true;   // bytes-on-disk changed even if path matches
+      this._uploadDirty = true; // bytes-on-disk changed even if path matches
       // Queue (don't immediately apply) the upstream wire disconnect. It
       // commits in _save(); discarded if the user cancels the editor.
       this._queueWireDisconnect("image");
@@ -803,14 +822,10 @@ AudioStudioEditor.prototype._resolveAudioSource = async function () {
       const r = await fetch(getInlineSourceUrl(this.cfg.audio_path));
       const blob = await r.blob();
       await this.loadAudioBlob(blob);
-      this._updatePill(
-        this.audioPill,
-        wired ? `Audio: Inline override (${fname})` : `Audio: Inline (${fname})`,
-        false,
-      );
+      this._updatePill(this.audioPill, wired ? `Audio: Inline override (${fname})` : `Audio: Inline (${fname})`, false);
       return;
     } catch (e) {
-      console.warn("[Pixaroma] AudioReact inline-override fetch failed:", e);
+      console.warn("[LinuxTechLab] AudioReact inline-override fetch failed:", e);
     }
   }
   if (upstreamUrl) {
@@ -821,7 +836,7 @@ AudioStudioEditor.prototype._resolveAudioSource = async function () {
       this._updatePill(this.audioPill, "Audio: Upstream", true);
       return;
     } catch (e) {
-      console.warn("[Pixaroma] AudioReact upstream audio fetch failed, falling back to inline if available:", e);
+      console.warn("[LinuxTechLab] AudioReact upstream audio fetch failed, falling back to inline if available:", e);
     }
   }
   if (this.cfg.audio_path) {
@@ -832,7 +847,7 @@ AudioStudioEditor.prototype._resolveAudioSource = async function () {
       this._updatePill(this.audioPill, `Audio: Inline (${fname})`, false);
       return;
     } catch (e) {
-      console.warn("[Pixaroma] AudioReact inline audio fetch failed:", e);
+      console.warn("[LinuxTechLab] AudioReact inline audio fetch failed:", e);
     }
   }
   this._updatePill(this.audioPill, "Audio: not loaded", false);
@@ -905,7 +920,10 @@ AudioStudioEditor.prototype._onAudioPillClick = function () {
 AudioStudioEditor.prototype._recomputeAudio = function () {
   if (!this._audioBuffer) return;
   const { envelope, onset, totalFrames } = computeAll(
-    this._audioBuffer, this.cfg.fps, this.cfg.smoothing, this.cfg.loop_safe,
+    this._audioBuffer,
+    this.cfg.fps,
+    this.cfg.smoothing,
+    this.cfg.loop_safe,
   );
   // Stamp the params key so _onCfgChanged can short-circuit when no
   // analysis-affecting param changed since the last compute.

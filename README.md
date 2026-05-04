@@ -20,8 +20,8 @@ LinuxTechLab turns ComfyUI into a powerful, easy-to-use design space. It brings 
 
 ### 🧊 3D Builder
 A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furniture, or import your own 3D models. You get easy camera controls, realistic lighting, undo/redo, and live previews. Perfect for making reference scenes for ControlNet or depth maps!
-![3D Builder — Node](workflows/3D%20Builder%20Pixaroma%20Workflow.jpg)
-![3D Builder — Editor](workflows/3D%20Builder%20Pixaroma%20Workflow%20v2.jpg)
+![3D Builder — Node](workflows/3D%20Builder%20LinuxTechLab%20Workflow.jpg)
+![3D Builder — Editor](workflows/3D%20Builder%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### 🎚️ AudioReact LinuxTechLab
 Audio-reactive image-to-video. **No extra models needed**, just an image and an audio track. Open the fullscreen editor, scrub the audio, and watch 15 motion modes (Pulse Zoom, Camera Shake, Glitch, Pinch, Wave, Tilt, Pixelate, RGB Split, and more) react to the beat in real time with a live WebGL preview. Stack 8 overlay effects on top: chroma shift, bloom, vignette, hue shift, cinematic teal/orange grade, letterbox, scanlines, and film grain. Pairs with **Save Mp4 LinuxTechLab** to write the clip directly to MP4 with audio muxed in. Requires WebGL2.
@@ -33,34 +33,34 @@ Audio-reactive image-to-video. **No extra models needed**, just an image and an 
 
 ### ✨ Image Composer
 Easily combine and arrange multiple images. Move, scale, and rotate layers using a simple visual editor. Use the eraser to tweak things by hand, or let our AI background removal tool isolate objects for you instantly.
-![Image Composer — Node](workflows/Image%20Composer%20Pixaroma%20Workflow.jpg)
-![Image Composer — Editor](workflows/Image%20Composer%20Pixaroma%20Workflow%20v2.jpg)
+![Image Composer — Node](workflows/Image%20Composer%20LinuxTechLab%20Workflow.jpg)
+![Image Composer — Editor](workflows/Image%20Composer%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### 🖌️ Paint Studio
 A fast, easy-to-use painting tool. It features layers, custom brushes, and a smudge tool for smooth blending. Perfect for fixing details, drawing custom masks, or painting from scratch.
-![Paint — Node](workflows/Paint%20Pixaroma%20Workflow.jpg)
-![Paint — Editor](workflows/Paint%20Pixaroma%20Workflow%20v2.jpg)
+![Paint — Node](workflows/Paint%20LinuxTechLab%20Workflow.jpg)
+![Paint — Editor](workflows/Paint%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### ✂️ Precision Crop
 No more guessing crop sizes with numbers! Visually draw your crop box. It includes standard presets (like 1:1 or 16:9) so your image is always framed perfectly for social media or video.
-![Image Crop — Node](workflows/Crop%20Pixaroma%20Workflow.jpg)
-![Image Crop — Editor](workflows/Crop%20Pixaroma%20Workflow%20v2.jpg)
+![Image Crop — Node](workflows/Crop%20LinuxTechLab%20Workflow.jpg)
+![Image Crop — Editor](workflows/Crop%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### 🌓 Interactive Compare
 The best way to see the difference between two images. Easily compare them side-by-side with a slider, overlap them, or highlight exactly what changed between the two versions.
-![Image Compare — Node](workflows/Image%20Compare%20Pixaroma%20Workflow.jpg)
-![Image Compare — Editor](workflows/Image%20Compare%20Pixaroma%20Workflow%20v2.jpg)
+![Image Compare — Node](workflows/Image%20Compare%20LinuxTechLab%20Workflow.jpg)
+![Image Compare — Editor](workflows/Image%20Compare%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### 📝 Note LinuxTechLab
 A beautiful, simple text editor to document your workflows right on the canvas. Write normally using bold, italics, lists, and headings. Add custom colored buttons, icons, or links to YouTube and Discord. You can even color-code your notes to match your style. It perfectly saves and restores exactly how you styled it.
-![Note LinuxTechLab — Node](workflows/Note%20Pixaroma%20Workflow.jpg)
-![Note LinuxTechLab — Editor](workflows/Note%20Pixaroma%20Workflow%20v2.jpg)
+![Note LinuxTechLab — Node](workflows/Note%20LinuxTechLab%20Workflow.jpg)
+![Note LinuxTechLab — Editor](workflows/Note%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### 🏷️ Label LinuxTechLab
 Keep your workflows tidy with clean, custom labels.
 
-![Labels — Node](workflows/Labels%20Pixaroma%20Workflow.jpg)
-![Labels — Editor](workflows/Labels%20Pixaroma%20Workflow%20v2.jpg)
+![Labels — Node](workflows/Labels%20LinuxTechLab%20Workflow.jpg)
+![Labels — Editor](workflows/Labels%20LinuxTechLab%20Workflow%20v2.jpg)
 
 ### 🎬 Save Mp4 LinuxTechLab
 Encode video frames + optional audio straight to MP4. Built-in `<video>` preview right on the node so you can watch the result without leaving ComfyUI. Pairs with AudioReact, but works with any source that produces frames + AUDIO.
@@ -81,10 +81,10 @@ A simple, one-click resolution picker. Choose from standard aspect ratios (like 
 ### 1. Installation
 
 #### **Method A: ComfyUI Easy Install (Zero-Config)**
-If you use [ComfyUI Easy Install](https://github.com/Tavris1/ComfyUI-Easy-Install) for Windows, **Pixaroma is already included!** Just update via the built-in updater and you're good to go.
+If you use [ComfyUI Easy Install](https://github.com/Tavris1/ComfyUI-Easy-Install) for Windows, **LinuxTechLab is already included!** Just update via the built-in updater and you're good to go.
 
 #### **Method B: ComfyUI Manager**
-1. Search for **Pixaroma** in the ComfyUI Manager.
+1. Search for **LinuxTechLab** in the ComfyUI Manager.
 2. Click **Install** and restart ComfyUI.
 
 #### **Method C: Manual Installation**
@@ -115,14 +115,6 @@ Once installed, you can pick from different AI models depending on the quality y
 
 ---
 
-## 📺 Learning Resources
-
-Master the Pixaroma suite with our video guides and workflow deep-dives:
-
-📺 **[Visit Pixaroma on YouTube](https://www.youtube.com/@pixaroma)**
-
----
-
 ## 🛠 Changelog
 
 ### **April 27, 2026**
@@ -133,8 +125,8 @@ Master the Pixaroma suite with our video guides and workflow deep-dives:
 - **Smoother 3D Builder:** Moving the camera, spinning, and zooming in your 3D scenes is now much faster and less laggy!
 
 ### **April 23, 2026**
-- **New Preview Node:** Added Preview Image Pixaroma with simple buttons to save your image anywhere on your computer.
-- **Organized Menu:** All our nodes now live under a single `👑 Pixaroma` menu.
+- **New Preview Node:** Added Preview Image LinuxTechLab with simple buttons to save your image anywhere on your computer.
+- **Organized Menu:** All our nodes now live under a single `LinuxTechLab` menu.
 
 ### **April 22, 2026**
 - **New Resolution Node:** A simple, one-click resolution picker for your aspect ratios.
@@ -156,13 +148,13 @@ Master the Pixaroma suite with our video guides and workflow deep-dives:
 ### **April 13, 2026**
 - **Paint Improvements:** Better cursors, smoother color picking, and quick brush resizing.
 - **Compare Tool Updates:** Better controls and a new solo-image view.
-- **Settings:** Pixaroma now has its own section in the ComfyUI settings menu.
+- **Settings:** LinuxTechLab now has its own section in the ComfyUI settings menu.
 
 ### **April 02, 2026**
 - **ComfyUI 2.0 Compatibility:** Updated all nodes to run smoothly on the latest ComfyUI version.
 
 ### **April 01, 2026**
-- **Launch Day:** Initial release of the Pixaroma suite! [Watch the video](https://www.youtube.com/watch?v=Lmxf8pK-H1k).
+- **Launch Day:** Initial release of the LinuxTechLab suite! [Watch the video](https://www.youtube.com/watch?v=Lmxf8pK-H1k).
 
 ---
 

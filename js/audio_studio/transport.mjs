@@ -6,7 +6,7 @@ import { getAudioContext } from "./audio_analysis.mjs";
 function injectTransportCSS() {
   if (document.getElementById("pix-as-transport-css")) return;
   const css = `
-    /* Play button — circular, Pixaroma orange. The icon is rendered via
+    /* Play button — circular, LinuxTechLab orange. The icon is rendered via
        CSS mask so we can recolor a single SVG (white inside the circle)
        and swap play/pause/stop without juggling images. */
     .pix-as-play-btn {
@@ -45,8 +45,8 @@ function injectTransportCSS() {
     .pix-as-stop-btn .pix-as-stop-icon {
       width: 11px; height: 11px;
       background-color: #f66744;
-      -webkit-mask: url(/pixaroma/assets/icons/ui/stop.svg) center/contain no-repeat;
-              mask: url(/pixaroma/assets/icons/ui/stop.svg) center/contain no-repeat;
+      -webkit-mask: url(/linuxtechlab/assets/icons/ui/stop.svg) center/contain no-repeat;
+              mask: url(/linuxtechlab/assets/icons/ui/stop.svg) center/contain no-repeat;
       pointer-events: none;
     }
 
@@ -68,8 +68,8 @@ function injectTransportCSS() {
     .pix-as-loop-btn .pix-as-loop-icon {
       width: 13px; height: 13px;
       background-color: #666;
-      -webkit-mask: url(/pixaroma/assets/icons/ui/loop.svg) center/contain no-repeat;
-              mask: url(/pixaroma/assets/icons/ui/loop.svg) center/contain no-repeat;
+      -webkit-mask: url(/linuxtechlab/assets/icons/ui/loop.svg) center/contain no-repeat;
+              mask: url(/linuxtechlab/assets/icons/ui/loop.svg) center/contain no-repeat;
       pointer-events: none;
       transition: background-color 0.1s;
     }
@@ -162,7 +162,7 @@ AudioStudioEditor.prototype._buildTransport = function () {
   playBtn.title = "Play / Pause (Space)";
   const playIcon = document.createElement("span");
   playIcon.className = "pix-as-play-icon";
-  playIcon.style.setProperty("--pix-as-icon-url", "url(/pixaroma/assets/icons/ui/play.svg)");
+  playIcon.style.setProperty("--pix-as-icon-url", "url(/linuxtechlab/assets/icons/ui/play.svg)");
   playBtn.appendChild(playIcon);
   playBtn.addEventListener("click", () => this._togglePlay());
   t.appendChild(playBtn);
@@ -250,7 +250,7 @@ AudioStudioEditor.prototype._buildTransport = function () {
   stepBack.className = "pix-as-frame-step";
   stepBack.title = "Frame back (Left arrow; Shift+Left = 1s)";
   const stepBackIcon = document.createElement("img");
-  stepBackIcon.src = "/pixaroma/assets/icons/ui/play.svg";
+  stepBackIcon.src = "/linuxtechlab/assets/icons/ui/play.svg";
   stepBackIcon.style.transform = "rotate(180deg)";
   stepBack.appendChild(stepBackIcon);
   stepBack.addEventListener("click", () => this._stepFrame(-1));
@@ -260,7 +260,7 @@ AudioStudioEditor.prototype._buildTransport = function () {
   stepFwd.className = "pix-as-frame-step";
   stepFwd.title = "Frame forward (Right arrow; Shift+Right = 1s)";
   const stepFwdIcon = document.createElement("img");
-  stepFwdIcon.src = "/pixaroma/assets/icons/ui/play.svg";
+  stepFwdIcon.src = "/linuxtechlab/assets/icons/ui/play.svg";
   stepFwd.appendChild(stepFwdIcon);
   stepFwd.addEventListener("click", () => this._stepFrame(1));
   t.appendChild(stepFwd);
@@ -285,8 +285,12 @@ AudioStudioEditor.prototype._buildTransport = function () {
   });
   // Stash listeners so forceClose can detach them — otherwise leaking
   // closures keep the editor alive after close.
-  this._scrubMove = (e) => { if (dragging) seekFromEvent(e); };
-  this._scrubUp = () => { dragging = false; };
+  this._scrubMove = (e) => {
+    if (dragging) seekFromEvent(e);
+  };
+  this._scrubUp = () => {
+    dragging = false;
+  };
   window.addEventListener("mousemove", this._scrubMove);
   window.addEventListener("mouseup", this._scrubUp);
 };
@@ -326,13 +330,13 @@ AudioStudioEditor.prototype._drawSparkline = function () {
   const ctx = c.getContext("2d");
   ctx.clearRect(0, 0, c.width, c.height);
   // Pull current band from envelope
-  const idx = ({ full: 0, bass: 1, mids: 2, treble: 3 })[this.cfg.audio_band] ?? 0;
+  const idx = { full: 0, bass: 1, mids: 2, treble: 3 }[this.cfg.audio_band] ?? 0;
   // _envArray is cached by core.mjs _recomputeAudio (F2)
   const env = this._envArray;
   if (!env) return;
   ctx.fillStyle = "rgba(246, 103, 68, 0.7)";
   for (let x = 0; x < c.width; x++) {
-    const f = Math.floor(x / c.width * this._totalFrames);
+    const f = Math.floor((x / c.width) * this._totalFrames);
     const v = env[f * 4 + idx];
     if (v > 0.05) ctx.fillRect(x, 0, 1, 1);
   }
@@ -352,9 +356,7 @@ AudioStudioEditor.prototype._setPlayIcon = function (kind /* "play" | "pause" */
   if (!this._playIcon) return;
   this._playIcon.style.setProperty(
     "--pix-as-icon-url",
-    kind === "pause"
-      ? "url(/pixaroma/assets/icons/ui/pause.svg)"
-      : "url(/pixaroma/assets/icons/ui/play.svg)",
+    kind === "pause" ? "url(/linuxtechlab/assets/icons/ui/pause.svg)" : "url(/linuxtechlab/assets/icons/ui/play.svg)",
   );
 };
 
@@ -404,8 +406,12 @@ AudioStudioEditor.prototype._startPlayback = function () {
 
 AudioStudioEditor.prototype._pausePlayback = function () {
   if (this._sourceNode) {
-    try { this._sourceNode.stop(); } catch {}
-    try { this._sourceNode.disconnect(); } catch {}
+    try {
+      this._sourceNode.stop();
+    } catch {}
+    try {
+      this._sourceNode.disconnect();
+    } catch {}
     this._sourceNode = null;
   }
   if (this._rafId) cancelAnimationFrame(this._rafId);

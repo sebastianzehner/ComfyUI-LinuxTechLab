@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma 3D Editor — Core class, constructor, UI building
+// LinuxTechLab 3D Editor — Core class, constructor, UI building
 // ============================================================
 import { ThreeDAPI } from "./api.mjs";
 import { openShapePicker } from "./picker.mjs";
@@ -31,24 +31,23 @@ export let THREE = null,
   RenderPass = null,
   OutlinePass = null,
   OutputPass = null;
-// Local vendored three.js (served by server_routes.py @ /pixaroma/vendor/three/)
+// Local vendored three.js (served by server_routes.py @ /linuxtechlab/vendor/three/)
 // keeps the 3D Builder working offline and pins the version so upstream
 // Three.js breaking changes can't silently break saved scenes.
-export const THREE_VENDOR = "/pixaroma/vendor/three";
+export const THREE_VENDOR = "/linuxtechlab/vendor/three";
 export async function loadThree() {
   if (THREE) return;
   // Parallel module loads — serial awaits added round-trip latency
   // that showed as a gray flash when the editor first opened.
-  const [threeMod, orbitMod, transformMod, composerMod, renderMod, outlineMod, outputMod] =
-    await Promise.all([
-      import(THREE_VENDOR + "/three.mjs"),
-      import(THREE_VENDOR + "/examples/jsm/controls/OrbitControls.mjs"),
-      import(THREE_VENDOR + "/examples/jsm/controls/TransformControls.mjs"),
-      import(THREE_VENDOR + "/examples/jsm/postprocessing/EffectComposer.mjs"),
-      import(THREE_VENDOR + "/examples/jsm/postprocessing/RenderPass.mjs"),
-      import(THREE_VENDOR + "/examples/jsm/postprocessing/OutlinePass.mjs"),
-      import(THREE_VENDOR + "/examples/jsm/postprocessing/OutputPass.mjs"),
-    ]);
+  const [threeMod, orbitMod, transformMod, composerMod, renderMod, outlineMod, outputMod] = await Promise.all([
+    import(THREE_VENDOR + "/three.mjs"),
+    import(THREE_VENDOR + "/examples/jsm/controls/OrbitControls.mjs"),
+    import(THREE_VENDOR + "/examples/jsm/controls/TransformControls.mjs"),
+    import(THREE_VENDOR + "/examples/jsm/postprocessing/EffectComposer.mjs"),
+    import(THREE_VENDOR + "/examples/jsm/postprocessing/RenderPass.mjs"),
+    import(THREE_VENDOR + "/examples/jsm/postprocessing/OutlinePass.mjs"),
+    import(THREE_VENDOR + "/examples/jsm/postprocessing/OutputPass.mjs"),
+  ]);
   THREE = threeMod;
   OrbitControls = orbitMod.OrbitControls;
   TransformControls = transformMod.TransformControls;
@@ -72,16 +71,16 @@ export function getPostprocessing() {
 }
 
 // Editor-specific CSS for 3D viewport elements not covered by framework
-const STYLE_ID = "pixaroma-3d-extra-v1";
+const STYLE_ID = "linuxtechlab-3d-extra-v1";
 function injectExtraStyles() {
   if (document.getElementById(STYLE_ID)) return;
   // Remove ALL old 3D-specific style sheets
   for (const old of [
-    "pixaroma-3d-styles",
-    "pixaroma-3d-styles-v3",
-    "pixaroma-3d-v4",
-    "pixaroma-3d-v5",
-    "pixaroma-3d-v6",
+    "linuxtechlab-3d-styles",
+    "linuxtechlab-3d-styles-v3",
+    "linuxtechlab-3d-v4",
+    "linuxtechlab-3d-v5",
+    "linuxtechlab-3d-v6",
   ])
     document.getElementById(old)?.remove();
   const s = document.createElement("style");
@@ -151,7 +150,7 @@ export {
 };
 
 // ─── Editor ──────────────────────────────────────────────────
-export class Pixaroma3DEditor {
+export class LinuxTechLab3DEditor {
   constructor() {
     this.onSave = null;
     this.onClose = null;
@@ -214,9 +213,7 @@ export class Pixaroma3DEditor {
       this._setStatus("ERROR: load failed");
       return;
     }
-    await new Promise((r) =>
-      requestAnimationFrame(() => requestAnimationFrame(r)),
-    );
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     this._initThree();
     this._restoreScene(jsonStr);
     this._animate();
@@ -308,7 +305,7 @@ export class Pixaroma3DEditor {
 
     const layout = createEditorLayout({
       editorName: "3D Builder",
-      editorId: "pixaroma-3d-editor",
+      editorId: "linuxtechlab-3d-editor",
       showUndoRedo: true,
       showStatusBar: false,
       showZoomBar: false,
@@ -422,8 +419,7 @@ export class Pixaroma3DEditor {
     this._buildRight(layout.rightSidebar, layout.sidebarFooter);
 
     // Enable drag & drop on workspace
-    if (this._canvasToolbar)
-      this._canvasToolbar.setupDropZone(layout.workspace);
+    if (this._canvasToolbar) this._canvasToolbar.setupDropZone(layout.workspace);
   }
 
   _buildLeft(left) {
@@ -451,8 +447,7 @@ export class Pixaroma3DEditor {
       bgColorInput.addEventListener("input", () => {
         this.bgColor = bgColorInput.value;
         if (this.el.viewport) this.el.viewport.style.backgroundColor = bgColorInput.value;
-        if (this.scene && !this.el.bgImgEl)
-          this.scene.background = new THREE.Color(bgColorInput.value);
+        if (this.scene && !this.el.bgImgEl) this.scene.background = new THREE.Color(bgColorInput.value);
       });
 
       const clearBtn = createButton("Clear Scene", {
@@ -521,7 +516,9 @@ export class Pixaroma3DEditor {
       transpRow.style.cssText = "margin:4px 0 0 2px;font-size:11px;opacity:0.85;";
       const transpCb = document.createElement("input");
       transpCb.type = "checkbox";
-      transpCb.addEventListener("change", () => { this._transparentBg = transpCb.checked; });
+      transpCb.addEventListener("change", () => {
+        this._transparentBg = transpCb.checked;
+      });
       transpRow.appendChild(transpCb);
       transpRow.append("Transparent BG (Save to Disk)");
       csContent.appendChild(transpRow);
@@ -611,7 +608,7 @@ export class Pixaroma3DEditor {
     });
     const bgTitleEl = bgTP.el.querySelector(".pxf-panel-title");
     if (bgTitleEl) {
-      const textNode = [...bgTitleEl.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
+      const textNode = [...bgTitleEl.childNodes].find((n) => n.nodeType === Node.TEXT_NODE);
       if (textNode) textNode.textContent = "BACKGROUND IMAGE";
     }
 
@@ -654,8 +651,7 @@ export class Pixaroma3DEditor {
       onClick: () => {
         if (!this.el.bgImgEl) return;
         _bgHidden = !_bgHidden;
-        if (this.el.bgContainer)
-          this.el.bgContainer.style.display = _bgHidden ? "none" : "";
+        if (this.el.bgContainer) this.el.bgContainer.style.display = _bgHidden ? "none" : "";
         hideBtn.textContent = _bgHidden ? "Show BG" : "Hide BG";
       },
     });
@@ -684,7 +680,7 @@ export class Pixaroma3DEditor {
       pc.insertBefore(bgFileInput, pc.firstChild);
       const uploadBtn = createButton("Upload Background Image", {
         variant: "full",
-        iconSrc: "/pixaroma/assets/icons/ui/upload.svg",
+        iconSrc: "/linuxtechlab/assets/icons/ui/upload.svg",
         onClick: () => bgFileInput.click(),
         title: "Browse for a background image",
       });
@@ -711,15 +707,13 @@ export class Pixaroma3DEditor {
     // mask-image treatment, same brand hover color).
     const obs = createPanel("3D Objects", { collapsible: true });
     const actRow = document.createElement("div");
-    actRow.style.cssText =
-      "display:grid;grid-template-columns:1fr 1fr;gap:6px;";
+    actRow.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;";
 
     // Hidden file input — reused by the Load button.
     const importInput = document.createElement("input");
     importInput.type = "file";
     importInput.multiple = true;
-    importInput.accept =
-      ".glb,.gltf,.obj,.mtl,.jpg,.jpeg,.png,.bmp,.tga,.webp";
+    importInput.accept = ".glb,.gltf,.obj,.mtl,.jpg,.jpeg,.png,.bmp,.tga,.webp";
     importInput.style.display = "none";
     importInput.addEventListener("change", async () => {
       const files = importInput.files;
@@ -749,7 +743,7 @@ export class Pixaroma3DEditor {
       ico.style.cssText = "width:30px;height:30px;";
       ico.setAttribute("role", "img");
       ico.setAttribute("aria-label", label);
-      const iconUrl = `url("/pixaroma/assets/icons/3D/${iconFile}")`;
+      const iconUrl = `url("/linuxtechlab/assets/icons/3D/${iconFile}")`;
       ico.style.webkitMaskImage = iconUrl;
       ico.style.maskImage = iconUrl;
       const lbl = document.createElement("span");
@@ -770,20 +764,17 @@ export class Pixaroma3DEditor {
       "load-3d-model.svg",
       "Load 3D Model",
       "Load a local 3D model (max 50 MB per file). " +
-      "For textured OBJ, select the .obj, .mtl, AND all texture " +
-      "images together in the file picker. GLB embeds textures " +
-      "and only needs one file.",
+        "For textured OBJ, select the .obj, .mtl, AND all texture " +
+        "images together in the file picker. GLB embeds textures " +
+        "and only needs one file.",
       () => importInput.click(),
     );
     actRow.append(addBtn, loadBtn);
     obs.content.appendChild(actRow);
 
     const importHint = document.createElement("div");
-    importHint.style.cssText =
-      "font-size:10px;color:#888;margin-top:6px;line-height:1.4;";
-    importHint.textContent =
-      "GLB: 1 file. Textured OBJ: select .obj + .mtl + textures " +
-      "together. Max 50 MB each.";
+    importHint.style.cssText = "font-size:10px;color:#888;margin-top:6px;line-height:1.4;";
+    importHint.textContent = "GLB: 1 file. Textured OBJ: select .obj + .mtl + textures " + "together. Max 50 MB each.";
     obs.content.appendChild(importHint);
 
     left.appendChild(obs.el);
@@ -791,8 +782,7 @@ export class Pixaroma3DEditor {
     // Transform Tools
     const tt = createPanel("Transform Tools", { collapsible: true });
     const tg = document.createElement("div");
-    tg.style.cssText =
-      "display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;";
+    tg.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;";
     this._toolDefs = [
       {
         id: "move",
@@ -834,8 +824,7 @@ export class Pixaroma3DEditor {
     // gizmo when the user drags the 3D handles, so the two input
     // methods stay in sync.
     const xformBlock = document.createElement("div");
-    xformBlock.style.cssText =
-      "margin-top:8px;padding-top:6px;border-top:1px solid #2a2c2e;";
+    xformBlock.style.cssText = "margin-top:8px;padding-top:6px;border-top:1px solid #2a2c2e;";
     this.el.xformSliders = [];
     // A flag shared by all three rows so dragging any slider only
     // pushes a SINGLE undo entry per drag session (not one per tick).
@@ -894,7 +883,9 @@ export class Pixaroma3DEditor {
       slider.addEventListener("input", () => apply(slider.value));
       // Reset the per-drag flag on pointer-up so the next drag
       // creates a fresh undo entry.
-      const endDrag = () => { dragState.snapshotted = false; };
+      const endDrag = () => {
+        dragState.snapshotted = false;
+      };
       slider.addEventListener("change", endDrag);
       slider.addEventListener("mouseup", endDrag);
       numIn.addEventListener("change", () => {
@@ -913,8 +904,7 @@ export class Pixaroma3DEditor {
     // mode (see _updateTransformSliders).
     const uniformRow = document.createElement("label");
     uniformRow.style.cssText =
-      "display:flex;align-items:center;gap:6px;font-size:11px;" +
-      "color:#ccc;margin:4px 0;cursor:pointer;";
+      "display:flex;align-items:center;gap:6px;font-size:11px;" + "color:#ccc;margin:4px 0;cursor:pointer;";
     const uniformCb = document.createElement("input");
     uniformCb.type = "checkbox";
     uniformCb.checked = true;
@@ -931,9 +921,7 @@ export class Pixaroma3DEditor {
       variant: "standard",
       onClick: () => {
         const THREE = getTHREE();
-        const targets = this.selectedObjs.size
-          ? [...this.selectedObjs]
-          : (this.activeObj ? [this.activeObj] : []);
+        const targets = this.selectedObjs.size ? [...this.selectedObjs] : this.activeObj ? [this.activeObj] : [];
         const movable = targets.filter((o) => !o.userData.locked);
         if (!movable.length) return;
         this._pushUndo();
@@ -968,13 +956,12 @@ export class Pixaroma3DEditor {
     // Camera
     const cam = createPanel("Camera", { collapsible: true });
     const cRow1 = document.createElement("div");
-    cRow1.style.cssText =
-      "display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;";
+    cRow1.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;";
     [
       { id: "front", l: "Front", ico: "front.svg", tip: "Front view (1)" },
-      { id: "side",  l: "Side",  ico: "side.svg",  tip: "Right side view (2) — press 7 for the opposite side" },
-      { id: "back",  l: "Back",  ico: "back.svg",  tip: "Back view (3)" },
-      { id: "top",   l: "Top",   ico: "top.svg",   tip: "Top view (4)" },
+      { id: "side", l: "Side", ico: "side.svg", tip: "Right side view (2) — press 7 for the opposite side" },
+      { id: "back", l: "Back", ico: "back.svg", tip: "Back view (3)" },
+      { id: "top", l: "Top", ico: "top.svg", tip: "Top view (4)" },
     ].forEach((t) => {
       const b = document.createElement("div");
       b.className = "pxf-tool-btn";
@@ -986,7 +973,7 @@ export class Pixaroma3DEditor {
       // lets hover tinting to orange drop in via CSS later.
       const iconEl = document.createElement("span");
       iconEl.className = "pxf-tool-btn-icon";
-      const iconUrl = `url("/pixaroma/assets/icons/3D/${t.ico}")`;
+      const iconUrl = `url("/linuxtechlab/assets/icons/3D/${t.ico}")`;
       iconEl.style.cssText =
         `display:block;width:22px;height:22px;margin:0 auto 2px;` +
         `background-color:#ccc;` +
@@ -995,7 +982,7 @@ export class Pixaroma3DEditor {
         `-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;` +
         `-webkit-mask-position:center;mask-position:center;` +
         `transition:background-color .12s;`;
-      // Hover tint to Pixaroma orange — matches shape-picker tiles
+      // Hover tint to LinuxTechLab orange — matches shape-picker tiles
       b.addEventListener("mouseenter", () => {
         iconEl.style.backgroundColor = "#f66744";
       });
@@ -1036,7 +1023,7 @@ export class Pixaroma3DEditor {
     cam.content.appendChild(perspRow);
     const focusBtn = createButton("Focus Selected (0)", {
       variant: "standard",
-      iconSrc: "/pixaroma/assets/icons/3D/focus.svg",
+      iconSrc: "/linuxtechlab/assets/icons/3D/focus.svg",
       onClick: () => this._camView("focus"),
       title: "Center camera on selected object",
     });
@@ -1218,7 +1205,9 @@ export class Pixaroma3DEditor {
     };
     const rR = createSliderRow("Rough", 0, 100, 85, (v) => {
       for (const o of this.selectedObjs) {
-        forEachMat(o, (m) => { if ("roughness" in m) m.roughness = v / 100; });
+        forEachMat(o, (m) => {
+          if ("roughness" in m) m.roughness = v / 100;
+        });
       }
       if (this.el.glossS) {
         const g = 100 - v;
@@ -1228,7 +1217,9 @@ export class Pixaroma3DEditor {
     });
     const gR = createSliderRow("Gloss", 0, 100, 15, (v) => {
       for (const o of this.selectedObjs) {
-        forEachMat(o, (m) => { if ("roughness" in m) m.roughness = 1 - v / 100; });
+        forEachMat(o, (m) => {
+          if ("roughness" in m) m.roughness = 1 - v / 100;
+        });
       }
       if (this.el.roughS) {
         const r = 100 - v;
@@ -1285,8 +1276,7 @@ export class Pixaroma3DEditor {
     this.el.lightAmbV = sR.numInput;
     lp.content.append(iR.el, sR.el);
     const dirLabel = document.createElement("div");
-    dirLabel.style.cssText =
-      "font-size:9px;color:#888;margin-top:4px;margin-bottom:3px;";
+    dirLabel.style.cssText = "font-size:9px;color:#888;margin-top:4px;margin-bottom:3px;";
     dirLabel.textContent = "Light Direction";
     lp.content.appendChild(dirLabel);
     const angR = createSliderRow("Angle", 0, 360, 81, (v) => {
@@ -1357,11 +1347,7 @@ export class Pixaroma3DEditor {
   }
   _mkBtn(text, onClick, cls = "pxf-btn", tip = "") {
     return createButton(text, {
-      variant: cls.includes("accent")
-        ? "accent"
-        : cls.includes("danger")
-          ? "danger"
-          : "standard",
+      variant: cls.includes("accent") ? "accent" : cls.includes("danger") ? "danger" : "standard",
       onClick,
       title: tip,
     });
@@ -1380,9 +1366,9 @@ export class Pixaroma3DEditor {
 // horizontal icon-button bar. Stores the buttons in this.el.adButtons
 // so _updateAlignButtons can grey them in/out as the selection grows
 // or shrinks.
-Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) {
+LinuxTechLab3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) {
   if (!titlebarCenter) return;
-  const AD_ICON_PATH = "/pixaroma/assets/icons/ui/";
+  const AD_ICON_PATH = "/linuxtechlab/assets/icons/ui/";
 
   // Build one icon button. Mask-image approach so the icon color is
   // driven by CSS — matches the other tool/camera buttons and gives
@@ -1404,8 +1390,7 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
       `transition:background-color .12s;`;
     b.appendChild(ico);
     b.addEventListener("mouseenter", () => {
-      if (!b.classList.contains("disabled"))
-        ico.style.backgroundColor = "#f66744";
+      if (!b.classList.contains("disabled")) ico.style.backgroundColor = "#f66744";
     });
     b.addEventListener("mouseleave", () => {
       ico.style.backgroundColor = "#ccc";
@@ -1421,20 +1406,22 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
   // letter label in front of each group disambiguates.
   const axes = [
     {
-      axis: "X", tip: "X axis — left / right",
+      axis: "X",
+      tip: "X axis — left / right",
       align: [
-        ["align-left.svg",     "Align X Min (left)"],
+        ["align-left.svg", "Align X Min (left)"],
         ["align-center-h.svg", "Align X Center"],
-        ["align-right.svg",    "Align X Max (right)"],
+        ["align-right.svg", "Align X Max (right)"],
       ],
       distribute: ["distribute-horizontal.svg", "Distribute along X"],
     },
     {
-      axis: "Y", tip: "Y axis — bottom / top",
+      axis: "Y",
+      tip: "Y axis — bottom / top",
       align: [
-        ["align-bottom.svg",   "Align Y Min (bottom)"],
+        ["align-bottom.svg", "Align Y Min (bottom)"],
         ["align-center-v.svg", "Align Y Center"],
-        ["align-top.svg",      "Align Y Max (top)"],
+        ["align-top.svg", "Align Y Max (top)"],
       ],
       distribute: ["distribute-vertical.svg", "Distribute along Y"],
     },
@@ -1443,11 +1430,12 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
       // depth reads more naturally as "push up = away/back" / "push
       // down = near/front" — horizon metaphor. Same min/center/max
       // semantics as the other axes; only the icon choice differs.
-      axis: "Z", tip: "Z axis — back (-Z) / center / front (+Z, toward viewer)",
+      axis: "Z",
+      tip: "Z axis — back (-Z) / center / front (+Z, toward viewer)",
       align: [
-        ["align-top.svg",      "Align Z Min (back, away from viewer)"],
+        ["align-top.svg", "Align Z Min (back, away from viewer)"],
         ["align-center-v.svg", "Align Z Center"],
-        ["align-bottom.svg",   "Align Z Max (front, toward viewer)"],
+        ["align-bottom.svg", "Align Z Max (front, toward viewer)"],
       ],
       distribute: ["distribute-vertical.svg", "Distribute along Z"],
     },
@@ -1456,8 +1444,7 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
   this.el.adButtons = { align: [], distribute: [] };
   const bar = document.createElement("div");
   bar.className = "p3d-ad-bar";
-  bar.style.cssText =
-    "display:flex;align-items:center;gap:4px;";
+  bar.style.cssText = "display:flex;align-items:center;gap:4px;";
 
   const modes = ["min", "center", "max"];
   // One axis group (label + 3 align buttons) per axis
@@ -1465,21 +1452,17 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
     if (idx > 0) {
       const sep = document.createElement("div");
       sep.className = "p3d-ad-sep";
-      sep.style.cssText =
-        "width:1px;height:20px;background:#3a3d40;margin:0 4px;";
+      sep.style.cssText = "width:1px;height:20px;background:#3a3d40;margin:0 4px;";
       bar.appendChild(sep);
     }
     const lbl = document.createElement("div");
     lbl.textContent = a.axis;
     lbl.title = a.tip;
     lbl.style.cssText =
-      "font-size:11px;font-weight:700;color:#888;padding:0 4px 0 2px;" +
-      "min-width:12px;text-align:center;";
+      "font-size:11px;font-weight:700;color:#888;padding:0 4px 0 2px;" + "min-width:12px;text-align:center;";
     bar.appendChild(lbl);
     a.align.forEach(([icon, title], i) => {
-      const btn = makeBtn(icon, title, () =>
-        this._alignSelected(a.axis, modes[i]),
-      );
+      const btn = makeBtn(icon, title, () => this._alignSelected(a.axis, modes[i]));
       this.el.adButtons.align.push(btn);
       bar.appendChild(btn);
     });
@@ -1488,8 +1471,7 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
   // Distribute group — separator, then one button per axis
   const sepD = document.createElement("div");
   sepD.className = "p3d-ad-sep";
-  sepD.style.cssText =
-    "width:1px;height:20px;background:#3a3d40;margin:0 6px 0 4px;";
+  sepD.style.cssText = "width:1px;height:20px;background:#3a3d40;margin:0 6px 0 4px;";
   bar.appendChild(sepD);
   axes.forEach((a) => {
     const [icon, titleBase] = a.distribute;
@@ -1515,7 +1497,7 @@ Pixaroma3DEditor.prototype._buildAlignDistributeBar = function (titlebarCenter) 
 
 // Grey out align buttons when <2 objects selected, distribute when <3.
 // Called from _select (any selection change) so the bar stays in sync.
-Pixaroma3DEditor.prototype._updateAlignButtons = function () {
+LinuxTechLab3DEditor.prototype._updateAlignButtons = function () {
   const btns = this.el?.adButtons;
   if (!btns) return;
   const n = this.selectedObjs?.size ?? 0;

@@ -1,5 +1,5 @@
 // ============================================================
-// Pixaroma 3D Editor — Add 3D Object modal picker
+// LinuxTechLab 3D Editor — Add 3D Object modal picker
 //
 // Full-screen overlay modal that presents every available shape —
 // primitives (SHAPES), decorative assets (bunny), and composite
@@ -189,9 +189,7 @@ async function spawnItem(editor, item) {
     if (item.kind === "bunny") {
       const { loadGLBFromURL } = await import("./importer.mjs");
       try {
-        const group = await loadGLBFromURL(
-          "/pixaroma/assets/models/bunny.glb",
-        );
+        const group = await loadGLBFromURL("/pixaroma/assets/models/bunny.glb");
         editor._addImportedGroup(group, "bunny", { name: "Bunny" });
       } catch (e) {
         console.error("[P3D] bunny load failed", e);
@@ -202,8 +200,7 @@ async function spawnItem(editor, item) {
       return;
     }
     if (item.kind === "composite") {
-      const { buildComposite, COMPOSITES, getCompositeDefaults } =
-        await import("./composites.mjs");
+      const { buildComposite, COMPOSITES, getCompositeDefaults } = await import("./composites.mjs");
       const defaults = getCompositeDefaults(item.id);
       const group = buildComposite(item.id, defaults);
       if (!group) {
@@ -253,8 +250,7 @@ export function openShapePicker(editor) {
   title.className = "p3d-picker-title";
   title.textContent = "Add 3D Object";
   const hint = document.createElement("div");
-  hint.style.cssText =
-    "font-size:11px;color:#888;font-weight:400;letter-spacing:0.2px;";
+  hint.style.cssText = "font-size:11px;color:#888;font-weight:400;letter-spacing:0.2px;";
   hint.textContent = "Click any object to add it to the scene";
   titleWrap.append(title, hint);
   const closeBtn = document.createElement("button");

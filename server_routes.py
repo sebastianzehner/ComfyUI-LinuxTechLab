@@ -441,17 +441,17 @@ async def upload_crop_source(request):
 
 
 # ────────────────────────────────────────────────────────────
-# AudioReact Pixaroma — inline image / audio upload
+# AudioReact LinuxTechLab — inline image / audio upload
 # ────────────────────────────────────────────────────────────
 
 ALLOWED_AUDIO_STUDIO_IMAGE_EXTS = {"png", "jpg", "jpeg", "webp"}
 ALLOWED_AUDIO_STUDIO_AUDIO_EXTS = {"wav"}  # WAV only — browser converts before upload
 _AUDIO_STUDIO_NODE_ID_RE = re.compile(r"^[a-zA-Z0-9_\-]+$")
-_AUDIO_STUDIO_MAX_FILE_BYTES = 50 * 1024 * 1024   # 50 MB per file
-_AUDIO_STUDIO_MAX_DIR_BYTES  = 100 * 1024 * 1024  # 100 MB combined per node
+_AUDIO_STUDIO_MAX_FILE_BYTES = 50 * 1024 * 1024  # 50 MB per file
+_AUDIO_STUDIO_MAX_DIR_BYTES = 100 * 1024 * 1024  # 100 MB combined per node
 
 
-@PromptServer.instance.routes.post("/pixaroma/api/audio_studio/upload")
+@PromptServer.instance.routes.post("/linuxtechlab/api/audio_studio/upload")
 async def audio_studio_upload(request):
     reader = await request.multipart()
 
@@ -479,7 +479,8 @@ async def audio_studio_upload(request):
         )
     if kind not in ("image", "audio"):
         return web.json_response(
-            {"error": "kind must be 'image' or 'audio'."}, status=400,
+            {"error": "kind must be 'image' or 'audio'."},
+            status=400,
         )
     if not file_bytes or not file_filename:
         return web.json_response({"error": "file field is missing."}, status=400)
@@ -492,18 +493,22 @@ async def audio_studio_upload(request):
     ext = file_filename.rsplit(".", 1)[-1].lower() if "." in file_filename else ""
     if kind == "image" and ext not in ALLOWED_AUDIO_STUDIO_IMAGE_EXTS:
         return web.json_response(
-            {"error": (
-                f"image extension {ext!r} not allowed; use one of "
-                f"{sorted(ALLOWED_AUDIO_STUDIO_IMAGE_EXTS)}."
-            )},
+            {
+                "error": (
+                    f"image extension {ext!r} not allowed; use one of "
+                    f"{sorted(ALLOWED_AUDIO_STUDIO_IMAGE_EXTS)}."
+                )
+            },
             status=400,
         )
     if kind == "audio" and ext not in ALLOWED_AUDIO_STUDIO_AUDIO_EXTS:
         return web.json_response(
-            {"error": (
-                "audio extension " + repr(ext) + " not allowed; only WAV is "
-                "accepted (the browser converts other formats before upload)."
-            )},
+            {
+                "error": (
+                    "audio extension " + repr(ext) + " not allowed; only WAV is "
+                    "accepted (the browser converts other formats before upload)."
+                )
+            },
             status=400,
         )
 
@@ -516,6 +521,7 @@ async def audio_studio_upload(request):
 
     # Replace any existing files of the same kind (potentially different ext).
     import glob as _glob
+
     for existing in _glob.glob(os.path.join(target_dir, kind + ".*")):
         try:
             os.unlink(existing)
@@ -541,10 +547,12 @@ async def audio_studio_upload(request):
         other_size = 0
     if other_size + len(file_bytes) > _AUDIO_STUDIO_MAX_DIR_BYTES:
         return web.json_response(
-            {"error": (
-                f"per-node combined size cap "
-                f"({_AUDIO_STUDIO_MAX_DIR_BYTES} bytes) exceeded."
-            )},
+            {
+                "error": (
+                    f"per-node combined size cap "
+                    f"({_AUDIO_STUDIO_MAX_DIR_BYTES} bytes) exceeded."
+                )
+            },
             status=400,
         )
 

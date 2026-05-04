@@ -1,8 +1,8 @@
 // ============================================================
-// Pixaroma 3D Editor — Three.js init, lighting
+// LinuxTechLab 3D Editor — Three.js init, lighting
 // ============================================================
 import {
-  Pixaroma3DEditor,
+  LinuxTechLab3DEditor,
   getTHREE,
   getOrbitControls,
   getTransformControls,
@@ -12,7 +12,7 @@ import {
 
 // ─── Three.js ─────────────────────────────────────────────
 
-Pixaroma3DEditor.prototype._initThree = function () {
+LinuxTechLab3DEditor.prototype._initThree = function () {
   const THREE = getTHREE(),
     OrbitControls = getOrbitControls(),
     TransformControls = getTransformControls();
@@ -31,8 +31,8 @@ Pixaroma3DEditor.prototype._initThree = function () {
     // than a flat gradient so metal reflections show clear bright/dark bands.
     const envScene = new THREE.Scene();
     const topColor = new THREE.Color("#ffffff"); // bright overhead fill
-    const sideHi = new THREE.Color("#7c7c82");   // mid sides (main reflection horizon)
-    const sideLo = new THREE.Color("#3a3a42");   // darker sides for contrast
+    const sideHi = new THREE.Color("#7c7c82"); // mid sides (main reflection horizon)
+    const sideLo = new THREE.Color("#3a3a42"); // darker sides for contrast
     const botColor = new THREE.Color("#161620"); // dark floor
     const keyColor = new THREE.Color("#ffffff"); // key softbox (punchy highlight)
     const fillColor = new THREE.Color("#c8d0ff"); // cool fill softbox
@@ -46,12 +46,12 @@ Pixaroma3DEditor.prototype._initThree = function () {
       envScene.add(m);
     };
     // Cube walls
-    mkPlane(40, 40, topColor, new THREE.Vector3(0,  20, 0), new THREE.Euler(Math.PI / 2, 0, 0));
+    mkPlane(40, 40, topColor, new THREE.Vector3(0, 20, 0), new THREE.Euler(Math.PI / 2, 0, 0));
     mkPlane(40, 40, botColor, new THREE.Vector3(0, -20, 0), new THREE.Euler(-Math.PI / 2, 0, 0));
-    mkPlane(40, 40, sideHi, new THREE.Vector3(0, 0,  20), new THREE.Euler(0, Math.PI, 0));
+    mkPlane(40, 40, sideHi, new THREE.Vector3(0, 0, 20), new THREE.Euler(0, Math.PI, 0));
     mkPlane(40, 40, sideLo, new THREE.Vector3(0, 0, -20));
-    mkPlane(40, 40, sideHi, new THREE.Vector3( 20, 0, 0), new THREE.Euler(0, -Math.PI / 2, 0));
-    mkPlane(40, 40, sideLo, new THREE.Vector3(-20, 0, 0), new THREE.Euler(0,  Math.PI / 2, 0));
+    mkPlane(40, 40, sideHi, new THREE.Vector3(20, 0, 0), new THREE.Euler(0, -Math.PI / 2, 0));
+    mkPlane(40, 40, sideLo, new THREE.Vector3(-20, 0, 0), new THREE.Euler(0, Math.PI / 2, 0));
     // Key softbox (front-right, white, big) — punchy main highlight
     mkPlane(14, 14, keyColor, new THREE.Vector3(10, 14, 12), new THREE.Euler(-Math.PI / 4, Math.PI / 6, 0));
     // Fill softbox (left, cool tint, smaller) — secondary highlight
@@ -59,7 +59,10 @@ Pixaroma3DEditor.prototype._initThree = function () {
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     const rt = pmrem.fromScene(envScene);
     pmrem.dispose();
-    envScene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });
+    envScene.traverse((o) => {
+      o.geometry?.dispose();
+      o.material?.dispose();
+    });
     return rt.texture;
   };
 
@@ -77,7 +80,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
   this.renderer.shadowMap.type = THREE.VSMShadowMap;
   // No tonemapping — earlier we used AgX for a softer "cinematic"
   // look, but it desaturated user-picked object colours and the
-  // selection outline (Pixaroma orange came out as washed-out tan).
+  // selection outline (LinuxTechLab orange came out as washed-out tan).
   // For an editor, WYSIWYG colour fidelity matters more than filmic
   // highlight rolloff — use linear sRGB output and let the picker
   // colour be exactly what's drawn.
@@ -113,12 +116,10 @@ Pixaroma3DEditor.prototype._initThree = function () {
   // rendered view — the composer kept drawing with the old camera.
   this._renderPass = new pp.RenderPass(this.scene, this.camera);
   this._composer.addPass(this._renderPass);
-  this._outlinePass = new pp.OutlinePass(
-    new THREE.Vector2(w, h), this.scene, this.camera,
-  );
+  this._outlinePass = new pp.OutlinePass(new THREE.Vector2(w, h), this.scene, this.camera);
   // edgeStrength much above ~5 pushes the outline colour brighter than
   // 1.0 in the shader and, after sRGB encoding, shifted from the
-  // intended Pixaroma red-orange toward yellow. 3 keeps the colour
+  // intended LinuxTechLab red-orange toward yellow. 3 keeps the colour
   // true at the cost of a slightly softer AA rim.
   this._outlinePass.edgeStrength = 4;
   this._outlinePass.edgeGlow = 0;
@@ -127,7 +128,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
   // Half-res edge detection — visually identical for a 2px outline and
   // halves the OutlinePass fragment cost on every frame.
   this._outlinePass.downSampleRatio = 2;
-  // Use the SAME Pixaroma orange for both visible and hidden passes.
+  // Use the SAME LinuxTechLab orange for both visible and hidden passes.
   // hiddenEdgeColor = black was causing parts of the silhouette to
   // vanish whenever a pixel was even slightly occluded (contact edges
   // with the ground plane, edges near the gizmo handles, or shallow-
@@ -144,10 +145,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
   this.orbitCtrl.dampingFactor = 0.08;
   this.orbitCtrl.target.set(0, 0.5, 0);
 
-  this.transformCtrl = new TransformControls(
-    this.camera,
-    this.renderer.domElement,
-  );
+  this.transformCtrl = new TransformControls(this.camera, this.renderer.domElement);
   this.transformCtrl.setMode("translate");
   this.transformCtrl.setSize(0.85);
   this.transformCtrl.addEventListener("dragging-changed", (e) => {
@@ -159,14 +157,13 @@ Pixaroma3DEditor.prototype._initThree = function () {
       if (e.value && this.activeObj) {
         const axis = this.transformCtrl.axis; // 'X' | 'Y' | 'Z' | 'XY' | ...
         this._dragIndicator.position.copy(this.activeObj.position);
-        if (axis === "Y")      this._dragIndicator.rotation.set(0, 0, Math.PI / 2);
+        if (axis === "Y") this._dragIndicator.rotation.set(0, 0, Math.PI / 2);
         else if (axis === "Z") this._dragIndicator.rotation.set(0, Math.PI / 2, 0);
-        else                    this._dragIndicator.rotation.set(0, 0, 0); // X default
+        else this._dragIndicator.rotation.set(0, 0, 0); // X default
         // Only show for single-axis translate drags; hide for rotate/
         // scale and multi-axis pulls (no single line represents them).
         const mode = this.transformCtrl.getMode();
-        this._dragIndicator.visible =
-          mode === "translate" && (axis === "X" || axis === "Y" || axis === "Z");
+        this._dragIndicator.visible = mode === "translate" && (axis === "X" || axis === "Y" || axis === "Z");
       } else {
         this._dragIndicator.visible = false;
       }
@@ -216,15 +213,9 @@ Pixaroma3DEditor.prototype._initThree = function () {
           start.rot.z + (this.activeObj.rotation.z - this._activeStartRot.z),
         );
       } else if (mode === "scale") {
-        const sx = this._activeStartScl.x
-          ? this.activeObj.scale.x / this._activeStartScl.x
-          : 1;
-        const sy = this._activeStartScl.y
-          ? this.activeObj.scale.y / this._activeStartScl.y
-          : 1;
-        const sz = this._activeStartScl.z
-          ? this.activeObj.scale.z / this._activeStartScl.z
-          : 1;
+        const sx = this._activeStartScl.x ? this.activeObj.scale.x / this._activeStartScl.x : 1;
+        const sy = this._activeStartScl.y ? this.activeObj.scale.y / this._activeStartScl.y : 1;
+        const sz = this._activeStartScl.z ? this.activeObj.scale.z / this._activeStartScl.z : 1;
         o.scale.set(start.scl.x * sx, start.scl.y * sy, start.scl.z * sz);
       }
     }
@@ -239,9 +230,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
     this._updateShadowFrustum?.();
   });
   const helper =
-    typeof this.transformCtrl.getHelper === "function"
-      ? this.transformCtrl.getHelper()
-      : this.transformCtrl;
+    typeof this.transformCtrl.getHelper === "function" ? this.transformCtrl.getHelper() : this.transformCtrl;
   this.scene.add(helper);
   this._gizmoHelper = helper;
   // Kill every line object inside the TransformControls helper —
@@ -262,10 +251,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
   // visual feedback the user asked for without bringing back the
   // bright built-in indicators.
   this._dragIndicator = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-500, 0, 0),
-      new THREE.Vector3( 500, 0, 0),
-    ]),
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-500, 0, 0), new THREE.Vector3(500, 0, 0)]),
     // White drag indicator per the user's mockup — reads cleanly on
     // both the light top face and the dark shadowed sides of a cube,
     // and unambiguously signals "this is the axis you're moving
@@ -299,8 +285,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
   const arrowLen = 0.85;
   const headLen = 0.22;
   const headW = 0.12;
-  const _arr = (dir, color) =>
-    new THREE.ArrowHelper(dir, new THREE.Vector3(), arrowLen, color, headLen, headW);
+  const _arr = (dir, color) => new THREE.ArrowHelper(dir, new THREE.Vector3(), arrowLen, color, headLen, headW);
   hudScene.add(_arr(new THREE.Vector3(1, 0, 0), 0xff4444));
   hudScene.add(_arr(new THREE.Vector3(0, 1, 0), 0x55dd55));
   hudScene.add(_arr(new THREE.Vector3(0, 0, 1), 0x4488ff));
@@ -325,34 +310,41 @@ Pixaroma3DEditor.prototype._initThree = function () {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "rgba(0,0,0,0.85)";
-    const cx = S / 2, cy = S / 2;
+    const cx = S / 2,
+      cy = S / 2;
     // Mini drop-shadow in 4 directions for legibility on any bg
-    for (const [dx, dy] of [[-2,0],[2,0],[0,-2],[0,2]]) {
+    for (const [dx, dy] of [
+      [-2, 0],
+      [2, 0],
+      [0, -2],
+      [0, 2],
+    ]) {
       ctx.fillText(text, cx + dx, cy + dy);
     }
     ctx.fillStyle = colorHex;
     ctx.fillText(text, cx, cy);
     const tex = new THREE.CanvasTexture(cv);
     tex.anisotropy = 4;
-    const sp = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }),
-    );
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
     // Slightly larger than before so the glyph reads clearly at 80px HUD.
     sp.scale.set(0.55, 0.55, 1);
     return sp;
   };
-  const lx = _mkLabel("X", "#ff9090"); lx.position.set(1.2, 0, 0);
-  const ly = _mkLabel("Y", "#9ef09e"); ly.position.set(0, 1.2, 0);
-  const lz = _mkLabel("Z", "#9bc2ff"); lz.position.set(0, 0, 1.2);
+  const lx = _mkLabel("X", "#ff9090");
+  lx.position.set(1.2, 0, 0);
+  const ly = _mkLabel("Y", "#9ef09e");
+  ly.position.set(0, 1.2, 0);
+  const lz = _mkLabel("Z", "#9bc2ff");
+  lz.position.set(0, 0, 1.2);
   hudScene.add(lx, ly, lz);
 
   const hudCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
   this._axisHud = {
     scene: hudScene,
     camera: hudCamera,
-    size: 80,              // pixels in main canvas
-    margin: 10,            // offset from top-right
-    visible: true,         // toggled by "Show Axes" checkbox
+    size: 80, // pixels in main canvas
+    margin: 10, // offset from top-right
+    visible: true, // toggled by "Show Axes" checkbox
   };
 
   // Canvas frame + gray masks (using shared framework component)
@@ -383,10 +375,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
   this.light.shadow.needsUpdate = true;
   this.scene.add(this.light);
 
-  this._groundMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(20, 20),
-    new THREE.ShadowMaterial({ opacity: 0.35 }),
-  );
+  this._groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.35 }));
   this._groundMesh.rotation.x = -Math.PI / 2;
   // Shadow catcher sits just below y=0 so it doesn't share depth with
   // object bases. Otherwise OutlinePass treats the bottom edge as
@@ -398,8 +387,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
 
   // Pointer
   this.renderer.domElement.addEventListener("pointerdown", (e) => {
-    if (e.button === 0)
-      this._ptr = { x: e.clientX, y: e.clientY, t: Date.now() };
+    if (e.button === 0) this._ptr = { x: e.clientX, y: e.clientY, t: Date.now() };
   });
   this.renderer.domElement.addEventListener("pointerup", (e) => {
     if (e.button !== 0 || !this._ptr) return;
@@ -407,8 +395,7 @@ Pixaroma3DEditor.prototype._initThree = function () {
       dy = e.clientY - this._ptr.y,
       dt = Date.now() - this._ptr.t;
     this._ptr = null;
-    if (Math.hypot(dx, dy) < 6 && dt < 500 && !this._gizmoDragging)
-      this._onClick(e);
+    if (Math.hypot(dx, dy) < 6 && dt < 500 && !this._gizmoDragging) this._onClick(e);
   });
 
   this._onKey = (e) => this._handleKey(e);
@@ -430,11 +417,11 @@ Pixaroma3DEditor.prototype._initThree = function () {
   }, 1000);
 };
 
-Pixaroma3DEditor.prototype._updateFrame = function () {
+LinuxTechLab3DEditor.prototype._updateFrame = function () {
   if (this._canvasFrame) this._canvasFrame.update(this.docW, this.docH);
 };
 
-Pixaroma3DEditor.prototype._onResize = function () {
+LinuxTechLab3DEditor.prototype._onResize = function () {
   const vp = this.el.viewport;
   if (!vp || !this.renderer) return;
   const w = vp.clientWidth,
@@ -461,7 +448,7 @@ Pixaroma3DEditor.prototype._onResize = function () {
   this._updateBgCSS();
 };
 
-Pixaroma3DEditor.prototype._animate = function () {
+LinuxTechLab3DEditor.prototype._animate = function () {
   if (!this.renderer) return;
   this._animId = requestAnimationFrame(() => this._animate());
   this.orbitCtrl.update();
@@ -494,9 +481,9 @@ Pixaroma3DEditor.prototype._animate = function () {
     // Place HUD camera at the opposite of the main camera's look dir
     // so it looks back at origin from the same side as main camera.
     // Distance is tuned to keep the arrow tips + letter labels (at
-     // position ~1.2 with sprite half-size ~0.275) safely inside the
-     // viewport. At FOV 50° a distance of 3.5 gives ~1.63 of visible
-     // half-extent which leaves margin for the labels at corner poses.
+    // position ~1.2 with sprite half-size ~0.275) safely inside the
+    // viewport. At FOV 50° a distance of 3.5 gives ~1.63 of visible
+    // half-extent which leaves margin for the labels at corner poses.
     hud.camera.position.copy(dir).multiplyScalar(-3.5);
     // Pick a non-degenerate up vector: world +Y normally, but when the
     // user is looking nearly straight up or down (top/bottom view) the
@@ -532,19 +519,15 @@ Pixaroma3DEditor.prototype._animate = function () {
 
 // ─── Lighting ─────────────────────────────────────────────
 
-Pixaroma3DEditor.prototype._applyLightDir = function () {
+LinuxTechLab3DEditor.prototype._applyLightDir = function () {
   if (!this.light) return;
   const d = 6,
     { theta, phi } = this._lightDir;
-  this.light.position.set(
-    d * Math.sin(phi) * Math.sin(theta),
-    d * Math.cos(phi),
-    d * Math.sin(phi) * Math.cos(theta),
-  );
+  this.light.position.set(d * Math.sin(phi) * Math.sin(theta), d * Math.cos(phi), d * Math.sin(phi) * Math.cos(theta));
   this.light.shadow.needsUpdate = true;
 };
 
-Pixaroma3DEditor.prototype._updateShadowFrustum = function () {
+LinuxTechLab3DEditor.prototype._updateShadowFrustum = function () {
   const THREE = getTHREE();
   if (!this.light || !this.objects.length) return;
   const box = new THREE.Box3();
@@ -565,12 +548,17 @@ Pixaroma3DEditor.prototype._updateShadowFrustum = function () {
   // Frustum sized to cover every object from the origin outward (not
   // from the moving centre). Take the max extent on any axis relative
   // to origin, plus a small margin so shadows don't clip at the edge.
-  const halfMax = Math.max(
-    Math.abs(box.min.x), Math.abs(box.max.x),
-    Math.abs(box.min.z), Math.abs(box.max.z),
-    Math.abs(box.max.y),
-    2,
-  ) * 1.2 + 2;
+  const halfMax =
+    Math.max(
+      Math.abs(box.min.x),
+      Math.abs(box.max.x),
+      Math.abs(box.min.z),
+      Math.abs(box.max.z),
+      Math.abs(box.max.y),
+      2,
+    ) *
+      1.2 +
+    2;
   const sc = this.light.shadow.camera;
   sc.left = -halfMax;
   sc.right = halfMax;

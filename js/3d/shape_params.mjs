@@ -1,9 +1,9 @@
 // ============================================================
-// Pixaroma 3D Editor — Per-object Shape parameter panel
+// LinuxTechLab 3D Editor — Per-object Shape parameter panel
 // Shown in the right sidebar. Displays sliders for the active
 // object's geoParams, rebuilds geometry on change.
 // ============================================================
-import { Pixaroma3DEditor, getTHREE } from "./core.mjs";
+import { LinuxTechLab3DEditor, getTHREE } from "./core.mjs";
 import { SHAPES, buildGeometry } from "./shapes.mjs";
 import { isCompositeType, COMPOSITES, buildComposite, getCompositeDefaults } from "./composites.mjs";
 
@@ -19,7 +19,7 @@ function refreshFill(slider) {
 // Create the Shape panel container. Called once during _buildRight.
 // Returns the panel element; body is filled by _rebuildShapePanel on
 // every selection change.
-Pixaroma3DEditor.prototype._createShapePanel = function (createPanel) {
+LinuxTechLab3DEditor.prototype._createShapePanel = function (createPanel) {
   const p = createPanel("Shape", { collapsible: true, collapsed: false });
   this._shapePanel = p;
   this._shapePanelBody = document.createElement("div");
@@ -29,15 +29,14 @@ Pixaroma3DEditor.prototype._createShapePanel = function (createPanel) {
   return p.el;
 };
 
-Pixaroma3DEditor.prototype._showShapePanelEmpty = function (msg) {
+LinuxTechLab3DEditor.prototype._showShapePanelEmpty = function (msg) {
   if (!this._shapePanelBody) return;
-  this._shapePanelBody.innerHTML =
-    `<div style="font-size:10px;color:#888;padding:8px 2px;">${msg}</div>`;
+  this._shapePanelBody.innerHTML = `<div style="font-size:10px;color:#888;padding:8px 2px;">${msg}</div>`;
 };
 
 // Called from _select() whenever selection changes. Rebuilds slider
 // UI to match the active object's type.
-Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
+LinuxTechLab3DEditor.prototype._rebuildShapePanel = function () {
   const body = this._shapePanelBody;
   if (!body) return;
   body.innerHTML = "";
@@ -54,11 +53,13 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
   if (this.selectedObjs.size > 1) {
     let allSame = true;
     for (const o of this.selectedObjs) {
-      if (o.userData.type !== type) { allSame = false; break; }
+      if (o.userData.type !== type) {
+        allSame = false;
+        break;
+      }
     }
     if (!allSame) {
-      this._showShapePanelEmpty(
-        "Multiple types selected - pick one object to edit shape.");
+      this._showShapePanelEmpty("Multiple types selected - pick one object to edit shape.");
       return;
     }
   }
@@ -72,10 +73,9 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
     body.innerHTML = "";
     // Header: icon + name
     const head = document.createElement("div");
-    head.style.cssText =
-      "display:flex;align-items:center;gap:6px;margin-bottom:6px;";
+    head.style.cssText = "display:flex;align-items:center;gap:6px;margin-bottom:6px;";
     const icon = document.createElement("img");
-    icon.src = `/pixaroma/assets/icons/3D/${composite.icon}`;
+    icon.src = `/linuxtechlab/assets/icons/3D/${composite.icon}`;
     icon.style.cssText = "width:16px;height:16px;filter:invert(90%);";
     const name = document.createElement("span");
     name.textContent = composite.label;
@@ -97,7 +97,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
     // Sliders / checkboxes for each param
     this._shapePanelRows = [];
     composite.params.forEach((f) => {
-      if (f.key === "showBooks" || f.min === 0 && f.max === 1 && f.step === 1) {
+      if (f.key === "showBooks" || (f.min === 0 && f.max === 1 && f.step === 1)) {
         // Render as checkbox — more natural for boolean-like params.
         const row = document.createElement("label");
         row.style.cssText =
@@ -128,8 +128,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
     if (composite.params.some((pp) => pp.key === "seed")) {
       const reroll = document.createElement("button");
       reroll.className = "p3d-btn";
-      reroll.style.cssText =
-        "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
+      reroll.style.cssText = "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
       reroll.textContent = "\ud83c\udfb2 Re-roll Seed";
       reroll.disabled = locked;
       reroll.addEventListener("click", () => {
@@ -148,8 +147,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
     // Reset defaults
     const reset = document.createElement("button");
     reset.className = "p3d-btn";
-    reset.style.cssText =
-      "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
+    reset.style.cssText = "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
     reset.textContent = "\u21ba Reset Shape Defaults";
     reset.disabled = locked;
     reset.addEventListener("click", () => {
@@ -164,7 +162,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
     });
     body.appendChild(reset);
     // "Use Original Material" — toggles between baked per-part colors
-    // and the unified Pixaroma clay override. Still visible for
+    // and the unified LinuxTechLab clay override. Still visible for
     // composites because multi-mesh Groups carry both material sets.
     if (obj.userData._origMaterials && obj.userData._overrideMat) {
       const row = document.createElement("label");
@@ -194,11 +192,8 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
   if (type === "import" || type === "bunny") {
     body.innerHTML = "";
     const head = document.createElement("div");
-    head.style.cssText =
-      "font-size:11px;color:#ccc;margin-bottom:6px;font-weight:600;";
-    head.textContent = type === "bunny"
-      ? "Bunny"
-      : (obj.userData.name || "Imported Model");
+    head.style.cssText = "font-size:11px;color:#ccc;margin-bottom:6px;font-weight:600;";
+    head.textContent = type === "bunny" ? "Bunny" : obj.userData.name || "Imported Model";
     body.appendChild(head);
     const info = document.createElement("div");
     info.style.cssText = "font-size:10px;color:#888;margin-bottom:8px;";
@@ -238,10 +233,9 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
 
   // Header: icon + name
   const head = document.createElement("div");
-  head.style.cssText =
-    "display:flex;align-items:center;gap:6px;margin-bottom:6px;";
+  head.style.cssText = "display:flex;align-items:center;gap:6px;margin-bottom:6px;";
   const icon = document.createElement("img");
-  icon.src = `/pixaroma/assets/icons/3D/${shape.icon}`;
+  icon.src = `/linuxtechlab/assets/icons/3D/${shape.icon}`;
   icon.style.cssText = "width:16px;height:16px;filter:invert(90%);";
   const name = document.createElement("span");
   name.textContent = shape.label;
@@ -272,8 +266,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
   if (shape.params.some((pp) => pp.key === "seed")) {
     const reroll = document.createElement("button");
     reroll.className = "p3d-btn";
-    reroll.style.cssText =
-      "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
+    reroll.style.cssText = "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
     reroll.textContent = "\ud83c\udfb2 Re-roll Seed";
     reroll.disabled = locked;
     reroll.addEventListener("click", () => {
@@ -293,8 +286,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
   // Reset defaults button
   const reset = document.createElement("button");
   reset.className = "p3d-btn";
-  reset.style.cssText =
-    "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
+  reset.style.cssText = "width:100%;margin-top:4px;font-size:10px;padding:4px 8px;";
   reset.textContent = "\u21ba Reset Shape Defaults";
   reset.disabled = locked;
   reset.addEventListener("click", () => {
@@ -313,7 +305,7 @@ Pixaroma3DEditor.prototype._rebuildShapePanel = function () {
 // One slider row: label + range + number input.
 // Live rebuild for shape.live=true; debounced rebuild otherwise.
 // One undo snapshot per drag (pushed on first input event).
-Pixaroma3DEditor.prototype._buildShapeParamRow = function (obj, shape, f, locked) {
+LinuxTechLab3DEditor.prototype._buildShapeParamRow = function (obj, shape, f, locked) {
   const row = document.createElement("div");
   row.className = "p3d-row";
   const lbl = document.createElement("div");
@@ -323,21 +315,23 @@ Pixaroma3DEditor.prototype._buildShapeParamRow = function (obj, shape, f, locked
   const slider = document.createElement("input");
   slider.type = "range";
   slider.className = "p3d-range";
-  slider.min = f.min; slider.max = f.max; slider.step = f.step;
+  slider.min = f.min;
+  slider.max = f.max;
+  slider.step = f.step;
   slider.value = obj.userData.geoParams[f.key];
   slider.disabled = locked;
 
   const numIn = document.createElement("input");
   numIn.type = "number";
   numIn.className = "p3d-input";
-  numIn.min = f.min; numIn.max = f.max; numIn.step = f.step;
+  numIn.min = f.min;
+  numIn.max = f.max;
+  numIn.step = f.step;
   numIn.value = slider.value;
   numIn.disabled = locked;
 
   const isInt = Number.isInteger(f.step);
-  const fmt = (v) => isInt
-    ? String(+v)
-    : (+v).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  const fmt = (v) => (isInt ? String(+v) : (+v).toFixed(2).replace(/0+$/, "").replace(/\.$/, ""));
 
   // Debounce state (closure per row)
   let debounceT = null;
@@ -412,7 +406,8 @@ Pixaroma3DEditor.prototype._buildShapeParamRow = function (obj, shape, f, locked
   // subsequent geometry rebuild reflects reality. Pushed onto the
   // panel-wide registry so apply() can call siblings.
   const refreshBounds = () => {
-    let minV = f.min, maxV = f.max;
+    let minV = f.min,
+      maxV = f.max;
     if (shape.bounds) {
       const b = shape.bounds(obj.userData.geoParams, f.key) || {};
       if (b.min !== undefined) minV = Math.max(minV, b.min);
@@ -456,10 +451,10 @@ Pixaroma3DEditor.prototype._buildShapeParamRow = function (obj, shape, f, locked
 };
 
 // Flip an imported group between its original materials (as loaded
-// by GLTFLoader / OBJLoader) and the unified Pixaroma clay override.
+// by GLTFLoader / OBJLoader) and the unified LinuxTechLab clay override.
 // Called from the Shape panel "Use Original Material" checkbox and
 // from the persistence restore path after re-loading a saved model.
-Pixaroma3DEditor.prototype._applyImportMaterialMode = function (group) {
+LinuxTechLab3DEditor.prototype._applyImportMaterialMode = function (group) {
   const keep = !!group.userData.keepOriginalMaterials;
   const override = group.userData._overrideMat;
   const origs = group.userData._origMaterials;
@@ -467,7 +462,7 @@ Pixaroma3DEditor.prototype._applyImportMaterialMode = function (group) {
   let i = 0;
   group.traverse((o) => {
     if (!o.isMesh) return;
-    o.material = keep ? (origs[i] || override) : override;
+    o.material = keep ? origs[i] || override : override;
     i++;
   });
 };
@@ -484,7 +479,7 @@ Pixaroma3DEditor.prototype._applyImportMaterialMode = function (group) {
 // the delta in local bb.min.y (scaled by the current Y scale to handle
 // non-uniform scaling). Plane has special positioning in _addObject and
 // is excluded.
-Pixaroma3DEditor.prototype._rebuildObjectGeometry = function (obj) {
+LinuxTechLab3DEditor.prototype._rebuildObjectGeometry = function (obj) {
   const THREE = getTHREE();
   const type = obj.userData.type;
   const gp = obj.userData.geoParams;
@@ -514,7 +509,7 @@ Pixaroma3DEditor.prototype._rebuildObjectGeometry = function (obj) {
 // but writes to userData.geoParams and invokes _rebuildCompositeGroup
 // instead of _rebuildObjectGeometry. Live rebuild (composites are
 // cheap to regenerate at this scale).
-Pixaroma3DEditor.prototype._buildCompositeParamRow = function (obj, composite, f, locked) {
+LinuxTechLab3DEditor.prototype._buildCompositeParamRow = function (obj, composite, f, locked) {
   const row = document.createElement("div");
   row.className = "p3d-row";
   const lbl = document.createElement("div");
@@ -523,19 +518,21 @@ Pixaroma3DEditor.prototype._buildCompositeParamRow = function (obj, composite, f
   const slider = document.createElement("input");
   slider.type = "range";
   slider.className = "p3d-range";
-  slider.min = f.min; slider.max = f.max; slider.step = f.step;
+  slider.min = f.min;
+  slider.max = f.max;
+  slider.step = f.step;
   slider.value = obj.userData.geoParams[f.key];
   slider.disabled = locked;
   const numIn = document.createElement("input");
   numIn.type = "number";
   numIn.className = "p3d-input";
-  numIn.min = f.min; numIn.max = f.max; numIn.step = f.step;
+  numIn.min = f.min;
+  numIn.max = f.max;
+  numIn.step = f.step;
   numIn.value = slider.value;
   numIn.disabled = locked;
   const isInt = Number.isInteger(f.step);
-  const fmt = (v) => isInt
-    ? String(+v)
-    : (+v).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  const fmt = (v) => (isInt ? String(+v) : (+v).toFixed(2).replace(/0+$/, "").replace(/\.$/, ""));
   let draggingSnapshot = false;
   const apply = (v) => {
     if (!draggingSnapshot) {
@@ -554,13 +551,20 @@ Pixaroma3DEditor.prototype._buildCompositeParamRow = function (obj, composite, f
     numIn.value = fmt(v);
     refreshFill(slider);
   };
-  slider.addEventListener("input", () => { sync(slider.value); apply(slider.value); });
-  slider.addEventListener("change", () => { draggingSnapshot = false; });
+  slider.addEventListener("input", () => {
+    sync(slider.value);
+    apply(slider.value);
+  });
+  slider.addEventListener("change", () => {
+    draggingSnapshot = false;
+  });
   numIn.addEventListener("change", () => {
     let v = +numIn.value;
     if (isNaN(v)) v = +slider.value;
     v = Math.max(f.min, Math.min(f.max, v));
-    sync(v); apply(v); draggingSnapshot = false;
+    sync(v);
+    apply(v);
+    draggingSnapshot = false;
   });
   this._shapePanelRows.push({ key: f.key, refreshBounds: () => {} });
   row.append(lbl, slider, numIn);
@@ -573,7 +577,7 @@ Pixaroma3DEditor.prototype._buildCompositeParamRow = function (obj, composite, f
 // (stash original materials + build override) and wrapImportPivot
 // (center the gizmo pivot on the mesh base), then swaps into the
 // scene preserving id, position, rotation, scale, user material tweaks.
-Pixaroma3DEditor.prototype._rebuildCompositeGroup = function (obj) {
+LinuxTechLab3DEditor.prototype._rebuildCompositeGroup = function (obj) {
   const type = obj.userData.type;
   if (!isCompositeType(type)) return;
   const gp = obj.userData.geoParams;
@@ -583,8 +587,7 @@ Pixaroma3DEditor.prototype._rebuildCompositeGroup = function (obj) {
     const { prepareImportedGroup } = mod;
     try {
       const inner = buildComposite(type, gp);
-      const { origMaterials, overrideMat } =
-        prepareImportedGroup(inner, obj.userData.colorHex);
+      const { origMaterials, overrideMat } = prepareImportedGroup(inner, obj.userData.colorHex);
       // Composites are built with pivot at base-center origin — no
       // wrapImportPivot call. This prevents the trunk from drifting
       // when asymmetric bumps/arms shift the bbox XZ center.
@@ -640,8 +643,7 @@ Pixaroma3DEditor.prototype._rebuildCompositeGroup = function (obj) {
         this.selectedObjs.add(newGroup);
       }
       if (wasActive) this.activeObj = newGroup;
-      if (wasAttached && !newGroup.userData.locked)
-        this.transformCtrl.attach(newGroup);
+      if (wasAttached && !newGroup.userData.locked) this.transformCtrl.attach(newGroup);
       if (this._syncOutlineSelection) this._syncOutlineSelection();
       this._updateLayers?.();
       this._updateShadowFrustum?.();

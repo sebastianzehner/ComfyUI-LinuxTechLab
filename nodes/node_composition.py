@@ -1,19 +1,20 @@
-import torch
-import numpy as np
-from PIL import Image, ImageChops
-import os
 import json
+import os
 import time
-import folder_paths
-from server import PromptServer
-from .node_ref import any_type, FlexibleOptionalInputType
 
+import folder_paths
+import numpy as np
+import torch
+from PIL import Image, ImageChops
+from server import PromptServer
+
+from .node_ref import FlexibleOptionalInputType, any_type
 
 # Temp subfolder for Image Composer node previews (cleared by ComfyUI
 # between runs). We save the final executed image here so the node's
 # mini preview can show the EXACT result — matching what downstream
 # Preview Image nodes see, including any auto-rembg applied.
-_PIXAROMA_PREVIEW_SUBFOLDER = "pixaroma_composer_preview"
+_LINUXTECHLAB_PREVIEW_SUBFOLDER = "linuxtechlab_composer_preview"
 
 
 def _save_preview_png(pil_img, doc_w, doc_h):
@@ -22,7 +23,9 @@ def _save_preview_png(pil_img, doc_w, doc_h):
     preview. Returns the UI image descriptor dict expected by
     ComfyUI's onExecuted message."""
     try:
-        temp_dir = os.path.join(folder_paths.get_temp_directory(), _PIXAROMA_PREVIEW_SUBFOLDER)
+        temp_dir = os.path.join(
+            folder_paths.get_temp_directory(), _LINUXTECHLAB_PREVIEW_SUBFOLDER
+        )
         os.makedirs(temp_dir, exist_ok=True)
         filename = f"composer_{int(time.time() * 1000)}.png"
         path = os.path.join(temp_dir, filename)
@@ -33,15 +36,16 @@ def _save_preview_png(pil_img, doc_w, doc_h):
         out.save(path, format="PNG", optimize=False)
         return {
             "filename": filename,
-            "subfolder": _PIXAROMA_PREVIEW_SUBFOLDER,
+            "subfolder": _LINUXTECHLAB_PREVIEW_SUBFOLDER,
             "type": "temp",
         }
     except Exception as e:
-        print(f"[Pixaroma] preview save failed: {e}")
+        print(f"[LinuxTechLab] preview save failed: {e}")
         return None
 
 
 # ── Helpers for placeholder compositing ──────────────────────────────────────
+
 
 def _hex_to_rgba(hex_str):
     hex_str = hex_str.lstrip("#")
@@ -83,29 +87,33 @@ def _remove_background(img, quality="auto"):
     fallback chain (best → lightest) if it's not installed.
     """
     try:
-        from rembg import remove, new_session
         import io
+
+        from rembg import new_session, remove
 
         # Legacy tier → modern model. Keeps old saved scenes working.
         _legacy = {"normal": "isnet-general-use", "high": "birefnet-general"}
         requested = _legacy.get(quality, quality) or "auto"
 
         # Try requested first, then fall through the auto chain. This
-        # matches the server-side /pixaroma/remove_bg behaviour so the
+        # matches the server-side /linuxtechlab/remove_bg behaviour so the
         # workflow output matches what the Image Composer preview uses.
         auto_chain = ("birefnet-general", "isnet-general-use", "u2net")
-        order = (list(auto_chain) if requested == "auto"
-                 else [requested] + [n for n in auto_chain if n != requested])
+        order = (
+            list(auto_chain)
+            if requested == "auto"
+            else [requested] + [n for n in auto_chain if n != requested]
+        )
         session = None
         for name in order:
             try:
                 session = new_session(name)
-                print(f"[Pixaroma] Auto Remove BG: using model '{name}'")
+                print(f"[LinuxTechLab] Auto Remove BG: using model '{name}'")
                 break
             except Exception as e:
-                print(f"[Pixaroma] model '{name}' not available: {e}")
+                print(f"[LinuxTechLab] model '{name}' not available: {e}")
         if session is None:
-            print("[Pixaroma] No rembg model could be loaded, skipping remove BG")
+            print("[LinuxTechLab] No rembg model could be loaded, skipping remove BG")
             return img
 
         buf = io.BytesIO()
@@ -113,10 +121,10 @@ def _remove_background(img, quality="auto"):
         result_bytes = remove(buf.getvalue(), session=session)
         return Image.open(io.BytesIO(result_bytes)).convert("RGBA")
     except ImportError:
-        print("[Pixaroma] rembg not installed — skipping auto remove BG")
+        print("[LinuxTechLab] rembg not installed — skipping auto remove BG")
         return img
     except Exception as e:
-        print(f"[Pixaroma] Auto remove BG failed: {e}")
+        print(f"[LinuxTechLab] Auto remove BG failed: {e}")
         return img
 
 
@@ -185,13 +193,17 @@ def _hsl_to_rgb(hsl):
 
     def hue2rgb(t):
         t = t % 1
-        return np.where(t < 1/6, p + (q - p) * 6 * t,
-               np.where(t < 1/2, q,
-               np.where(t < 2/3, p + (q - p) * (2/3 - t) * 6, p)))
+        return np.where(
+            t < 1 / 6,
+            p + (q - p) * 6 * t,
+            np.where(
+                t < 1 / 2, q, np.where(t < 2 / 3, p + (q - p) * (2 / 3 - t) * 6, p)
+            ),
+        )
 
-    r = np.where(s == 0, l, hue2rgb(h + 1/3))
+    r = np.where(s == 0, l, hue2rgb(h + 1 / 3))
     g = np.where(s == 0, l, hue2rgb(h))
-    b = np.where(s == 0, l, hue2rgb(h - 1/3))
+    b = np.where(s == 0, l, hue2rgb(h - 1 / 3))
     return np.stack([r, g, b], axis=-1)
 
 
@@ -213,22 +225,42 @@ def _blend_over(base_rgba, top_rgba, mode):
     elif mode == "Screen":
         blended = 1 - (1 - base_rgb) * (1 - top_rgb)
     elif mode == "Overlay":
-        blended = np.where(base_rgb < 0.5, 2 * base_rgb * top_rgb, 1 - 2 * (1 - base_rgb) * (1 - top_rgb))
+        blended = np.where(
+            base_rgb < 0.5,
+            2 * base_rgb * top_rgb,
+            1 - 2 * (1 - base_rgb) * (1 - top_rgb),
+        )
     elif mode == "Darken":
         blended = np.minimum(base_rgb, top_rgb)
     elif mode == "Lighten":
         blended = np.maximum(base_rgb, top_rgb)
     elif mode == "Color Dodge":
-        blended = np.where(top_rgb >= 1, 1.0, np.minimum(1.0, base_rgb / np.maximum(1 - top_rgb, 1e-6)))
+        blended = np.where(
+            top_rgb >= 1, 1.0, np.minimum(1.0, base_rgb / np.maximum(1 - top_rgb, 1e-6))
+        )
     elif mode == "Color Burn":
-        blended = np.where(top_rgb <= 0, 0.0, np.maximum(0.0, 1 - (1 - base_rgb) / np.maximum(top_rgb, 1e-6)))
+        blended = np.where(
+            top_rgb <= 0,
+            0.0,
+            np.maximum(0.0, 1 - (1 - base_rgb) / np.maximum(top_rgb, 1e-6)),
+        )
     elif mode == "Hard Light":
-        blended = np.where(top_rgb < 0.5, 2 * base_rgb * top_rgb, 1 - 2 * (1 - base_rgb) * (1 - top_rgb))
+        blended = np.where(
+            top_rgb < 0.5,
+            2 * base_rgb * top_rgb,
+            1 - 2 * (1 - base_rgb) * (1 - top_rgb),
+        )
     elif mode == "Soft Light":
-        gd = np.where(base_rgb < 0.25, ((16 * base_rgb - 12) * base_rgb + 4) * base_rgb, np.sqrt(np.maximum(base_rgb, 0)))
-        blended = np.where(top_rgb < 0.5,
-                           base_rgb - (1 - 2 * top_rgb) * base_rgb * (1 - base_rgb),
-                           base_rgb + (2 * top_rgb - 1) * (gd - base_rgb))
+        gd = np.where(
+            base_rgb < 0.25,
+            ((16 * base_rgb - 12) * base_rgb + 4) * base_rgb,
+            np.sqrt(np.maximum(base_rgb, 0)),
+        )
+        blended = np.where(
+            top_rgb < 0.5,
+            base_rgb - (1 - 2 * top_rgb) * base_rgb * (1 - base_rgb),
+            base_rgb + (2 * top_rgb - 1) * (gd - base_rgb),
+        )
     elif mode == "Difference":
         blended = np.abs(base_rgb - top_rgb)
     elif mode == "Exclusion":
@@ -237,13 +269,21 @@ def _blend_over(base_rgba, top_rgba, mode):
         base_hsl = _rgb_to_hsl(base_rgb)
         top_hsl = _rgb_to_hsl(top_rgb)
         if mode == "Hue":
-            out_hsl = np.stack([top_hsl[..., 0], base_hsl[..., 1], base_hsl[..., 2]], axis=-1)
+            out_hsl = np.stack(
+                [top_hsl[..., 0], base_hsl[..., 1], base_hsl[..., 2]], axis=-1
+            )
         elif mode == "Saturation":
-            out_hsl = np.stack([base_hsl[..., 0], top_hsl[..., 1], base_hsl[..., 2]], axis=-1)
+            out_hsl = np.stack(
+                [base_hsl[..., 0], top_hsl[..., 1], base_hsl[..., 2]], axis=-1
+            )
         elif mode == "Color":
-            out_hsl = np.stack([top_hsl[..., 0], top_hsl[..., 1], base_hsl[..., 2]], axis=-1)
+            out_hsl = np.stack(
+                [top_hsl[..., 0], top_hsl[..., 1], base_hsl[..., 2]], axis=-1
+            )
         else:  # Luminosity
-            out_hsl = np.stack([base_hsl[..., 0], base_hsl[..., 1], top_hsl[..., 2]], axis=-1)
+            out_hsl = np.stack(
+                [base_hsl[..., 0], base_hsl[..., 1], top_hsl[..., 2]], axis=-1
+            )
         blended = _hsl_to_rgb(out_hsl)
     else:
         blended = top_rgb
@@ -294,7 +334,7 @@ def _apply_layer_transform(img, layer, doc_w, doc_h):
     return canvas
 
 
-class PixaromaImageComposition:
+class LinuxTechLabImageComposition:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -306,7 +346,7 @@ class PixaromaImageComposition:
     RETURN_TYPES = ("IMAGE", "INT", "INT")
     RETURN_NAMES = ("image", "width", "height")
     FUNCTION = "load_composite"
-    CATEGORY = "👑 Pixaroma"
+    CATEGORY = "LinuxTechLab"
     OUTPUT_NODE = True
 
     @classmethod
@@ -316,7 +356,11 @@ class PixaromaImageComposition:
         if not composition_data:
             return ""
         try:
-            project_json = composition_data.get("project_json", "{}") if isinstance(composition_data, dict) else str(composition_data)
+            project_json = (
+                composition_data.get("project_json", "{}")
+                if isinstance(composition_data, dict)
+                else str(composition_data)
+            )
             meta = json.loads(project_json)
             composite_path = meta.get("composite_path", "")
             if composite_path:
@@ -335,7 +379,11 @@ class PixaromaImageComposition:
         if not composition_data:
             return (empty_image, 1024, 1024)
 
-        project_json = composition_data.get("project_json", "{}") if isinstance(composition_data, dict) else str(composition_data)
+        project_json = (
+            composition_data.get("project_json", "{}")
+            if isinstance(composition_data, dict)
+            else str(composition_data)
+        )
 
         if not project_json or project_json == "" or project_json == "{}":
             return (empty_image, 1024, 1024)
@@ -369,10 +417,16 @@ class PixaromaImageComposition:
                         if img_input is not None:
                             layer_img = _tensor_to_pil(img_input)
                             if layer.get("removeBgOnExec"):
-                                layer_img = _remove_background(layer_img, layer.get("bgRemovalQuality", "auto"))
-                            layer_img = _fit_to_placeholder(layer_img, ph_w, ph_h, layer.get("fillMode", "cover"))
+                                layer_img = _remove_background(
+                                    layer_img, layer.get("bgRemovalQuality", "auto")
+                                )
+                            layer_img = _fit_to_placeholder(
+                                layer_img, ph_w, ph_h, layer.get("fillMode", "cover")
+                            )
                         else:
-                            color = _hex_to_rgba(layer.get("placeholderColor", "#808080"))
+                            color = _hex_to_rgba(
+                                layer.get("placeholderColor", "#808080")
+                            )
                             layer_img = Image.new("RGBA", (ph_w, ph_h), color)
                     else:
                         src = layer.get("src") or ""
@@ -382,13 +436,17 @@ class PixaromaImageComposition:
                         if layer_img is None:
                             continue
                         if layer.get("removeBgOnExec"):
-                            layer_img = _remove_background(layer_img, layer.get("bgRemovalQuality", "auto"))
+                            layer_img = _remove_background(
+                                layer_img, layer.get("bgRemovalQuality", "auto")
+                            )
                     # Apply eraser mask if present (mask white = erased)
                     mask_src = layer.get("maskSrc")
                     if mask_src:
                         layer_img = _apply_eraser_mask(layer_img, mask_src, input_dir)
                     composed = _apply_layer_transform(layer_img, layer, doc_w, doc_h)
-                    canvas = _blend_over(canvas, composed, layer.get("blendMode", "Normal"))
+                    canvas = _blend_over(
+                        canvas, composed, layer.get("blendMode", "Normal")
+                    )
                 # Save the final composed image to temp so the node's
                 # mini preview gets the exact executed result (including
                 # auto-rembg / mask application). Without this, the JS
@@ -407,7 +465,7 @@ class PixaromaImageComposition:
                 if preview_img:
                     try:
                         PromptServer.instance.send_sync(
-                            "pixaroma-composer-preview",
+                            "linuxtechlab-composer-preview",
                             {
                                 "project_id": meta.get("project_id"),
                                 "filename": preview_img["filename"],
@@ -418,7 +476,7 @@ class PixaromaImageComposition:
                             },
                         )
                     except Exception as e:
-                        print(f"[Pixaroma] preview WS send failed: {e}")
+                        print(f"[LinuxTechLab] preview WS send failed: {e}")
                 return (_pil_to_tensor(canvas), doc_w, doc_h)
 
             # Fast path: load the pre-rendered composite PNG
@@ -431,7 +489,7 @@ class PixaromaImageComposition:
             # Security: block path traversal — path must stay inside input_dir
             if not full_path.startswith(input_dir + os.sep):
                 print(
-                    "[Pixaroma] Security: composite_path escapes input directory, blocked."
+                    "[LinuxTechLab] Security: composite_path escapes input directory, blocked."
                 )
                 return (empty_image, doc_w, doc_h)
 
@@ -446,14 +504,14 @@ class PixaromaImageComposition:
             return (img_tensor, doc_w, doc_h)
 
         except Exception as e:
-            print(f"[Pixaroma] Fatal Load Error: {e}")
+            print(f"[LinuxTechLab] Fatal Load Error: {e}")
             return (empty_image, 1024, 1024)
 
 
 NODE_CLASS_MAPPINGS = {
-    "PixaromaImageComposition": PixaromaImageComposition,
+    "LinuxTechLabImageComposition": LinuxTechLabImageComposition,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PixaromaImageComposition": "Image Composer Pixaroma",
+    "LinuxTechLabImageComposition": "Image Composer LinuxTechLab",
 }

@@ -1,11 +1,11 @@
-// Event binding, alignment, keyboard, mouse, transforms — mixed into PixaromaEditor.prototype
-import { PixaromaEditor } from "./core.mjs";
-import { PixaromaLayers } from "./layers.mjs";
-import { PixaromaAPI } from "./api.mjs";
+// Event binding, alignment, keyboard, mouse, transforms — mixed into LinuxTechLabEditor.prototype
+import { LinuxTechLabEditor } from "./core.mjs";
+import { LinuxTechLabLayers } from "./layers.mjs";
+import { LinuxTechLabAPI } from "./api.mjs";
 
-PixaromaEditor.prototype.attachEvents = function () {
+LinuxTechLabEditor.prototype.attachEvents = function () {
   const getBounds = (layer) => {
-    const pts = PixaromaLayers.getTransformedPoints(layer).slice(0, 4);
+    const pts = LinuxTechLabLayers.getTransformedPoints(layer).slice(0, 4);
     const xs = pts.map((p) => p.x);
     const ys = pts.map((p) => p.y);
     return {
@@ -20,9 +20,7 @@ PixaromaEditor.prototype.attachEvents = function () {
 
   const alignSelection = (type) => {
     if (this.selectedLayerIds.size < 2) return;
-    const selectedLayers = this.layers.filter(
-      (l) => this.selectedLayerIds.has(l.id) && !l.locked,
-    );
+    const selectedLayers = this.layers.filter((l) => this.selectedLayerIds.has(l.id) && !l.locked);
     if (selectedLayers.length === 0) return;
 
     const boundsList = selectedLayers.map((l) => ({
@@ -54,11 +52,9 @@ PixaromaEditor.prototype.attachEvents = function () {
       } else {
         const first = boundsList[0];
         const last = boundsList[boundsList.length - 1];
-        const step =
-          (last.bounds.cx - first.bounds.cx) / (boundsList.length - 1);
+        const step = (last.bounds.cx - first.bounds.cx) / (boundsList.length - 1);
         boundsList.forEach((b, i) => {
-          if (i > 0 && i < boundsList.length - 1)
-            b.layer.cx = first.bounds.cx + step * i;
+          if (i > 0 && i < boundsList.length - 1) b.layer.cx = first.bounds.cx + step * i;
         });
       }
     }
@@ -72,11 +68,9 @@ PixaromaEditor.prototype.attachEvents = function () {
       } else {
         const first = boundsList[0];
         const last = boundsList[boundsList.length - 1];
-        const step =
-          (last.bounds.cy - first.bounds.cy) / (boundsList.length - 1);
+        const step = (last.bounds.cy - first.bounds.cy) / (boundsList.length - 1);
         boundsList.forEach((b, i) => {
-          if (i > 0 && i < boundsList.length - 1)
-            b.layer.cy = first.bounds.cy + step * i;
+          if (i > 0 && i < boundsList.length - 1) b.layer.cy = first.bounds.cy + step * i;
         });
       }
     }
@@ -119,11 +113,7 @@ PixaromaEditor.prototype.attachEvents = function () {
 
   this._composerKeyDown = (e) => {
     const tag = e.target?.tagName;
-    if (
-      (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") &&
-      !e.target?.dataset?.pixaromaTrap
-    )
-      return;
+    if ((tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") && !e.target?.dataset?.linuxtechlabTrap) return;
     if (e.code === "Space") {
       e.preventDefault();
       this.spacePressed = true;
@@ -135,11 +125,7 @@ PixaromaEditor.prototype.attachEvents = function () {
       } else if (this.selectedLayerIds.size === 1) {
         this.setMode("eraser");
       } else if (this.selectedLayerIds.size > 1) {
-        if (this._layout)
-          this._layout.setStatus(
-            "Eraser requires a single layer selected",
-            "warn",
-          );
+        if (this._layout) this._layout.setStatus("Eraser requires a single layer selected", "warn");
       }
     }
     if (e.code === "KeyV" && !e.ctrlKey && !e.metaKey) {
@@ -191,37 +177,29 @@ PixaromaEditor.prototype.attachEvents = function () {
       capture: true,
     });
     window.removeEventListener("keyup", this._composerKeyUp, { capture: true });
-    if (this._composerMouseMove)
-      window.removeEventListener("mousemove", this._composerMouseMove);
-    if (this._composerMouseUp)
-      window.removeEventListener("mouseup", this._composerMouseUp);
-    if (this._composerBlur)
-      window.removeEventListener("blur", this._composerBlur);
+    if (this._composerMouseMove) window.removeEventListener("mousemove", this._composerMouseMove);
+    if (this._composerMouseUp) window.removeEventListener("mouseup", this._composerMouseUp);
+    if (this._composerBlur) window.removeEventListener("blur", this._composerBlur);
   };
 
   // Handle hover cursor + clicks on the extended hit area outside canvas bounds
   if (this.selHitArea) {
     this.selHitArea.addEventListener("mousemove", (e) => {
-      if (
-        this.isMouseDown ||
-        this.selectedLayerIds.size !== 1 ||
-        this.activeMode === "eraser"
-      ) {
+      if (this.isMouseDown || this.selectedLayerIds.size !== 1 || this.activeMode === "eraser") {
         this.selHitArea.style.cursor = "default";
         return;
       }
       const coords = this.getCanvasCoordinates(e);
       const layer = this.getActiveLayer();
       if (layer && !layer.locked) {
-        const pts = PixaromaLayers.getTransformedPoints(layer);
+        const pts = LinuxTechLabLayers.getTransformedPoints(layer);
         if (Math.hypot(coords.x - pts[8].x, coords.y - pts[8].y) <= 15) {
           this.selHitArea.style.cursor = "crosshair";
           return;
         }
         for (let i = 0; i < 4; i++) {
           if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 15) {
-            this.selHitArea.style.cursor =
-              (layer.rotation + 45) % 180 < 90 ? "nwse-resize" : "nesw-resize";
+            this.selHitArea.style.cursor = (layer.rotation + 45) % 180 < 90 ? "nwse-resize" : "nesw-resize";
             return;
           }
         }
@@ -248,24 +226,15 @@ PixaromaEditor.prototype.attachEvents = function () {
     this.selHitArea.addEventListener("mousedown", (e) => {
       if (e.button === 1 || this.spacePressed) return; // let it bubble for pan
       // Check for handle grab
-      if (
-        e.button === 0 &&
-        this.selectedLayerIds.size === 1 &&
-        this.activeMode !== "eraser"
-      ) {
+      if (e.button === 0 && this.selectedLayerIds.size === 1 && this.activeMode !== "eraser") {
         const coords = this.getCanvasCoordinates(e);
         const layer = this.getActiveLayer();
         if (layer && !layer.locked) {
-          const pts = PixaromaLayers.getTransformedPoints(layer);
+          const pts = LinuxTechLabLayers.getTransformedPoints(layer);
           let hitHandle = false;
-          if (Math.hypot(coords.x - pts[8].x, coords.y - pts[8].y) <= 15)
-            hitHandle = true;
-          for (let i = 0; i < 4; i++)
-            if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 15)
-              hitHandle = true;
-          for (let i = 4; i < 8; i++)
-            if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 12)
-              hitHandle = true;
+          if (Math.hypot(coords.x - pts[8].x, coords.y - pts[8].y) <= 15) hitHandle = true;
+          for (let i = 0; i < 4; i++) if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 15) hitHandle = true;
+          for (let i = 4; i < 8; i++) if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 12) hitHandle = true;
           if (hitHandle) {
             e.preventDefault();
             e.stopPropagation();
@@ -330,12 +299,7 @@ PixaromaEditor.prototype.attachEvents = function () {
     });
   };
   syncSliderStandard(this.brushSizeSlider, this.brushSizeNum, "size");
-  syncSliderStandard(
-    this.brushHardnessSlider,
-    this.brushHardnessNum,
-    "hardness",
-    100,
-  );
+  syncSliderStandard(this.brushHardnessSlider, this.brushHardnessNum, "hardness", 100);
 
   this.uploadBtn.addEventListener("change", (e) => {
     const file = e.target.files[0];
@@ -363,12 +327,7 @@ PixaromaEditor.prototype.attachEvents = function () {
           rawServerPath: "",
           savedOnServer: false,
         };
-        PixaromaLayers.fitLayerToCanvas(
-          layerObj,
-          this.docWidth,
-          this.docHeight,
-          "width",
-        );
+        LinuxTechLabLayers.fitLayerToCanvas(layerObj, this.docWidth, this.docHeight, "width");
         this.layers.push(layerObj);
         this.selectedLayerIds.clear();
         this.selectedLayerIds.add(layerObj.id);
@@ -442,49 +401,31 @@ PixaromaEditor.prototype.attachEvents = function () {
   syncSliderStretch(this.stretchVSlider, this.stretchVNum, "scaleY", 100);
 
   this.btnFitW.onclick = () =>
-    this.applyToSelection((l) =>
-      PixaromaLayers.fitLayerToCanvas(
-        l,
-        this.docWidth,
-        this.docHeight,
-        "width",
-      ),
-    );
+    this.applyToSelection((l) => LinuxTechLabLayers.fitLayerToCanvas(l, this.docWidth, this.docHeight, "width"));
   this.btnFitH.onclick = () =>
-    this.applyToSelection((l) =>
-      PixaromaLayers.fitLayerToCanvas(
-        l,
-        this.docWidth,
-        this.docHeight,
-        "height",
-      ),
-    );
-  this.btnFlipH.onclick = () =>
-    this.applyToSelection((l) => (l.flippedX = !l.flippedX));
-  this.btnFlipV.onclick = () =>
-    this.applyToSelection((l) => (l.flippedY = !l.flippedY));
-  this.btnRotLeft.onclick = () =>
-    this.applyToSelection((l) => (l.rotation = (l.rotation - 90 + 360) % 360));
-  this.btnRotRight.onclick = () =>
-    this.applyToSelection((l) => (l.rotation = (l.rotation + 90) % 360));
+    this.applyToSelection((l) => LinuxTechLabLayers.fitLayerToCanvas(l, this.docWidth, this.docHeight, "height"));
+  this.btnFlipH.onclick = () => this.applyToSelection((l) => (l.flippedX = !l.flippedX));
+  this.btnFlipV.onclick = () => this.applyToSelection((l) => (l.flippedY = !l.flippedY));
+  this.btnRotLeft.onclick = () => this.applyToSelection((l) => (l.rotation = (l.rotation - 90 + 360) % 360));
+  this.btnRotRight.onclick = () => this.applyToSelection((l) => (l.rotation = (l.rotation + 90) % 360));
   this.btnReset.onclick = () =>
     this.applyToSelection((l) => {
       l.rotation = 0;
       l.flippedX = false;
       l.flippedY = false;
       l.opacity = 1;
-      PixaromaLayers.fitLayerToCanvas(
-        l,
-        this.docWidth,
-        this.docHeight,
-        "width",
-      );
+      LinuxTechLabLayers.fitLayerToCanvas(l, this.docWidth, this.docHeight, "width");
     });
 
   this.btnDupLayer.onclick = () => {
     if (this.selectedLayerIds.size === 0) return;
     const usedPH = new Set(this.layers.filter((l) => l.isPlaceholder).map((l) => l.inputIndex));
-    const nextPHIdx = () => { let i = 1; while (usedPH.has(i)) i++; usedPH.add(i); return i; };
+    const nextPHIdx = () => {
+      let i = 1;
+      while (usedPH.has(i)) i++;
+      usedPH.add(i);
+      return i;
+    };
     const newLayers = [];
     this.layers.forEach((layer) => {
       if (this.selectedLayerIds.has(layer.id)) {
@@ -504,9 +445,15 @@ PixaromaEditor.prototype.attachEvents = function () {
           const newName = `image_${newIdx}`;
           dup.inputIndex = newIdx;
           dup.name = newName;
-          dup.img = this._makePlaceholderImage(layer.img.width, layer.img.height, layer.placeholderColor, newName, (bitmapImg) => {
-            dup.img = bitmapImg;
-          });
+          dup.img = this._makePlaceholderImage(
+            layer.img.width,
+            layer.img.height,
+            layer.placeholderColor,
+            newName,
+            (bitmapImg) => {
+              dup.img = bitmapImg;
+            },
+          );
         } else {
           dup.name = layer.name + " copy";
         }
@@ -536,8 +483,7 @@ PixaromaEditor.prototype.attachEvents = function () {
     if (this.selectedLayerIds.size === 0) return;
     const layer = this.getActiveLayer();
     if (!layer || !layer.img) {
-      if (this._layout)
-        this._layout.setStatus("Cannot remove background: no layer selected");
+      if (this._layout) this._layout.setStatus("Cannot remove background: no layer selected");
       return;
     }
     const checkCvs = document.createElement("canvas");
@@ -545,12 +491,7 @@ PixaromaEditor.prototype.attachEvents = function () {
     checkCvs.height = layer.img.height;
     const checkCtx = checkCvs.getContext("2d");
     checkCtx.drawImage(layer.img, 0, 0);
-    const pixels = checkCtx.getImageData(
-      0,
-      0,
-      checkCvs.width,
-      checkCvs.height,
-    ).data;
+    const pixels = checkCtx.getImageData(0, 0, checkCvs.width, checkCvs.height).data;
     let hasContent = false;
     for (let i = 3; i < pixels.length; i += 4) {
       if (pixels[i] > 0) {
@@ -559,38 +500,29 @@ PixaromaEditor.prototype.attachEvents = function () {
       }
     }
     if (!hasContent) {
-      if (this._layout)
-        this._layout.setStatus("Layer is empty \u2014 nothing to remove");
+      if (this._layout) this._layout.setStatus("Layer is empty \u2014 nothing to remove");
       return;
     }
     const originalText = this.removeBgBtn.innerText;
     this.removeBgBtn.innerText = "Processing... please wait";
     this.removeBgBtn.disabled = true;
-    if (this._layout)
-      this._layout.setStatus(
-        "AI Remove Background: processing selected layer...",
-      );
-    console.log("[Pixaroma] AI Remove Background: starting...");
+    if (this._layout) this._layout.setStatus("AI Remove Background: processing selected layer...");
+    console.log("[LinuxTechLab] AI Remove Background: starting...");
 
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = layer.img.width;
     tempCanvas.height = layer.img.height;
     tempCanvas.getContext("2d").drawImage(layer.img, 0, 0);
     try {
-      const data = await PixaromaAPI.removeBg(
+      const data = await LinuxTechLabAPI.removeBg(
         tempCanvas.toDataURL("image/png"),
         // Prefer per-layer model choice, then the panel selection,
         // then fall back to auto (server picks best).
         layer.bgRemovalQuality || this._bgRemovalQuality || "auto",
       );
       if (data.code === "REMBG_MISSING") {
-        if (this._layout)
-          this._layout.setStatus(
-            "rembg not installed \u2014 see Help for instructions",
-          );
-        console.warn(
-          "[Pixaroma] rembg library not installed. Run: python.exe -m pip install rembg",
-        );
+        if (this._layout) this._layout.setStatus("rembg not installed \u2014 see Help for instructions");
+        console.warn("[LinuxTechLab] rembg library not installed. Run: python.exe -m pip install rembg");
         alert(
           "Remove BG \u2014 Missing Dependency\n\n" +
             "The rembg library is not installed. To install it:\n\n" +
@@ -602,13 +534,10 @@ PixaromaEditor.prototype.attachEvents = function () {
             "After installation is complete, restart ComfyUI and try again.",
         );
       } else if (data.error) {
-        if (this._layout)
-          this._layout.setStatus("AI Remove Background failed: " + data.error);
-        console.error("[Pixaroma] AI Remove BG error:", data.error);
+        if (this._layout) this._layout.setStatus("AI Remove Background failed: " + data.error);
+        console.error("[LinuxTechLab] AI Remove BG error:", data.error);
       } else {
-        console.log(
-          "[Pixaroma] AI Remove Background: success, applying result...",
-        );
+        console.log("[LinuxTechLab] AI Remove Background: success, applying result...");
         const newImg = new Image();
         newImg.crossOrigin = "Anonymous";
         newImg.onload = () => {
@@ -621,15 +550,14 @@ PixaromaEditor.prototype.attachEvents = function () {
           // this tells the user whether BiRefNet / isnet / u2net won
           // the fallback chain, so they know what quality to expect.
           const used = data.modelUsed ? ` (${data.modelUsed})` : "";
-          if (this._layout)
-            this._layout.setStatus("Background removed" + used);
-          console.log("[Pixaroma] AI Remove Background: done" + used);
+          if (this._layout) this._layout.setStatus("Background removed" + used);
+          console.log("[LinuxTechLab] AI Remove Background: done" + used);
         };
         newImg.src = data.image;
       }
     } catch (err) {
       if (this._layout) this._layout.setStatus("AI Remove Background failed");
-      console.error("[Pixaroma] AI Remove BG error:", err);
+      console.error("[LinuxTechLab] AI Remove BG error:", err);
     } finally {
       this.removeBgBtn.innerText = originalText;
       this.removeBgBtn.disabled = false;
@@ -644,10 +572,7 @@ PixaromaEditor.prototype.attachEvents = function () {
       const uploadPromises = this.layers.map(async (layer) => {
         let finalSrcPath = layer.rawServerPath || null;
         if (!layer.savedOnServer && layer.rawB64_internal) {
-          const dRaw = await PixaromaAPI.uploadLayer(
-            layer.id,
-            layer.rawB64_internal,
-          );
+          const dRaw = await LinuxTechLabAPI.uploadLayer(layer.id, layer.rawB64_internal);
           finalSrcPath = dRaw.path;
           layer.rawServerPath = finalSrcPath;
           layer.savedOnServer = true;
@@ -655,12 +580,8 @@ PixaromaEditor.prototype.attachEvents = function () {
 
         let finalMaskPath = layer.savedMaskPath_internal || null;
         if (layer.hasMask_internal && layer.eraserMaskCanvas_internal) {
-          const maskB64 =
-            layer.eraserMaskCanvas_internal.toDataURL("image/png");
-          const dMask = await PixaromaAPI.uploadLayer(
-            layer.id + "_mask_" + Date.now(),
-            maskB64,
-          );
+          const maskB64 = layer.eraserMaskCanvas_internal.toDataURL("image/png");
+          const dMask = await LinuxTechLabAPI.uploadLayer(layer.id + "_mask_" + Date.now(), maskB64);
           finalMaskPath = dMask.path;
           layer.savedMaskPath_internal = finalMaskPath;
         }
@@ -682,7 +603,8 @@ PixaromaEditor.prototype.attachEvents = function () {
           maskSrc: finalMaskPath,
         };
         if (layer.removeBgOnExec) layerEntry.removeBgOnExec = true;
-        if (layer.bgRemovalQuality && layer.bgRemovalQuality !== "normal") layerEntry.bgRemovalQuality = layer.bgRemovalQuality;
+        if (layer.bgRemovalQuality && layer.bgRemovalQuality !== "normal")
+          layerEntry.bgRemovalQuality = layer.bgRemovalQuality;
         if (layer.blendMode && layer.blendMode !== "Normal") layerEntry.blendMode = layer.blendMode;
         if (layer.isPlaceholder) {
           layerEntry.isPlaceholder = true;
@@ -714,7 +636,7 @@ PixaromaEditor.prototype.attachEvents = function () {
         composite_path: null,
         session_ver: 6.0,
       };
-      const dFin = await PixaromaAPI.saveProject(this.projectID, finalDataURL);
+      const dFin = await LinuxTechLabAPI.saveProject(this.projectID, finalDataURL);
 
       if (dFin.status === "success") {
         finalMeta.composite_path = dFin.composite_path;
@@ -746,7 +668,7 @@ PixaromaEditor.prototype.attachEvents = function () {
         alert("Server save failure: " + dFin.error);
       }
     } catch (err) {
-      console.error("Pixaroma Save Error:", err);
+      console.error("LinuxTechLab Save Error:", err);
       this._layout.setSaveError("Save failed");
     }
   });
@@ -755,7 +677,7 @@ PixaromaEditor.prototype.attachEvents = function () {
     if (
       e.button === 1 ||
       this.spacePressed ||
-      this.overlay.id !== "pixaroma-editor-instance" ||
+      this.overlay.id !== "linuxtechlab-editor-instance" ||
       e.target !== this.canvas
     )
       return;
@@ -815,11 +737,7 @@ PixaromaEditor.prototype.attachEvents = function () {
         }
         return;
       }
-      if (
-        this.overlay.id !== "pixaroma-editor-instance" ||
-        e.target.tagName === "INPUT"
-      )
-        return;
+      if (this.overlay.id !== "linuxtechlab-editor-instance" || e.target.tagName === "INPUT") return;
 
       const coords = this.getCanvasCoordinates(e);
 
@@ -833,16 +751,8 @@ PixaromaEditor.prototype.attachEvents = function () {
             e.clientY <= canvasRect.bottom;
           if (isOverCanvas) {
             const layer = this.getActiveLayer();
-            const startLayerCoords = this.getCoordinatesInLayerImage(
-              layer,
-              this.lastX,
-              this.lastY,
-            );
-            const endLayerCoords = this.getCoordinatesInLayerImage(
-              layer,
-              coords.x,
-              coords.y,
-            );
+            const startLayerCoords = this.getCoordinatesInLayerImage(layer, this.lastX, this.lastY);
+            const endLayerCoords = this.getCoordinatesInLayerImage(layer, coords.x, coords.y);
             this.drawEraserLine(layer, startLayerCoords, endLayerCoords);
             this.lastX = coords.x;
             this.lastY = coords.y;
@@ -858,7 +768,7 @@ PixaromaEditor.prototype.attachEvents = function () {
         this.onSelectMouseMove(e, coords);
       }
     } catch (err) {
-      console.error("Pixaroma Intercepted Mouse Error:", err);
+      console.error("LinuxTechLab Intercepted Mouse Error:", err);
       this.isMouseDown = false;
     }
   };
@@ -896,25 +806,19 @@ PixaromaEditor.prototype.attachEvents = function () {
   window.addEventListener("blur", this._composerBlur);
 };
 
-PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
+LinuxTechLabEditor.prototype.onSelectMouseDown = function (e, coords) {
   if (this.selectedLayerIds.size === 1) {
     const layer = this.getActiveLayer();
     if (layer && !layer.locked) {
-      const pts = PixaromaLayers.getTransformedPoints(layer);
-      if (Math.hypot(coords.x - pts[8].x, coords.y - pts[8].y) <= 15)
-        this.interactionMode = "rotate";
-      else if (Math.hypot(coords.x - pts[4].x, coords.y - pts[4].y) <= 12)
-        this.interactionMode = "stretchL";
-      else if (Math.hypot(coords.x - pts[5].x, coords.y - pts[5].y) <= 12)
-        this.interactionMode = "stretchR";
-      else if (Math.hypot(coords.x - pts[6].x, coords.y - pts[6].y) <= 12)
-        this.interactionMode = "stretchT";
-      else if (Math.hypot(coords.x - pts[7].x, coords.y - pts[7].y) <= 12)
-        this.interactionMode = "stretchB";
+      const pts = LinuxTechLabLayers.getTransformedPoints(layer);
+      if (Math.hypot(coords.x - pts[8].x, coords.y - pts[8].y) <= 15) this.interactionMode = "rotate";
+      else if (Math.hypot(coords.x - pts[4].x, coords.y - pts[4].y) <= 12) this.interactionMode = "stretchL";
+      else if (Math.hypot(coords.x - pts[5].x, coords.y - pts[5].y) <= 12) this.interactionMode = "stretchR";
+      else if (Math.hypot(coords.x - pts[6].x, coords.y - pts[6].y) <= 12) this.interactionMode = "stretchT";
+      else if (Math.hypot(coords.x - pts[7].x, coords.y - pts[7].y) <= 12) this.interactionMode = "stretchB";
       else {
         for (let i = 0; i < 4; i++)
-          if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 15)
-            this.interactionMode = "scale";
+          if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 15) this.interactionMode = "scale";
       }
 
       if (this.interactionMode) {
@@ -926,9 +830,7 @@ PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
             scaleX: layer.scaleX,
             scaleY: layer.scaleY,
             rotation: layer.rotation,
-            startAngle:
-              (Math.atan2(coords.y - layer.cy, coords.x - layer.cx) * 180) /
-              Math.PI,
+            startAngle: (Math.atan2(coords.y - layer.cy, coords.x - layer.cx) * 180) / Math.PI,
             startDist: Math.hypot(coords.x - layer.cx, coords.y - layer.cy),
           },
         ];
@@ -940,11 +842,7 @@ PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
   let clickedLayerIndex = -1;
   for (let i = this.layers.length - 1; i >= 0; i--) {
     const l = this.layers[i];
-    if (
-      l.visible &&
-      !l.locked &&
-      PixaromaLayers.isPointInLayer(coords.x, coords.y, l)
-    ) {
+    if (l.visible && !l.locked && LinuxTechLabLayers.isPointInLayer(coords.x, coords.y, l)) {
       clickedLayerIndex = i;
       break;
     }
@@ -953,8 +851,7 @@ PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
   if (clickedLayerIndex !== -1) {
     const clickedLayer = this.layers[clickedLayerIndex];
     if (e.shiftKey || e.ctrlKey) {
-      if (this.selectedLayerIds.has(clickedLayer.id))
-        this.selectedLayerIds.delete(clickedLayer.id);
+      if (this.selectedLayerIds.has(clickedLayer.id)) this.selectedLayerIds.delete(clickedLayer.id);
       else this.selectedLayerIds.add(clickedLayer.id);
     } else if (e.altKey) {
       if (!this.selectedLayerIds.has(clickedLayer.id)) {
@@ -962,7 +859,12 @@ PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
         this.selectedLayerIds.add(clickedLayer.id);
       }
       const usedPH2 = new Set(this.layers.filter((l) => l.isPlaceholder).map((l) => l.inputIndex));
-      const nextPHIdx2 = () => { let i = 1; while (usedPH2.has(i)) i++; usedPH2.add(i); return i; };
+      const nextPHIdx2 = () => {
+        let i = 1;
+        while (usedPH2.has(i)) i++;
+        usedPH2.add(i);
+        return i;
+      };
       const newLayers = [];
       this.layers.forEach((layer) => {
         if (this.selectedLayerIds.has(layer.id)) {
@@ -982,9 +884,15 @@ PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
             const newName = `image_${newIdx}`;
             dup.inputIndex = newIdx;
             dup.name = newName;
-            dup.img = this._makePlaceholderImage(layer.img.width, layer.img.height, layer.placeholderColor, newName, (bitmapImg) => {
-              dup.img = bitmapImg;
-            });
+            dup.img = this._makePlaceholderImage(
+              layer.img.width,
+              layer.img.height,
+              layer.placeholderColor,
+              newName,
+              (bitmapImg) => {
+                dup.img = bitmapImg;
+              },
+            );
           } else {
             dup.name = layer.name + " copy";
           }
@@ -1017,20 +925,19 @@ PixaromaEditor.prototype.onSelectMouseDown = function (e, coords) {
   }
 };
 
-PixaromaEditor.prototype.onSelectMouseMove = function (e, coords) {
+LinuxTechLabEditor.prototype.onSelectMouseMove = function (e, coords) {
   if (!this.isMouseDown) {
     if (this.selectedLayerIds.size === 1) {
       const layer = this.getActiveLayer();
       if (layer && !layer.locked) {
-        const pts = PixaromaLayers.getTransformedPoints(layer);
+        const pts = LinuxTechLabLayers.getTransformedPoints(layer);
         if (Math.hypot(coords.x - pts[8].x, coords.y - pts[8].y) <= 15) {
           this.canvas.style.cursor = "crosshair";
           return;
         }
         for (let i = 0; i < 4; i++) {
           if (Math.hypot(coords.x - pts[i].x, coords.y - pts[i].y) <= 15) {
-            this.canvas.style.cursor =
-              (layer.rotation + 45) % 180 < 90 ? "nwse-resize" : "nesw-resize";
+            this.canvas.style.cursor = (layer.rotation + 45) % 180 < 90 ? "nwse-resize" : "nesw-resize";
             return;
           }
         }
@@ -1067,8 +974,7 @@ PixaromaEditor.prototype.onSelectMouseMove = function (e, coords) {
       layer.cx = t.cx + dx;
       layer.cy = t.cy + dy;
     } else if (this.interactionMode === "rotate") {
-      const currentAngle =
-        (Math.atan2(coords.y - t.cy, coords.x - t.cx) * 180) / Math.PI;
+      const currentAngle = (Math.atan2(coords.y - t.cy, coords.x - t.cx) * 180) / Math.PI;
       let newAngle = t.rotation + (currentAngle - t.startAngle);
       if (e.shiftKey) newAngle = Math.round(newAngle / 15) * 15;
       layer.rotation = Math.round((newAngle + 360) % 360);
@@ -1078,16 +984,8 @@ PixaromaEditor.prototype.onSelectMouseMove = function (e, coords) {
       const currentDist = Math.hypot(coords.x - t.cx, coords.y - t.cy);
       const scaleFactor = Math.max(0.01, currentDist / t.startDist);
       if (e.shiftKey) {
-        layer.scaleX = Math.max(
-          0.01,
-          ((t.cx - coords.x) * (layer.flippedX ? 1 : -1)) /
-            (layer.img.width / 2),
-        );
-        layer.scaleY = Math.max(
-          0.01,
-          ((t.cy - coords.y) * (layer.flippedY ? 1 : -1)) /
-            (layer.img.height / 2),
-        );
+        layer.scaleX = Math.max(0.01, ((t.cx - coords.x) * (layer.flippedX ? 1 : -1)) / (layer.img.width / 2));
+        layer.scaleY = Math.max(0.01, ((t.cy - coords.y) * (layer.flippedY ? 1 : -1)) / (layer.img.height / 2));
       } else {
         layer.scaleX = t.scaleX * scaleFactor;
         layer.scaleY = t.scaleY * scaleFactor;
@@ -1098,17 +996,11 @@ PixaromaEditor.prototype.onSelectMouseMove = function (e, coords) {
       const currentDist = Math.hypot(coords.x - t.cx, coords.y - t.cy);
       const scaleFactor = Math.max(0.01, currentDist / t.startDist);
 
-      if (
-        this.interactionMode === "stretchL" ||
-        this.interactionMode === "stretchR"
-      ) {
+      if (this.interactionMode === "stretchL" || this.interactionMode === "stretchR") {
         layer.scaleX = t.scaleX * scaleFactor;
         this.stretchHSlider.value = Math.round(layer.scaleX * 100);
         this.stretchHNum.value = Math.round(layer.scaleX * 100);
-      } else if (
-        this.interactionMode === "stretchT" ||
-        this.interactionMode === "stretchB"
-      ) {
+      } else if (this.interactionMode === "stretchT" || this.interactionMode === "stretchB") {
         layer.scaleY = t.scaleY * scaleFactor;
         this.stretchVSlider.value = Math.round(layer.scaleY * 100);
         this.stretchVNum.value = Math.round(layer.scaleY * 100);

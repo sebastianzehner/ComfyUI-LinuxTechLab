@@ -13,10 +13,10 @@ import {
   createSelectInput,
   createRow,
 } from "../framework/index.mjs";
-// PixaromaAPI is used below to query rembg install status when the
+// LinuxTechLabAPI is used below to query rembg install status when the
 // AI Background Removal panel builds. Without this import the whole
 // right sidebar fails to build and the editor won't open.
-import { PixaromaAPI } from "./api.mjs";
+import { LinuxTechLabAPI } from "./api.mjs";
 
 // Legacy values that predate the multi-model dropdown — remapped to
 // whatever the modern dropdown calls the same quality tier, so an
@@ -34,14 +34,12 @@ function _applyBgQualityToSelect(selectEl, stored) {
   if (!selectEl) return;
   let v = stored || "auto";
   if (_LEGACY_BG_QUALITY_MAP[v]) v = _LEGACY_BG_QUALITY_MAP[v];
-  const hasOption = Array.from(selectEl.options).some(
-    (o) => o.value === v && !o.disabled,
-  );
+  const hasOption = Array.from(selectEl.options).some((o) => o.value === v && !o.disabled);
   selectEl.value = hasOption ? v : "auto";
 }
 
 // ─── Editor-specific CSS (layer items, eraser, etc.) ────────
-const COMPOSER_STYLE_ID = "pixaroma-composer-styles";
+const COMPOSER_STYLE_ID = "linuxtechlab-composer-styles";
 function injectComposerStyles() {
   if (document.getElementById(COMPOSER_STYLE_ID)) return;
   const s = document.createElement("style");
@@ -60,20 +58,16 @@ function injectComposerStyles() {
   document.head.appendChild(s);
 }
 
-export class PixaromaUI {
+export class LinuxTechLabUI {
   constructor(core) {
     this.core = core;
   }
 
   updateHistoryUI() {
     const core = this.core;
-    if (core._layout && core._layout.undoBtn)
-      core._layout.undoBtn.disabled = !(core.historyIndex > 0);
+    if (core._layout && core._layout.undoBtn) core._layout.undoBtn.disabled = !(core.historyIndex > 0);
     if (core._layout && core._layout.redoBtn)
-      core._layout.redoBtn.disabled = !(
-        core.historyIndex <
-        core.history.length - 1
-      );
+      core._layout.redoBtn.disabled = !(core.historyIndex < core.history.length - 1);
   }
 
   updateActiveLayerUI() {
@@ -82,9 +76,7 @@ export class PixaromaUI {
     // Context-aware tooltips based on current state
     if (core._layout && core.activeMode !== "eraser") {
       if (core.layers.length === 0) {
-        core._layout.setStatus(
-          "Add an image to get started \u2014 click Add Image or drag & drop",
-        );
+        core._layout.setStatus("Add an image to get started \u2014 click Add Image or drag & drop");
       } else if (core.selectedLayerIds.size === 0) {
         core._layout.setStatus(
           "Click to select \u00b7 Shift+Click multi-select \u00b7 Alt+Drag duplicate \u00b7 Space+Drag pan \u00b7 Scroll zoom",
@@ -101,20 +93,17 @@ export class PixaromaUI {
     }
 
     // --- Align bar: only usable with multi-selection ---
-    const alignBtns =
-      core._layout?.titlebarCenter?.querySelectorAll(".pxf-btn-sm") || [];
+    const alignBtns = core._layout?.titlebarCenter?.querySelectorAll(".pxf-btn-sm") || [];
     if (core.selectedLayerIds.size > 1) {
       alignBtns.forEach((btn) => {
         btn.disabled = false;
       });
-      if (core._layout?.titlebarCenter)
-        core._layout.titlebarCenter.style.opacity = "1";
+      if (core._layout?.titlebarCenter) core._layout.titlebarCenter.style.opacity = "1";
     } else {
       alignBtns.forEach((btn) => {
         btn.disabled = true;
       });
-      if (core._layout?.titlebarCenter)
-        core._layout.titlebarCenter.style.opacity = "0.3";
+      if (core._layout?.titlebarCenter) core._layout.titlebarCenter.style.opacity = "0.3";
     }
 
     if (core.selectedLayerIds.size === 0) {
@@ -158,18 +147,13 @@ export class PixaromaUI {
       // Eraser requires exactly one layer selected
       if (core.selectedLayerIds.size > 1 && core.activeMode === "eraser") {
         core.setMode(null);
-        if (core._layout)
-          core._layout.setStatus(
-            "Eraser requires a single layer selected",
-            "warn",
-          );
+        if (core._layout) core._layout.setStatus("Eraser requires a single layer selected", "warn");
       }
 
       // Sync transform sliders to the first selected layer
       const layer = core.getActiveLayer();
       if (layer) {
-        if (core._layerPanel && core._layerPanel.setBlend)
-          core._layerPanel.setBlend(layer.blendMode || "Normal");
+        if (core._layerPanel && core._layerPanel.setBlend) core._layerPanel.setBlend(layer.blendMode || "Normal");
         core.opacitySlider.value = Math.round(layer.opacity * 100);
         core.opacityNum.value = Math.round(layer.opacity * 100);
         core.rotateSlider.value = layer.rotation;
@@ -194,11 +178,9 @@ export class PixaromaUI {
         // Show/hide placeholder fill mode, ratio, preview, convert button
         if (layer.isPlaceholder) {
           if (core._phFillRow) core._phFillRow.style.display = "";
-          if (core._phFillSelect)
-            core._phFillSelect.value = layer.fillMode || "cover";
+          if (core._phFillSelect) core._phFillSelect.value = layer.fillMode || "cover";
           if (core._phRatioRow) core._phRatioRow.style.display = "";
-          if (core._phRatioSelect)
-            core._phRatioSelect.value = layer.phRatio || "canvas";
+          if (core._phRatioSelect) core._phRatioSelect.value = layer.phRatio || "canvas";
           const connected = core.isPlaceholderConnected(layer);
           if (core._phPreviewBtn) {
             core._phPreviewBtn.style.display = "";
@@ -244,8 +226,7 @@ export class PixaromaUI {
       this._thumbCanvas.height = 26;
       this._thumbCtx = this._thumbCanvas.getContext("2d");
     }
-    const firstSelectedId = core.selectedLayerIds.size > 0
-      ? core.selectedLayerIds.values().next().value : null;
+    const firstSelectedId = core.selectedLayerIds.size > 0 ? core.selectedLayerIds.values().next().value : null;
     // Display layers top-to-bottom (reversed from array order, since last = top)
     const items = [...core.layers].reverse().map((layer) => {
       const isSelected = core.selectedLayerIds.has(layer.id);
@@ -290,8 +271,7 @@ export class PixaromaUI {
         onClick: (e) => {
           if (e.detail > 1) return;
           if (e.shiftKey || e.ctrlKey || e.metaKey) {
-            if (core.selectedLayerIds.has(layer.id))
-              core.selectedLayerIds.delete(layer.id);
+            if (core.selectedLayerIds.has(layer.id)) core.selectedLayerIds.delete(layer.id);
             else core.selectedLayerIds.add(layer.id);
           } else {
             core.selectedLayerIds.clear();
@@ -320,10 +300,7 @@ export class PixaromaUI {
     if (idx < 0) return;
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= core.layers.length) return;
-    [core.layers[idx], core.layers[newIdx]] = [
-      core.layers[newIdx],
-      core.layers[idx],
-    ];
+    [core.layers[idx], core.layers[newIdx]] = [core.layers[newIdx], core.layers[idx]];
     core.pushHistory();
     core.syncActiveLayerIndex();
     this.updateActiveLayerUI();
@@ -332,7 +309,7 @@ export class PixaromaUI {
 
   build() {
     const core = this.core;
-    const existingEditor = document.getElementById("pixaroma-editor-instance");
+    const existingEditor = document.getElementById("linuxtechlab-editor-instance");
     if (existingEditor) existingEditor.remove();
 
     injectComposerStyles();
@@ -340,7 +317,7 @@ export class PixaromaUI {
     // ─── Create layout via framework ────────────────────────
     const layout = createEditorLayout({
       editorName: "Image Composer",
-      editorId: "pixaroma-editor-instance",
+      editorId: "linuxtechlab-editor-instance",
       showUndoRedo: true,
       showStatusBar: false,
       showZoomBar: true,
@@ -467,8 +444,7 @@ export class PixaromaUI {
           core.selHitArea.style.width = width + 2 * core.selPad + "px";
           core.selHitArea.style.height = height + 2 * core.selPad + "px";
         }
-        if (core._dimLabel)
-          core._dimLabel.textContent = `${core.docWidth}\u00d7${core.docHeight}`;
+        if (core._dimLabel) core._dimLabel.textContent = `${core.docWidth}\u00d7${core.docHeight}`;
         core.fitViewToWorkspace();
         core.draw();
         core.pushHistory();
@@ -483,7 +459,7 @@ export class PixaromaUI {
         const img = new Image();
         img.crossOrigin = "Anonymous";
         img.onload = async () => {
-          const { PixaromaLayers } = await import("./layers.mjs");
+          const { LinuxTechLabLayers } = await import("./layers.mjs");
 
           // Auto-size canvas to the image on an empty composer so users don't
           // have to manually match dimensions before composing.
@@ -503,8 +479,7 @@ export class PixaromaUI {
               core.selHitArea.style.width = newW + 2 * core.selPad + "px";
               core.selHitArea.style.height = newH + 2 * core.selPad + "px";
             }
-            if (core._dimLabel)
-              core._dimLabel.textContent = `${newW}\u00d7${newH}`;
+            if (core._dimLabel) core._dimLabel.textContent = `${newW}\u00d7${newH}`;
             if (core._canvasSettings) {
               core._canvasSettings.setSize(newW, newH);
               core._canvasSettings.setRatio(0);
@@ -529,12 +504,7 @@ export class PixaromaUI {
             rawServerPath: "",
             savedOnServer: false,
           };
-          PixaromaLayers.fitLayerToCanvas(
-            layerObj,
-            core.docWidth,
-            core.docHeight,
-            "width",
-          );
+          LinuxTechLabLayers.fitLayerToCanvas(layerObj, core.docWidth, core.docHeight, "width");
           core.layers.push(layerObj);
           core.selectedLayerIds.clear();
           core.selectedLayerIds.add(layerObj.id);
@@ -651,9 +621,7 @@ export class PixaromaUI {
     };
 
     canvasActionsRow.append(bgLabel, bgColorInput, clearBtn, resetBtn);
-    core._canvasSettings.el
-      .querySelector(".pxf-panel-content")
-      .appendChild(canvasActionsRow);
+    core._canvasSettings.el.querySelector(".pxf-panel-content").appendChild(canvasActionsRow);
 
     const transpRow = document.createElement("label");
     transpRow.className = "pxf-check-row";
@@ -661,12 +629,12 @@ export class PixaromaUI {
     transpRow.style.cssText = "margin:4px 0 0 2px;font-size:11px;opacity:0.85;";
     const transpCb = document.createElement("input");
     transpCb.type = "checkbox";
-    transpCb.addEventListener("change", () => { core._transparentBg = transpCb.checked; });
+    transpCb.addEventListener("change", () => {
+      core._transparentBg = transpCb.checked;
+    });
     transpRow.appendChild(transpCb);
     transpRow.append("Transparent BG (Save to Disk)");
-    core._canvasSettings.el
-      .querySelector(".pxf-panel-content")
-      .appendChild(transpRow);
+    core._canvasSettings.el.querySelector(".pxf-panel-content").appendChild(transpRow);
 
     // --- Placeholders panel (add, fill mode, preview) ---
     const phPanel = createPanel("Placeholders", {
@@ -675,24 +643,23 @@ export class PixaromaUI {
     });
 
     const addPhBtn = createButton("Add Placeholder", { variant: "full" });
-    addPhBtn.title =
-      "Add a placeholder layer — connect an image input at workflow execution";
+    addPhBtn.title = "Add a placeholder layer — connect an image input at workflow execution";
     addPhBtn.onclick = () => core.addPlaceholderLayer();
     phPanel.content.appendChild(addPhBtn);
 
     const ratioSelect = createSelectInput({
       options: [
         { value: "canvas", label: "Canvas ratio" },
-        { value: "1:1",    label: "1:1 Square" },
-        { value: "4:3",    label: "4:3" },
-        { value: "3:4",    label: "3:4" },
-        { value: "16:9",   label: "16:9 Wide" },
-        { value: "9:16",   label: "9:16 Tall" },
-        { value: "3:2",    label: "3:2" },
-        { value: "2:3",    label: "2:3" },
-        { value: "2:1",    label: "2:1" },
-        { value: "1:2",    label: "1:2" },
-        { value: "21:9",   label: "21:9 Ultra" },
+        { value: "1:1", label: "1:1 Square" },
+        { value: "4:3", label: "4:3" },
+        { value: "3:4", label: "3:4" },
+        { value: "16:9", label: "16:9 Wide" },
+        { value: "9:16", label: "9:16 Tall" },
+        { value: "3:2", label: "3:2" },
+        { value: "2:3", label: "2:3" },
+        { value: "2:1", label: "2:1" },
+        { value: "1:2", label: "1:2" },
+        { value: "21:9", label: "21:9 Ultra" },
       ],
       value: "canvas",
       onChange: (val) => {
@@ -787,9 +754,7 @@ export class PixaromaUI {
 
     // Status tooltip
     core.statusText = layout.statusText;
-    layout.setStatus(
-      "Add an image to get started \u2014 click Add Image or drag & drop",
-    );
+    layout.setStatus("Add an image to get started \u2014 click Add Image or drag & drop");
 
     // =====================================================================
     // WORKSPACE
@@ -836,7 +801,7 @@ export class PixaromaUI {
     if (this._canvasToolbar) this._canvasToolbar.setupDropZone(core.workspace);
 
     // Align bar (in titlebar center) -- using SVG icons
-    const _ai = "/pixaroma/assets/icons/ui/";
+    const _ai = "/linuxtechlab/assets/icons/ui/";
     const alignBar = document.createElement("div");
     alignBar.style.cssText = "display:flex;align-items:center;gap:4px;";
     const alignBtns = [
@@ -862,8 +827,7 @@ export class PixaromaUI {
     alignBtns.forEach((cfg) => {
       if (!cfg) {
         const sep = document.createElement("div");
-        sep.style.cssText =
-          "width:1px;height:16px;background:#3a3d40;margin:0 2px;";
+        sep.style.cssText = "width:1px;height:16px;background:#3a3d40;margin:0 2px;";
         alignBar.appendChild(sep);
         return;
       }
@@ -1047,14 +1011,7 @@ export class PixaromaUI {
     eraserPanel.content.appendChild(sizeRow.el);
 
     // Brush Hardness
-    const hardRow = createSliderRow(
-      "Hard",
-      0,
-      100,
-      Math.round(core.brushHardness * 100),
-      null,
-      { labelWidth: "52px" },
-    );
+    const hardRow = createSliderRow("Hard", 0, 100, Math.round(core.brushHardness * 100), null, { labelWidth: "52px" });
     core.brushHardnessSlider = hardRow.slider;
     core.brushHardnessNum = hardRow.numInput;
     eraserPanel.content.appendChild(hardRow.el);
@@ -1135,65 +1092,65 @@ export class PixaromaUI {
     // and gives a quick hint about what the selected model will do on
     // first use (download size). Populated by _refreshRembgInfo() below.
     const bgStatusLine = document.createElement("div");
-    bgStatusLine.style.cssText =
-      "font-size:10px;color:#888;margin:4px 2px 2px;line-height:1.4;";
+    bgStatusLine.style.cssText = "font-size:10px;color:#888;margin:4px 2px 2px;line-height:1.4;";
     bgStatusLine.textContent = "Checking rembg installation...";
     bgRemovalPanel.content.appendChild(bgStatusLine);
     core._bgStatusLine = bgStatusLine;
 
     // Async: fetch real model catalog from the server and refresh
     // the dropdown + status line with proper labels & availability.
-    PixaromaAPI.removeBgInfo().then((info) => {
-      core._rembgInfo = info;
-      if (!info.rembgInstalled) {
-        bgStatusLine.innerHTML =
-          '<span style="color:#e57">✗ rembg not installed</span> — ' +
-          'run <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">python.exe -m pip install rembg</code> ' +
-          'in ComfyUI\'s python_embeded folder, then restart ComfyUI.';
-        // Grey out all controls so the user can't click into an error.
-        core.removeBgBtn.style.opacity = "0.3";
-        core.removeBgBtn.style.pointerEvents = "none";
-        bgQualitySelect.disabled = true;
-        return;
-      }
-
-      // Rebuild dropdown with real model names + annotations.
-      const models = Array.isArray(info.models) ? info.models : [];
-      bgQualitySelect.innerHTML = "";
-      for (const m of models) {
-        const opt = document.createElement("option");
-        opt.value = m.id;
-        let label = m.label;
-        if (m.id !== "auto") {
-          // Annotate real models with size + downloaded mark so the
-          // user knows what a first click will cost.
-          const parts = [];
-          if (m.sizeMB) parts.push(`${m.sizeMB} MB`);
-          if (m.downloaded) parts.push("✓ downloaded");
-          else if (m.available) parts.push("will download");
-          if (parts.length) label += ` — ${parts.join(", ")}`;
+    LinuxTechLabAPI.removeBgInfo()
+      .then((info) => {
+        core._rembgInfo = info;
+        if (!info.rembgInstalled) {
+          bgStatusLine.innerHTML =
+            '<span style="color:#e57">✗ rembg not installed</span> — ' +
+            'run <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">python.exe -m pip install rembg</code> ' +
+            "in ComfyUI's python_embeded folder, then restart ComfyUI.";
+          // Grey out all controls so the user can't click into an error.
+          core.removeBgBtn.style.opacity = "0.3";
+          core.removeBgBtn.style.pointerEvents = "none";
+          bgQualitySelect.disabled = true;
+          return;
         }
-        opt.textContent = label;
-        opt.disabled = !m.available;
-        if (!m.available) opt.title = `Needs rembg ${m.minRembg}+ (you have ${info.rembgVersion || "unknown"})`;
-        bgQualitySelect.appendChild(opt);
-      }
-      // Preserve existing selection if it's still a valid option,
-      // otherwise fall back to auto.
-      const current = core._bgRemovalQuality || "auto";
-      const hasCurrent = models.some((m) => m.id === current && m.available);
-      bgQualitySelect.value = hasCurrent ? current : "auto";
 
-      // Status line — green check + version + dir
-      const firstMissing = models.find((m) => m.available && !m.downloaded && m.id !== "auto");
-      const hint = firstMissing
-        ? `First use of a new model will download to <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>.`
-        : `Models: <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>`;
-      bgStatusLine.innerHTML =
-        `<span style="color:#4a7">✓ rembg ${info.rembgVersion || ""}</span> · ${hint}`;
-    }).catch(() => {
-      bgStatusLine.textContent = "Couldn't query rembg status — backend unreachable.";
-    });
+        // Rebuild dropdown with real model names + annotations.
+        const models = Array.isArray(info.models) ? info.models : [];
+        bgQualitySelect.innerHTML = "";
+        for (const m of models) {
+          const opt = document.createElement("option");
+          opt.value = m.id;
+          let label = m.label;
+          if (m.id !== "auto") {
+            // Annotate real models with size + downloaded mark so the
+            // user knows what a first click will cost.
+            const parts = [];
+            if (m.sizeMB) parts.push(`${m.sizeMB} MB`);
+            if (m.downloaded) parts.push("✓ downloaded");
+            else if (m.available) parts.push("will download");
+            if (parts.length) label += ` — ${parts.join(", ")}`;
+          }
+          opt.textContent = label;
+          opt.disabled = !m.available;
+          if (!m.available) opt.title = `Needs rembg ${m.minRembg}+ (you have ${info.rembgVersion || "unknown"})`;
+          bgQualitySelect.appendChild(opt);
+        }
+        // Preserve existing selection if it's still a valid option,
+        // otherwise fall back to auto.
+        const current = core._bgRemovalQuality || "auto";
+        const hasCurrent = models.some((m) => m.id === current && m.available);
+        bgQualitySelect.value = hasCurrent ? current : "auto";
+
+        // Status line — green check + version + dir
+        const firstMissing = models.find((m) => m.available && !m.downloaded && m.id !== "auto");
+        const hint = firstMissing
+          ? `First use of a new model will download to <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>.`
+          : `Models: <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>`;
+        bgStatusLine.innerHTML = `<span style="color:#4a7">✓ rembg ${info.rembgVersion || ""}</span> · ${hint}`;
+      })
+      .catch(() => {
+        bgStatusLine.textContent = "Couldn't query rembg status — backend unreachable.";
+      });
 
     // Auto Remove BG checkbox
     const autoBgRow = document.createElement("label");

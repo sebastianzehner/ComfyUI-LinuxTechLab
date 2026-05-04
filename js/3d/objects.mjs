@@ -1,7 +1,7 @@
 // ============================================================
-// Pixaroma 3D Editor — Object CRUD, selection, color, materials
+// LinuxTechLab 3D Editor — Object CRUD, selection, color, materials
 // ============================================================
-import { Pixaroma3DEditor, getTHREE, createLayerItem } from "./core.mjs";
+import { LinuxTechLab3DEditor, getTHREE, createLayerItem } from "./core.mjs";
 import { buildGeometry, getShapeDefaults } from "./shapes.mjs";
 import { isCompositeType, buildComposite } from "./composites.mjs";
 
@@ -15,7 +15,7 @@ import { isCompositeType, buildComposite } from "./composites.mjs";
 // _syncOutlineSelection() at the end so the pass picks up the new
 // set of highlighted objects.
 
-Pixaroma3DEditor.prototype._syncOutlineSelection = function () {
+LinuxTechLab3DEditor.prototype._syncOutlineSelection = function () {
   if (this._outlinePass) {
     this._outlinePass.selectedObjects = [...this.selectedObjs];
   }
@@ -23,12 +23,12 @@ Pixaroma3DEditor.prototype._syncOutlineSelection = function () {
 
 // ─── Objects ──────────────────────────────────────────────
 
-Pixaroma3DEditor.prototype._makeGeo = function (type, gp) {
+LinuxTechLab3DEditor.prototype._makeGeo = function (type, gp) {
   const THREE = getTHREE();
   return buildGeometry(THREE, type, gp);
 };
 
-Pixaroma3DEditor.prototype._addObject = function (type, gp) {
+LinuxTechLab3DEditor.prototype._addObject = function (type, gp) {
   const THREE = getTHREE();
   this._pushUndo();
   this._id++;
@@ -71,10 +71,7 @@ Pixaroma3DEditor.prototype._addObject = function (type, gp) {
     geo.computeBoundingBox();
     mesh.position.y = -geo.boundingBox.min.y;
     mat.side = THREE.DoubleSide;
-  } else if (
-    type === "vase" || type === "bottle" || type === "goblet" ||
-    type === "bowl" || type === "plantpot"
-  ) {
+  } else if (type === "vase" || type === "bottle" || type === "goblet" || type === "bowl" || type === "plantpot") {
     // Lathe-geometry vessels: the profile creates an open mouth / deep
     // interior cavity. Without DoubleSide the inside renders as a black
     // hole whenever the camera peeks in or the light grazes the rim.
@@ -104,11 +101,11 @@ Pixaroma3DEditor.prototype._addObject = function (type, gp) {
   this._updateShadowFrustum?.();
 };
 
-Pixaroma3DEditor.prototype._defaultGeoParams = function (type) {
+LinuxTechLab3DEditor.prototype._defaultGeoParams = function (type) {
   return getShapeDefaults(type);
 };
 
-Pixaroma3DEditor.prototype._deleteSelected = function () {
+LinuxTechLab3DEditor.prototype._deleteSelected = function () {
   if (!this.selectedObjs.size) return;
   this._pushUndo();
   this.transformCtrl.detach();
@@ -151,7 +148,7 @@ Pixaroma3DEditor.prototype._deleteSelected = function () {
   this._updateShadowFrustum?.();
 };
 
-Pixaroma3DEditor.prototype._dupSelected = function () {
+LinuxTechLab3DEditor.prototype._dupSelected = function () {
   const THREE = getTHREE();
   if (!this.activeObj) return;
   this._pushUndo();
@@ -191,9 +188,7 @@ Pixaroma3DEditor.prototype._dupSelected = function () {
   if (isCompositeType(type)) {
     this._id++;
     const newId = this._id;
-    const gp = src.userData.geoParams
-      ? { ...src.userData.geoParams }
-      : {};
+    const gp = src.userData.geoParams ? { ...src.userData.geoParams } : {};
     const inner = buildComposite(type, gp);
     // Snapshot everything we need from src BEFORE the async resolves
     // (user could select/delete src in the meantime).
@@ -207,9 +202,7 @@ Pixaroma3DEditor.prototype._dupSelected = function () {
     import("./importer.mjs").then((mod) => {
       if (this._closed) return;
       const { prepareImportedGroup } = mod;
-      const { origMaterials, overrideMat } = prepareImportedGroup(
-        inner, savedColor,
-      );
+      const { origMaterials, overrideMat } = prepareImportedGroup(inner, savedColor);
       if (savedOverride) {
         overrideMat.color.copy(savedOverride.color);
         overrideMat.roughness = savedOverride.roughness;
@@ -268,9 +261,7 @@ Pixaroma3DEditor.prototype._dupSelected = function () {
     clone.rotation.copy(src.rotation);
     clone.scale.copy(src.scale);
     this._id++;
-    const newOverride = src.userData._overrideMat
-      ? src.userData._overrideMat.clone()
-      : null;
+    const newOverride = src.userData._overrideMat ? src.userData._overrideMat.clone() : null;
     clone.userData = {
       ...src.userData,
       id: this._id,
@@ -293,12 +284,10 @@ Pixaroma3DEditor.prototype._dupSelected = function () {
 // object's world-space bounding box and shifts position.y so the box's
 // min.y lands at y = 0. Works for any selection: single mesh, imported
 // group, composite, multi-select. Locked objects are skipped.
-Pixaroma3DEditor.prototype._dropToFloor = function () {
+LinuxTechLab3DEditor.prototype._dropToFloor = function () {
   const THREE = getTHREE();
   if (!this.selectedObjs.size && !this.activeObj) return;
-  const targets = this.selectedObjs.size
-    ? [...this.selectedObjs]
-    : [this.activeObj];
+  const targets = this.selectedObjs.size ? [...this.selectedObjs] : [this.activeObj];
   // Filter out locked objects first so we don't push an undo entry
   // when nothing will actually move.
   const movable = targets.filter((o) => !o.userData.locked);
@@ -331,7 +320,7 @@ Pixaroma3DEditor.prototype._dropToFloor = function () {
 // silhouette, not a loose rotated-box approximation. Locked objects
 // are skipped. Single-select or zero-select = no-op (needs 2+ to align
 // and 3+ to distribute meaningfully).
-Pixaroma3DEditor.prototype._alignSelected = function (axis, mode) {
+LinuxTechLab3DEditor.prototype._alignSelected = function (axis, mode) {
   const THREE = getTHREE();
   const ax = axis.toLowerCase();
   if (!["x", "y", "z"].includes(ax)) return;
@@ -365,16 +354,14 @@ Pixaroma3DEditor.prototype._alignSelected = function (axis, mode) {
   // Human-readable feedback. Uses the same min/center/max words as
   // the tooltip so the user can confirm the exact action.
   const label = { min: "Min", center: "Center", max: "Max" }[mode];
-  this._setStatus?.(
-    `Aligned ${movable.length} objects to ${axis} ${label}`,
-  );
+  this._setStatus?.(`Aligned ${movable.length} objects to ${axis} ${label}`);
 };
 
 // Distribute: evenly space the selected objects' centers along an axis.
 // The two extremes (lowest and highest center on that axis) stay put,
 // and the middle objects slide to equal spacing between them. Needs
 // 3+ objects — with fewer it's already distributed (or degenerate).
-Pixaroma3DEditor.prototype._distributeSelected = function (axis) {
+LinuxTechLab3DEditor.prototype._distributeSelected = function (axis) {
   const THREE = getTHREE();
   const ax = axis.toLowerCase();
   if (!["x", "y", "z"].includes(ax)) return;
@@ -401,13 +388,12 @@ Pixaroma3DEditor.prototype._distributeSelected = function (axis) {
   this._syncProps?.();
 };
 
-Pixaroma3DEditor.prototype._select = function (mesh, additive) {
+LinuxTechLab3DEditor.prototype._select = function (mesh, additive) {
   if (!additive) this.selectedObjs.clear();
   if (mesh) {
     if (this.selectedObjs.has(mesh) && additive) {
       this.selectedObjs.delete(mesh);
-      this.activeObj =
-        this.selectedObjs.size > 0 ? [...this.selectedObjs][0] : null;
+      this.activeObj = this.selectedObjs.size > 0 ? [...this.selectedObjs][0] : null;
     } else {
       this.selectedObjs.add(mesh);
       this.activeObj = mesh;
@@ -415,8 +401,7 @@ Pixaroma3DEditor.prototype._select = function (mesh, additive) {
   } else {
     this.activeObj = null;
   }
-  if (this.activeObj && !this.activeObj.userData.locked)
-    this.transformCtrl.attach(this.activeObj);
+  if (this.activeObj && !this.activeObj.userData.locked) this.transformCtrl.attach(this.activeObj);
   else this.transformCtrl.detach();
   this._syncProps();
   this._updateLayers();
@@ -426,7 +411,7 @@ Pixaroma3DEditor.prototype._select = function (mesh, additive) {
   this._updateAlignButtons?.();
 };
 
-Pixaroma3DEditor.prototype._setObjColor = function (hex) {
+LinuxTechLab3DEditor.prototype._setObjColor = function (hex) {
   if (!this.activeObj) return;
   for (const o of this.selectedObjs) {
     // Mesh: set its own material. Group (imported bunny / future
@@ -471,7 +456,7 @@ function applyToMaterials(o, fn) {
   }
 }
 
-Pixaroma3DEditor.prototype._hslToColor = function () {
+LinuxTechLab3DEditor.prototype._hslToColor = function () {
   const THREE = getTHREE();
   if (!this.activeObj) return;
   const h = (this.el.hslH?.value || 0) / 360,
@@ -487,7 +472,7 @@ Pixaroma3DEditor.prototype._hslToColor = function () {
   this._updateLayers();
 };
 
-Pixaroma3DEditor.prototype._syncHSLFromColor = function () {
+LinuxTechLab3DEditor.prototype._syncHSLFromColor = function () {
   if (!this.activeObj) return;
   const mat = firstMeshMaterial(this.activeObj);
   if (!mat || !mat.color) return;
@@ -509,7 +494,7 @@ Pixaroma3DEditor.prototype._syncHSLFromColor = function () {
 
 // ─── Materials ────────────────────────────────────────────
 
-Pixaroma3DEditor.prototype._applyMat = function (p) {
+LinuxTechLab3DEditor.prototype._applyMat = function (p) {
   if (!this.activeObj) return;
   for (const o of this.selectedObjs) {
     applyToMaterials(o, (m) => {
@@ -530,7 +515,7 @@ Pixaroma3DEditor.prototype._applyMat = function (p) {
 // panel's "Select an object…" placeholder behaviour and avoids the
 // confusing state where a color-picker change would silently apply
 // to nothing.
-Pixaroma3DEditor.prototype._setObjectPanelsEnabled = function (enabled) {
+LinuxTechLab3DEditor.prototype._setObjectPanelsEnabled = function (enabled) {
   const el = this.el;
   const opacity = enabled ? "1" : "0.4";
   const pointer = enabled ? "" : "none";
@@ -542,17 +527,22 @@ Pixaroma3DEditor.prototype._setObjectPanelsEnabled = function (enabled) {
   };
   toggle(el.objColor);
   toggle(el.objName);
-  toggle(el.hslH); toggle(el.hslS); toggle(el.hslL);
-  toggle(el.roughS); toggle(el.roughV);
-  toggle(el.glossS); toggle(el.glossV);
-  toggle(el.opacS);  toggle(el.opacV);
+  toggle(el.hslH);
+  toggle(el.hslS);
+  toggle(el.hslL);
+  toggle(el.roughS);
+  toggle(el.roughV);
+  toggle(el.glossS);
+  toggle(el.glossV);
+  toggle(el.opacS);
+  toggle(el.opacV);
   toggle(el.delBtn);
   if (el.matBtns) for (const b of el.matBtns) toggle(b);
 };
 
 // Format a transform-slider value for the number input box. Integer
 // step (rotation in whole degrees) → no decimals; floats → 2dp.
-Pixaroma3DEditor.prototype._formatXformValue = function (v) {
+LinuxTechLab3DEditor.prototype._formatXformValue = function (v) {
   return Number.isInteger(v) ? String(v) : (+v).toFixed(2);
 };
 
@@ -560,7 +550,7 @@ Pixaroma3DEditor.prototype._formatXformValue = function (v) {
 // the current mode, and populate them from the active object's
 // transform. Also called on every gizmo-drag tick so the sliders
 // track the 3D manipulator in real time.
-Pixaroma3DEditor.prototype._updateTransformSliders = function () {
+LinuxTechLab3DEditor.prototype._updateTransformSliders = function () {
   const slots = this.el.xformSliders;
   if (!slots) return;
   const obj = this.activeObj;
@@ -571,34 +561,46 @@ Pixaroma3DEditor.prototype._updateTransformSliders = function () {
   // checkbox row in Move / Rotate so it doesn't look like a dead
   // option the user can toggle without effect.
   if (this.el.xformUniformRow) {
-    this.el.xformUniformRow.style.display =
-      mode === "scale" ? "flex" : "none";
+    this.el.xformUniformRow.style.display = mode === "scale" ? "flex" : "none";
   }
   for (const { label, slider, numIn, axis } of slots) {
     const axLower = axis.toLowerCase();
     let min, max, step, val, prefix;
     if (mode === "rotate") {
-      min = -180; max = 180; step = 1; prefix = "Rot";
+      min = -180;
+      max = 180;
+      step = 1;
+      prefix = "Rot";
       val = obj ? (obj.rotation[axLower] * 180) / Math.PI : 0;
     } else if (mode === "scale") {
-      min = 0.1; max = 5; step = 0.01; prefix = "Scale";
+      min = 0.1;
+      max = 5;
+      step = 0.01;
+      prefix = "Scale";
       val = obj ? obj.scale[axLower] : 1;
     } else {
       // Default: move
-      min = -10; max = 10; step = 0.05; prefix = "Pos";
+      min = -10;
+      max = 10;
+      step = 0.05;
+      prefix = "Pos";
       val = obj ? obj.position[axLower] : 0;
     }
     label.textContent = `${prefix} ${axis}`;
-    slider.min = min; slider.max = max; slider.step = step;
+    slider.min = min;
+    slider.max = max;
+    slider.step = step;
     slider.value = val;
     slider.disabled = locked;
-    numIn.min = min; numIn.max = max; numIn.step = step;
+    numIn.min = min;
+    numIn.max = max;
+    numIn.step = step;
     numIn.value = fmt(val);
     numIn.disabled = locked;
   }
 };
 
-Pixaroma3DEditor.prototype._syncProps = function () {
+LinuxTechLab3DEditor.prototype._syncProps = function () {
   // Transform sliders follow every selection / transform change too
   this._updateTransformSliders?.();
   const o = this.activeObj;
@@ -615,9 +617,7 @@ Pixaroma3DEditor.prototype._syncProps = function () {
   // mesh, otherwise the object's own .material.
   const mat = firstMeshMaterial(o);
   if (this.el.objColor)
-    this.el.objColor.value =
-      o.userData.colorHex ||
-      (mat?.color ? "#" + mat.color.getHexString() : "#888888");
+    this.el.objColor.value = o.userData.colorHex || (mat?.color ? "#" + mat.color.getHexString() : "#888888");
   if (this.el.objName) this.el.objName.value = o.userData.name || "";
   const rough = mat?.roughness ?? 0.55;
   if (this.el.roughS) {
@@ -656,7 +656,7 @@ Pixaroma3DEditor.prototype._syncProps = function () {
 const THUMB_RENDER_PX = 56;
 const THUMB_DISPLAY_PX = 28;
 
-Pixaroma3DEditor.prototype._getThumbRenderer = function () {
+LinuxTechLab3DEditor.prototype._getThumbRenderer = function () {
   const THREE = getTHREE();
   if (this._thumbRenderer) return this._thumbRenderer;
   const r = new THREE.WebGLRenderer({
@@ -670,7 +670,7 @@ Pixaroma3DEditor.prototype._getThumbRenderer = function () {
   return r;
 };
 
-Pixaroma3DEditor.prototype._generateThumbnail = function (obj) {
+LinuxTechLab3DEditor.prototype._generateThumbnail = function (obj) {
   const THREE = getTHREE();
   // Cache key: any field that can change the render must be in here.
   const ud = obj.userData || {};
@@ -706,8 +706,10 @@ Pixaroma3DEditor.prototype._generateThumbnail = function (obj) {
     // Auto-frame: fit the world AABB into the mini camera.
     const box = new THREE.Box3().setFromObject(clone, true);
     if (box.isEmpty()) return null;
-    const size = new THREE.Vector3(); box.getSize(size);
-    const center = new THREE.Vector3(); box.getCenter(center);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
     // Shift the clone so its bbox centre sits at the origin — gives
     // a balanced framing regardless of the object's pivot.
     clone.position.sub(center);
@@ -733,7 +735,7 @@ Pixaroma3DEditor.prototype._generateThumbnail = function (obj) {
   }
 };
 
-Pixaroma3DEditor.prototype._updateLayers = function () {
+LinuxTechLab3DEditor.prototype._updateLayers = function () {
   if (!this._layerPanel) return;
   const items = this.objects.map((obj, i) => {
     const isActive = obj === this.activeObj;
@@ -748,8 +750,7 @@ Pixaroma3DEditor.prototype._updateLayers = function () {
     if (url) {
       thumbnail = document.createElement("img");
       thumbnail.src = url;
-      thumbnail.style.cssText =
-        `width:${THUMB_DISPLAY_PX}px;height:${THUMB_DISPLAY_PX}px;border-radius:3px;border:1px solid #555;flex-shrink:0;background:#2a2c2e;object-fit:contain;image-rendering:auto;`;
+      thumbnail.style.cssText = `width:${THUMB_DISPLAY_PX}px;height:${THUMB_DISPLAY_PX}px;border-radius:3px;border:1px solid #555;flex-shrink:0;background:#2a2c2e;object-fit:contain;image-rendering:auto;`;
     } else {
       // Render failed (no WebGL / context lost) — fall back to colour dot.
       thumbnail = document.createElement("div");
@@ -770,8 +771,7 @@ Pixaroma3DEditor.prototype._updateLayers = function () {
       },
       onLockToggle: () => {
         obj.userData.locked = !obj.userData.locked;
-        if (obj.userData.locked && obj === this.activeObj)
-          this.transformCtrl.detach();
+        if (obj.userData.locked && obj === this.activeObj) this.transformCtrl.detach();
         this._updateLayers();
         if (this._rebuildShapePanel) this._rebuildShapePanel();
       },

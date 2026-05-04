@@ -1,18 +1,16 @@
-// Placeholder layer management — mixed into PixaromaEditor.prototype
-import { PixaromaEditor } from "./core.mjs";
+// Placeholder layer management — mixed into LinuxTechLabEditor.prototype
+import { LinuxTechLabEditor } from "./core.mjs";
 
 const PH_COLORS = ["#4A90D9", "#E07B54", "#7DC97A", "#C06BC9", "#E8C547"];
 
-PixaromaEditor.prototype._nextPlaceholderIndex = function () {
-  const used = new Set(
-    this.layers.filter((l) => l.isPlaceholder).map((l) => l.inputIndex),
-  );
+LinuxTechLabEditor.prototype._nextPlaceholderIndex = function () {
+  const used = new Set(this.layers.filter((l) => l.isPlaceholder).map((l) => l.inputIndex));
   let i = 1;
   while (used.has(i)) i++;
   return i;
 };
 
-PixaromaEditor.prototype._makePlaceholderImage = function (w, h, color, inputName, callback) {
+LinuxTechLabEditor.prototype._makePlaceholderImage = function (w, h, color, inputName, callback) {
   const c = document.createElement("canvas");
   c.width = Math.max(w, 1);
   c.height = Math.max(h, 1);
@@ -27,13 +25,15 @@ PixaromaEditor.prototype._makePlaceholderImage = function (w, h, color, inputNam
   ctx.fillText(inputName, c.width / 2, c.height / 2);
   // Convert canvas to Image for faster drawImage during interactions
   const img = new Image();
-  img.onload = () => { if (callback) callback(img); };
+  img.onload = () => {
+    if (callback) callback(img);
+  };
   img.src = c.toDataURL();
   // Return canvas as immediate fallback until Image loads
   return c;
 };
 
-PixaromaEditor.prototype.addPlaceholderLayer = function () {
+LinuxTechLabEditor.prototype.addPlaceholderLayer = function () {
   const idx = this._nextPlaceholderIndex();
   const inputName = `image_${idx}`;
   const color = PH_COLORS[(idx - 1) % PH_COLORS.length];
@@ -79,7 +79,7 @@ PixaromaEditor.prototype.addPlaceholderLayer = function () {
   this.syncNodeInputs();
 };
 
-PixaromaEditor.prototype.convertLayerToPlaceholder = function (layerId) {
+LinuxTechLabEditor.prototype.convertLayerToPlaceholder = function (layerId) {
   const layer = this.layers.find((l) => l.id === layerId);
   if (!layer || layer.isPlaceholder) return;
 
@@ -111,7 +111,7 @@ PixaromaEditor.prototype.convertLayerToPlaceholder = function (layerId) {
   this.syncNodeInputs();
 };
 
-PixaromaEditor.prototype._getInputSlotIndex = function (inputName) {
+LinuxTechLabEditor.prototype._getInputSlotIndex = function (inputName) {
   const inputs = this.node?.inputs || [];
   for (let i = 0; i < inputs.length; i++) {
     if (inputs[i].name === inputName) return i;
@@ -119,7 +119,7 @@ PixaromaEditor.prototype._getInputSlotIndex = function (inputName) {
   return -1;
 };
 
-PixaromaEditor.prototype.isPlaceholderConnected = function (layer) {
+LinuxTechLabEditor.prototype.isPlaceholderConnected = function (layer) {
   if (!layer?.isPlaceholder || !this.node) return false;
   const slotIdx = this._getInputSlotIndex(`image_${layer.inputIndex}`);
   if (slotIdx < 0) return false;
@@ -127,7 +127,7 @@ PixaromaEditor.prototype.isPlaceholderConnected = function (layer) {
   return !!(input && input.link != null);
 };
 
-PixaromaEditor.prototype._getUpstreamImageUrl = function (layer) {
+LinuxTechLabEditor.prototype._getUpstreamImageUrl = function (layer) {
   if (!this.node) return null;
   const slotIdx = this._getInputSlotIndex(`image_${layer.inputIndex}`);
   if (slotIdx < 0) return null;
@@ -159,7 +159,7 @@ PixaromaEditor.prototype._getUpstreamImageUrl = function (layer) {
   return null;
 };
 
-PixaromaEditor.prototype._applyFillMode = function (srcImg, phW, phH, mode, callback) {
+LinuxTechLabEditor.prototype._applyFillMode = function (srcImg, phW, phH, mode, callback) {
   const c = document.createElement("canvas");
   c.width = phW;
   c.height = phH;
@@ -171,22 +171,26 @@ PixaromaEditor.prototype._applyFillMode = function (srcImg, phW, phH, mode, call
     ctx.drawImage(srcImg, 0, 0, phW, phH);
   } else if (mode === "contain") {
     const scale = Math.min(phW / sw, phH / sh);
-    const dw = sw * scale, dh = sh * scale;
+    const dw = sw * scale,
+      dh = sh * scale;
     ctx.drawImage(srcImg, (phW - dw) / 2, (phH - dh) / 2, dw, dh);
   } else {
     // cover
     const scale = Math.max(phW / sw, phH / sh);
-    const dw = sw * scale, dh = sh * scale;
+    const dw = sw * scale,
+      dh = sh * scale;
     ctx.drawImage(srcImg, (phW - dw) / 2, (phH - dh) / 2, dw, dh);
   }
   // Convert to Image for faster drawImage
   const img = new Image();
-  img.onload = () => { if (callback) callback(img); };
+  img.onload = () => {
+    if (callback) callback(img);
+  };
   img.src = c.toDataURL();
   return c;
 };
 
-PixaromaEditor.prototype.previewPlaceholderInput = function (layerId) {
+LinuxTechLabEditor.prototype.previewPlaceholderInput = function (layerId) {
   const layer = this.layers.find((l) => l.id === layerId);
   if (!layer || !layer.isPlaceholder) return;
 
@@ -207,12 +211,12 @@ PixaromaEditor.prototype.previewPlaceholderInput = function (layerId) {
     this.pushHistory();
   };
   img.onerror = () => {
-    console.warn("[Pixaroma] Failed to load preview for", layer.name);
+    console.warn("[LinuxTechLab] Failed to load preview for", layer.name);
   };
   img.src = url;
 };
 
-PixaromaEditor.prototype.previewAllConnectedPlaceholders = function () {
+LinuxTechLabEditor.prototype.previewAllConnectedPlaceholders = function () {
   this.layers.forEach((l) => {
     if (l.isPlaceholder && this.isPlaceholderConnected(l)) {
       this.previewPlaceholderInput(l.id);
@@ -255,7 +259,7 @@ export function getUpstreamImageUrlForNode(node, inputName) {
   return null;
 }
 
-PixaromaEditor.prototype.changePlaceholderRatio = function (layer, ratioKey) {
+LinuxTechLabEditor.prototype.changePlaceholderRatio = function (layer, ratioKey) {
   layer.phRatio = ratioKey;
 
   // Determine new w/h — preserve area comparable to half the canvas
@@ -284,7 +288,7 @@ PixaromaEditor.prototype.changePlaceholderRatio = function (layer, ratioKey) {
   this.pushHistory();
 };
 
-PixaromaEditor.prototype.syncNodeInputs = function () {
+LinuxTechLabEditor.prototype.syncNodeInputs = function () {
   const node = this.node;
   if (!node) return;
 

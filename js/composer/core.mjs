@@ -1,8 +1,8 @@
-import { PixaromaUI } from "./ui.mjs";
-import { PixaromaLayers } from "./layers.mjs";
+import { LinuxTechLabUI } from "./ui.mjs";
+import { LinuxTechLabLayers } from "./layers.mjs";
 import { installFocusTrap } from "../shared/index.mjs";
 
-export class PixaromaEditor {
+export class LinuxTechLabEditor {
   constructor(node) {
     this.node = node;
     this.layers = [];
@@ -39,7 +39,7 @@ export class PixaromaEditor {
     this.historyIndex = -1;
     this.isRestoringHistory = false;
 
-    this.ui = new PixaromaUI(this);
+    this.ui = new LinuxTechLabUI(this);
     this.ui.build();
 
     this.renderCanvas = document.createElement("canvas");
@@ -61,9 +61,7 @@ export class PixaromaEditor {
       }
       if (this.selectedLayerIds.size === 1) this.setupEraserOnSelection();
       if (this._layout)
-        this._layout.setStatus(
-          "Eraser mode \u00b7 Drag to erase \u00b7 [ / ] resize \u00b7 E to toggle off",
-        );
+        this._layout.setStatus("Eraser mode \u00b7 Drag to erase \u00b7 [ / ] resize \u00b7 E to toggle off");
     } else {
       // Select mode: default cursor, reset toggle button
       this.canvas.style.cursor = "default";
@@ -74,9 +72,7 @@ export class PixaromaEditor {
       // Context-aware tooltip on returning to select mode
       if (this._layout) {
         if (this.layers.length === 0) {
-          this._layout.setStatus(
-            "Add an image to get started \u2014 click Add Image or drag & drop",
-          );
+          this._layout.setStatus("Add an image to get started \u2014 click Add Image or drag & drop");
         } else if (this.selectedLayerIds.size === 0) {
           this._layout.setStatus(
             "Click to select \u00b7 Shift+Click multi-select \u00b7 Alt+Drag duplicate \u00b7 Space+Drag pan \u00b7 Scroll zoom",
@@ -187,6 +183,6 @@ export class PixaromaEditor {
   }
 
   captureState() {
-    return PixaromaLayers.captureState(this.layers);
+    return LinuxTechLabLayers.captureState(this.layers);
   }
 }

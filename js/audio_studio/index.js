@@ -25,13 +25,13 @@ const DEFAULT_CFG = {
   motion_direction: 1.0,
   // Per-mode params — each is no-op for non-target modes. Defaults match
   // Params(...) in nodes/_audio_react_engine.py (Pattern #1).
-  shake_axis: "both",       // "both" / "x" / "y" — Camera Shake only
-  ripple_density: 1.0,      // multiplier on Ripple's wave frequency
-  slit_density: 1.0,        // multiplier on Time Slice's bar count
-  glitch_bands: 30,         // Glitch motion — horizontal slice count (5-100)
-  wave_density: 1.0,        // multiplier on Wave's spatial frequency
-  pixelate_blocks: 24,      // Pixelate motion — block count at peak onset
-  squeeze_axis: "x",        // "x" or "y" — Squeeze motion only
+  shake_axis: "both", // "both" / "x" / "y" — Camera Shake only
+  ripple_density: 1.0, // multiplier on Ripple's wave frequency
+  slit_density: 1.0, // multiplier on Time Slice's bar count
+  glitch_bands: 30, // Glitch motion — horizontal slice count (5-100)
+  wave_density: 1.0, // multiplier on Wave's spatial frequency
+  pixelate_blocks: 24, // Pixelate motion — block count at peak onset
+  squeeze_axis: "x", // "x" or "y" — Squeeze motion only
   smoothing: 5,
   loop_safe: true,
   fps: 24,
@@ -80,11 +80,11 @@ function isEditorOpen(node) {
 }
 
 app.registerExtension({
-  name: "Pixaroma.AudioStudio",
+  name: "LinuxTechLab.AudioStudio",
 
   // Pattern #9: extension-scope monkey-patch app.graphToPrompt to inject
   // studio_json from node.properties.audioStudioState into the request
-  // body right before submission. Same pattern as Resolution Pixaroma.
+  // body right before submission. Same pattern as Resolution LinuxTechLab.
   async setup() {
     const original = app.graphToPrompt.bind(app);
     app.graphToPrompt = async function (...args) {
@@ -94,7 +94,7 @@ app.registerExtension({
         if (!out) return result;
         for (const id in out) {
           const entry = out[id];
-          if (!entry || entry.class_type !== "PixaromaAudioStudio") continue;
+          if (!entry || entry.class_type !== "LinuxTechLabAudioStudio") continue;
           // Resolve the node from the graph by id (subgraph-safe: try both
           // exact id and parseInt fallback, same defensive pattern as Resolution).
           let node = null;
@@ -114,14 +114,14 @@ app.registerExtension({
           entry.inputs.studio_json = JSON.stringify(state);
         }
       } catch (e) {
-        console.warn("[Pixaroma] AudioStudio graphToPrompt hook failed:", e);
+        console.warn("[LinuxTechLab] AudioStudio graphToPrompt hook failed:", e);
       }
       return result;
     };
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "PixaromaAudioStudio") return;
+    if (node.comfyClass !== "LinuxTechLabAudioStudio") return;
 
     if (!node.properties) node.properties = {};
     if (!node.properties[STATE_KEY]) {
@@ -165,7 +165,9 @@ app.registerExtension({
     const origRemoved = node.onRemoved;
     node.onRemoved = function () {
       if (isEditorOpen(this)) {
-        try { this._audioStudioEditor.forceClose(); } catch {}
+        try {
+          this._audioStudioEditor.forceClose();
+        } catch {}
       }
       origRemoved?.call(this);
     };

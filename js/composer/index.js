@@ -1,5 +1,5 @@
 import { app } from "../../../../scripts/app.js";
-// api is used at the top level (pixaroma-composer-preview WebSocket
+// api is used at the top level (linuxtechlab-composer-preview WebSocket
 // listener) AND inside the execution-events try block further down.
 // Importing it once here keeps both call sites using the same module.
 import { api } from "../../../../scripts/api.js";
@@ -13,7 +13,7 @@ import {
 } from "../shared/index.mjs";
 
 // Import core class first, then mixins as side-effects
-import { PixaromaEditor } from "./core.mjs";
+import { LinuxTechLabEditor } from "./core.mjs";
 import "./eraser.mjs";
 import "./render.mjs";
 import "./interaction.mjs";
@@ -21,11 +21,13 @@ import "./placeholder.mjs";
 import { getUpstreamImageUrlForNode } from "./placeholder.mjs";
 
 // Re-export so other modules can import from index
-export { PixaromaEditor };
+export { LinuxTechLabEditor };
 
 // ── DEBUG — set to true to trace preview updates in the console ──
 const DBG = false;
-function dbg(...args) { if (DBG) console.log("[PXR-DEBUG]", ...args); }
+function dbg(...args) {
+  if (DBG) console.log("[PXR-DEBUG]", ...args);
+}
 
 // Same mapping used by the in-editor canvas (see composer/render.mjs).
 // Must stay in sync — the mini-preview client recomposite needs to
@@ -52,28 +54,28 @@ const BLEND_MAP = {
 
 // Check if the editor is truly open (overlay is in the DOM)
 function isEditorOpen(node) {
-  if (!node._pixaromaEditor) return false;
-  const overlay = node._pixaromaEditor.overlay;
+  if (!node._linuxtechlabEditor) return false;
+  const overlay = node._linuxtechlabEditor.overlay;
   if (!overlay || !overlay.isConnected) {
     // Editor was removed from DOM without close handler — clean up
     dbg("editor overlay gone — clearing stale reference");
-    node._pixaromaEditor = null;
+    node._linuxtechlabEditor = null;
     return false;
   }
   return true;
 }
 
 app.registerExtension({
-  name: "Pixaroma.ImageComposer",
+  name: "LinuxTechLab.ImageComposer",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "PixaromaImageComposition") return;
+    if (nodeData.name !== "LinuxTechLabImageComposition") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       originalOnExecuted?.apply(this, arguments);
-      dbg("onExecuted fired", { hasRebuild: !!this._pixaromaRebuildPreview, editorOpen: isEditorOpen(this) });
-      // If the "pixaroma-composer-preview" WebSocket event already
+      dbg("onExecuted fired", { hasRebuild: !!this._linuxtechlabRebuildPreview, editorOpen: isEditorOpen(this) });
+      // If the "linuxtechlab-composer-preview" WebSocket event already
       // pushed the correct server-rendered image into our top
       // preview (dynamic re-compose path: placeholders / auto-rembg
       // / masks), DO NOT run rebuildPreview — it would re-composite
@@ -82,43 +84,46 @@ app.registerExtension({
       //
       // The flag is set by _onComposerPreview and cleared on
       // execution_start so the next run starts fresh.
-      if (this._pixaromaWsPreviewApplied) {
+      if (this._linuxtechlabWsPreviewApplied) {
         dbg("onExecuted → WS preview already applied, skipping rebuild");
         return;
       }
       // Fast-path fallback (no placeholders / auto-rembg / masks):
       // Python loaded the pre-baked composite PNG and didn't send a
       // custom event — so rebuild client-side from current inputs.
-      if (this._pixaromaRebuildPreview && !isEditorOpen(this)) {
-        const rebuild = this._pixaromaRebuildPreview;
-        setTimeout(() => { dbg("onExecuted → delayed rebuildPreview"); rebuild(); }, 300);
+      if (this._linuxtechlabRebuildPreview && !isEditorOpen(this)) {
+        const rebuild = this._linuxtechlabRebuildPreview;
+        setTimeout(() => {
+          dbg("onExecuted → delayed rebuildPreview");
+          rebuild();
+        }, 300);
       }
     };
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "PixaromaImageComposition") return;
+    if (node.comfyClass !== "LinuxTechLabImageComposition") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
 
     // ── Shared preview system ──
-    const parts = createNodePreview(
-      "Image Composer",
-      "Pixaroma",
-      "Click 'Open Image Composer' to start",
-    );
+    const parts = createNodePreview("Image Composer", "LinuxTechLab", "Click 'Open Image Composer' to start");
 
     // ── State — mirrors the hidden project_json widget ──
     let projectJson = "{}";
 
     // ── Open button ──
     node.addWidget("button", "Open Image Composer", null, () => {
-      const editor = new PixaromaEditor(node);
-      node._pixaromaEditor = editor;
+      const editor = new LinuxTechLabEditor(node);
+      node._linuxtechlabEditor = editor;
 
       editor.onSave = (jsonStr, dataURL) => {
-        dbg("editor.onSave", { jsonLen: jsonStr.length, hasDataURL: !!dataURL, editorOpen: !!node._pixaromaEditor });
+        dbg("editor.onSave", {
+          jsonLen: jsonStr.length,
+          hasDataURL: !!dataURL,
+          editorOpen: !!node._linuxtechlabEditor,
+        });
         projectJson = jsonStr;
         widget.value = { project_json: jsonStr };
 
@@ -134,67 +139,70 @@ app.registerExtension({
         node.setDirtyCanvas(true, true);
       };
 
-      editor.onSaveToDisk = (dataURL) =>
-        downloadDataURL(dataURL, "pixaroma_composer");
+      editor.onSaveToDisk = (dataURL) => downloadDataURL(dataURL, "linuxtechlab_composer");
 
       editor.onClose = () => {
         dbg("editor.onClose");
         editor.syncNodeInputs();
-        node._pixaromaEditor = null;
+        node._linuxtechlabEditor = null;
         _lastUpstreamSnapshot = "";
         node.setDirtyCanvas(true, true);
       };
     });
 
     // ── DOM widget ──
-    let widget = node.addDOMWidget(
-      "ComposerWidget",
-      "custom",
-      parts.container,
-      {
-        getValue: () => ({ project_json: projectJson }),
-        setValue: (v) => {
-          dbg("setValue called", { type: typeof v, hasProjectJson: !!(v && v.project_json), projectJsonLen: v?.project_json?.length });
-          if (v && typeof v === "object" && v.project_json) {
-            const incoming = v.project_json;
-            if (incoming && incoming !== "{}" && incoming !== projectJson) {
-              dbg("setValue → updating projectJson", { oldLen: projectJson.length, newLen: incoming.length });
-              projectJson = incoming;
-            }
-            let hasPlaceholders = false;
-            try {
-              const m = JSON.parse(projectJson);
-              hasPlaceholders = (m.layers || []).some((l) => l.isPlaceholder);
-            } catch {}
-            dbg("setValue → hasPlaceholders:", hasPlaceholders, "editorOpen:", isEditorOpen(node));
-            if (isEditorOpen(node)) {
-              // Editor is open — it handles its own preview, skip rebuild
-            } else if (hasPlaceholders) {
-              rebuildPreview();
-            } else {
-              restoreNodePreview(parts, projectJson, node);
-            }
+    let widget = node.addDOMWidget("ComposerWidget", "custom", parts.container, {
+      getValue: () => ({ project_json: projectJson }),
+      setValue: (v) => {
+        dbg("setValue called", {
+          type: typeof v,
+          hasProjectJson: !!(v && v.project_json),
+          projectJsonLen: v?.project_json?.length,
+        });
+        if (v && typeof v === "object" && v.project_json) {
+          const incoming = v.project_json;
+          if (incoming && incoming !== "{}" && incoming !== projectJson) {
+            dbg("setValue → updating projectJson", { oldLen: projectJson.length, newLen: incoming.length });
+            projectJson = incoming;
           }
-        },
-        getMinHeight: () => 210,
-        margin: 5,
+          let hasPlaceholders = false;
+          try {
+            const m = JSON.parse(projectJson);
+            hasPlaceholders = (m.layers || []).some((l) => l.isPlaceholder);
+          } catch {}
+          dbg("setValue → hasPlaceholders:", hasPlaceholders, "editorOpen:", isEditorOpen(node));
+          if (isEditorOpen(node)) {
+            // Editor is open — it handles its own preview, skip rebuild
+          } else if (hasPlaceholders) {
+            rebuildPreview();
+          } else {
+            restoreNodePreview(parts, projectJson, node);
+          }
+        }
       },
-    );
+      getMinHeight: () => 210,
+      margin: 5,
+    });
 
     // cleanup handled in API listener section below
 
     // Default auto-preview
-    node._pixaromaAutoPreview = true;
+    node._linuxtechlabAutoPreview = true;
 
     // Full re-composite: render all layers in z-order, replacing connected
     // placeholders with their upstream image (respecting fill mode).
     const rebuildPreview = () => {
       let meta;
-      try { meta = JSON.parse(projectJson); } catch {
+      try {
+        meta = JSON.parse(projectJson);
+      } catch {
         dbg("rebuildPreview → JSON parse failed");
         return;
       }
-      if (!meta) { dbg("rebuildPreview → meta is null"); return; }
+      if (!meta) {
+        dbg("rebuildPreview → meta is null");
+        return;
+      }
 
       const docW = meta.doc_w || 1024;
       const docH = meta.doc_h || 1024;
@@ -209,11 +217,14 @@ app.registerExtension({
       // Build load list for every visible layer
       const loadList = [];
       for (const layer of layers) {
-        if (layer.visible === false) { loadList.push({ layer, url: null, maskUrl: null }); continue; }
+        if (layer.visible === false) {
+          loadList.push({ layer, url: null, maskUrl: null });
+          continue;
+        }
         let maskUrl = null;
         if (layer.maskSrc) {
           const maskFn = layer.maskSrc.split(/[\\/]/).pop();
-          maskUrl = `/view?filename=${encodeURIComponent(maskFn)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+          maskUrl = `/view?filename=${encodeURIComponent(maskFn)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
         }
         if (layer.isPlaceholder) {
           const url = getUpstreamImageUrlForNode(node, `image_${layer.inputIndex}`);
@@ -221,9 +232,12 @@ app.registerExtension({
           loadList.push({ layer, url, maskUrl, isPlaceholder: true });
         } else {
           const src = layer.src;
-          if (!src || src === "__placeholder__") { loadList.push({ layer, url: null, maskUrl: null }); continue; }
+          if (!src || src === "__placeholder__") {
+            loadList.push({ layer, url: null, maskUrl: null });
+            continue;
+          }
           const fn = src.split(/[\\/]/).pop();
-          const url = `/view?filename=${encodeURIComponent(fn)}&type=input&subfolder=pixaroma&t=${Date.now()}`;
+          const url = `/view?filename=${encodeURIComponent(fn)}&type=input&subfolder=linuxtechlab&t=${Date.now()}`;
           dbg("  regular layer", layer.name, "→ url:", url.substring(0, 80));
           loadList.push({ layer, url, maskUrl });
         }
@@ -233,9 +247,16 @@ app.registerExtension({
       const images = new Array(loadList.length);
       const maskImages = new Array(loadList.length);
       let pending = 0;
-      loadList.forEach((item) => { if (item.url) pending++; if (item.maskUrl) pending++; });
+      loadList.forEach((item) => {
+        if (item.url) pending++;
+        if (item.maskUrl) pending++;
+      });
       dbg("rebuildPreview → pending image loads:", pending);
-      if (pending === 0) { dbg("rebuildPreview → no images to load, compositing immediately"); compositeAll(); return; }
+      if (pending === 0) {
+        dbg("rebuildPreview → no images to load, compositing immediately");
+        compositeAll();
+        return;
+      }
 
       let done = 0;
       const check = () => {
@@ -248,14 +269,24 @@ app.registerExtension({
         if (item.url) {
           const img = new Image();
           img.crossOrigin = "Anonymous";
-          img.onload = () => { images[i] = img; dbg("  img loaded", i, img.naturalWidth + "x" + img.naturalHeight); check(); };
-          img.onerror = (e) => { dbg("  img FAILED", i, item.url.substring(0, 80)); check(); };
+          img.onload = () => {
+            images[i] = img;
+            dbg("  img loaded", i, img.naturalWidth + "x" + img.naturalHeight);
+            check();
+          };
+          img.onerror = (e) => {
+            dbg("  img FAILED", i, item.url.substring(0, 80));
+            check();
+          };
           img.src = item.url;
         }
         if (item.maskUrl) {
           const msk = new Image();
           msk.crossOrigin = "Anonymous";
-          msk.onload = () => { maskImages[i] = msk; check(); };
+          msk.onload = () => {
+            maskImages[i] = msk;
+            check();
+          };
           msk.onerror = check;
           msk.src = item.maskUrl;
         }
@@ -263,18 +294,22 @@ app.registerExtension({
 
       function applyFillMode(img, phW, phH, mode) {
         const c = document.createElement("canvas");
-        c.width = phW; c.height = phH;
+        c.width = phW;
+        c.height = phH;
         const ctx = c.getContext("2d");
-        const sw = img.naturalWidth, sh = img.naturalHeight;
+        const sw = img.naturalWidth,
+          sh = img.naturalHeight;
         if (mode === "fill") {
           ctx.drawImage(img, 0, 0, phW, phH);
         } else if (mode === "contain") {
           const s = Math.min(phW / sw, phH / sh);
-          const dw = sw * s, dh = sh * s;
+          const dw = sw * s,
+            dh = sh * s;
           ctx.drawImage(img, (phW - dw) / 2, (phH - dh) / 2, dw, dh);
         } else {
           const s = Math.max(phW / sw, phH / sh);
-          const dw = sw * s, dh = sh * s;
+          const dw = sw * s,
+            dh = sh * s;
           ctx.drawImage(img, (phW - dw) / 2, (phH - dh) / 2, dw, dh);
         }
         return c;
@@ -283,13 +318,16 @@ app.registerExtension({
       function drawLayer(ctx, layer, img, maskImg) {
         const natW = img.naturalWidth || img.width;
         const natH = img.naturalHeight || img.height;
-        const sx = Math.abs(layer.scaleX || 1), sy = Math.abs(layer.scaleY || 1);
-        const w = natW * sx, h = natH * sy;
+        const sx = Math.abs(layer.scaleX || 1),
+          sy = Math.abs(layer.scaleY || 1);
+        const w = natW * sx,
+          h = natH * sy;
 
         let src = img;
         if (maskImg) {
           const tc = document.createElement("canvas");
-          tc.width = natW; tc.height = natH;
+          tc.width = natW;
+          tc.height = natH;
           const tCtx = tc.getContext("2d");
           tCtx.drawImage(img, 0, 0);
           tCtx.globalCompositeOperation = "destination-out";
@@ -297,12 +335,12 @@ app.registerExtension({
           src = tc;
         }
 
-        const cx = layer.cx ?? docW / 2, cy = layer.cy ?? docH / 2;
-        const rot = (layer.rotation || 0) * Math.PI / 180;
+        const cx = layer.cx ?? docW / 2,
+          cy = layer.cy ?? docH / 2;
+        const rot = ((layer.rotation || 0) * Math.PI) / 180;
         ctx.save();
         ctx.globalAlpha = layer.opacity ?? 1;
-        if (layer.blendMode && BLEND_MAP[layer.blendMode])
-          ctx.globalCompositeOperation = BLEND_MAP[layer.blendMode];
+        if (layer.blendMode && BLEND_MAP[layer.blendMode]) ctx.globalCompositeOperation = BLEND_MAP[layer.blendMode];
         ctx.translate(cx, cy);
         ctx.rotate(rot);
         ctx.scale(layer.flippedX ? -1 : 1, layer.flippedY ? -1 : 1);
@@ -312,7 +350,8 @@ app.registerExtension({
 
       function compositeAll() {
         const cvs = document.createElement("canvas");
-        cvs.width = docW; cvs.height = docH;
+        cvs.width = docW;
+        cvs.height = docH;
         const ctx = cvs.getContext("2d");
 
         loadList.forEach((item, i) => {
@@ -331,7 +370,8 @@ app.registerExtension({
               const phH = item.layer.naturalHeight || Math.round(docH / 2);
               const color = item.layer.placeholderColor || "#808080";
               const pc = document.createElement("canvas");
-              pc.width = phW; pc.height = phH;
+              pc.width = phW;
+              pc.height = phH;
               const pCtx = pc.getContext("2d");
               pCtx.fillStyle = color;
               pCtx.fillRect(0, 0, phW, phH);
@@ -356,7 +396,7 @@ app.registerExtension({
     };
 
     // Expose for onExecuted
-    node._pixaromaRebuildPreview = rebuildPreview;
+    node._linuxtechlabRebuildPreview = rebuildPreview;
 
     // Preferred onExecuted path: Python sends back the exact final
     // composed PNG via the ui.images channel. This helper fetches it
@@ -364,7 +404,7 @@ app.registerExtension({
     // re-compositing needed, and critically it includes any server-
     // applied auto-rembg so the mini preview matches downstream
     // PreviewImage nodes.
-    node._pixaromaShowPreviewFromUI = (uiImage) => {
+    node._linuxtechlabShowPreviewFromUI = (uiImage) => {
       if (!uiImage || !uiImage.filename) return;
       const params = new URLSearchParams({
         filename: uiImage.filename,
@@ -382,11 +422,11 @@ app.registerExtension({
           dimText = `${meta.doc_w}\u00d7${meta.doc_h}`;
         }
       } catch {}
-      dbg("pixaromaShowPreviewFromUI → loading", url);
+      dbg("linuxtechlabShowPreviewFromUI → loading", url);
       showNodePreview(parts, url, dimText, node);
     };
 
-    // Listen for the server-side "pixaroma-composer-preview" event the
+    // Listen for the server-side "linuxtechlab-composer-preview" event the
     // Python node sends after a dynamic re-compose (placeholders /
     // auto-rembg / masks). It carries the filename of the exact PNG
     // that was baked as the workflow output, so we can push that same
@@ -405,7 +445,7 @@ app.registerExtension({
       } catch {}
       if (data.project_id && myProjectId && data.project_id !== myProjectId) return;
       if (isEditorOpen(node)) return; // don't fight the editor's own saves
-      node._pixaromaShowPreviewFromUI({
+      node._linuxtechlabShowPreviewFromUI({
         filename: data.filename,
         subfolder: data.subfolder,
         type: data.type,
@@ -416,9 +456,9 @@ app.registerExtension({
       // server-rendered image with a client-side recomposite that
       // doesn't include auto-rembg, causing the "good image flashes
       // then goes bad" symptom.
-      node._pixaromaWsPreviewApplied = true;
+      node._linuxtechlabWsPreviewApplied = true;
     };
-    api.addEventListener("pixaroma-composer-preview", _onComposerPreview);
+    api.addEventListener("linuxtechlab-composer-preview", _onComposerPreview);
 
     node.onConnectionsChange = (type, slotIndex, connected) => {
       if (type !== LiteGraph.INPUT) return;
@@ -427,8 +467,8 @@ app.registerExtension({
 
       dbg("onConnectionsChange", inputName, connected);
       if (isEditorOpen(node)) {
-        node._pixaromaEditor.ui.updateActiveLayerUI();
-      } else if (node._pixaromaAutoPreview) {
+        node._linuxtechlabEditor.ui.updateActiveLayerUI();
+      } else if (node._linuxtechlabAutoPreview) {
         rebuildPreview();
       }
     };
@@ -465,8 +505,11 @@ app.registerExtension({
 
     // Poll every 500ms for upstream changes (widget swaps, execution results)
     const pollInterval = setInterval(() => {
-      if (!node.graph) { clearInterval(pollInterval); return; }
-      if (!node._pixaromaAutoPreview || isEditorOpen(node)) return;
+      if (!node.graph) {
+        clearInterval(pollInterval);
+        return;
+      }
+      if (!node._linuxtechlabAutoPreview || isEditorOpen(node)) return;
       const snap = getUpstreamSnapshot();
       if (snap && snap !== _lastUpstreamSnapshot) {
         dbg("poll → snapshot changed", { old: _lastUpstreamSnapshot.substring(0, 60), new: snap.substring(0, 60) });
@@ -478,7 +521,7 @@ app.registerExtension({
         // upstream LoadImage getting its exec result — not a real
         // user-initiated change. Keep _lastUpstreamSnapshot updated
         // so a later genuine change is detected.
-        if (node._pixaromaWsPreviewApplied) {
+        if (node._linuxtechlabWsPreviewApplied) {
           dbg("poll → WS preview already applied, skipping rebuild");
           return;
         }
@@ -496,7 +539,7 @@ app.registerExtension({
         // Reset the WS-preview flag so if this run doesn't hit the
         // dynamic re-compose path (no placeholders / auto-rembg /
         // masks), onExecuted falls back to rebuildPreview correctly.
-        node._pixaromaWsPreviewApplied = false;
+        node._linuxtechlabWsPreviewApplied = false;
       });
 
       // "executing" with null detail means execution finished
@@ -508,7 +551,7 @@ app.registerExtension({
             // Same gate as onExecuted and the poll: if the WS event
             // already pushed the correct server-rendered preview,
             // don't clobber it with a client-side recomposite.
-            if (node._pixaromaWsPreviewApplied) {
+            if (node._linuxtechlabWsPreviewApplied) {
               dbg("executing-null → WS preview already applied, skipping rebuild");
               return;
             }
@@ -524,7 +567,7 @@ app.registerExtension({
         // Detach the preview WebSocket listener so removed nodes don't
         // leak event handlers / update phantom previews on later runs.
         try {
-          api.removeEventListener("pixaroma-composer-preview", _onComposerPreview);
+          api.removeEventListener("linuxtechlab-composer-preview", _onComposerPreview);
         } catch {}
         widget = null;
       };

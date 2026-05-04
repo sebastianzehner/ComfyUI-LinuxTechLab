@@ -1,11 +1,9 @@
 // ============================================================
-// Pixaroma 3D Editor — Save/restore, background image mgmt
+// LinuxTechLab 3D Editor — Save/restore, background image mgmt
 // ============================================================
-import { Pixaroma3DEditor, getTHREE, ThreeDAPI } from "./core.mjs";
+import { LinuxTechLab3DEditor, getTHREE, ThreeDAPI } from "./core.mjs";
 import { loadTeapotGeometry, getShapeDefaults } from "./shapes.mjs";
-import {
-  COMPOSITES, isCompositeType, buildComposite, getCompositeDefaults,
-} from "./composites.mjs";
+import { COMPOSITES, isCompositeType, buildComposite, getCompositeDefaults } from "./composites.mjs";
 // Static import of the SYNCHRONOUS importer helpers so the composite
 // restore path can build Groups without a placeholder-swap flicker.
 // (GLB / OBJ restore still needs the async loaders below.)
@@ -13,7 +11,7 @@ import { prepareImportedGroup } from "./importer.mjs";
 
 // ─── Save / Restore ───────────────────────────────────────
 
-Pixaroma3DEditor.prototype._serializeScene = function () {
+LinuxTechLab3DEditor.prototype._serializeScene = function () {
   return {
     doc_w: this.docW,
     doc_h: this.docH,
@@ -60,9 +58,7 @@ Pixaroma3DEditor.prototype._serializeScene = function () {
         // Save the geoParams object so per-shape slider state (trunk
         // height, petal count, seed, etc.) survives save/reopen.
         base.keepOriginalMaterials = !!o.userData.keepOriginalMaterials;
-        base.geoParams = o.userData.geoParams
-          ? { ...o.userData.geoParams }
-          : null;
+        base.geoParams = o.userData.geoParams ? { ...o.userData.geoParams } : null;
       }
       // Material fields for parametric meshes straight from o.material.
       // For imported groups pull them from the stashed override material
@@ -116,7 +112,7 @@ Pixaroma3DEditor.prototype._serializeScene = function () {
   };
 };
 
-Pixaroma3DEditor.prototype._restoreScene = function (jsonStr) {
+LinuxTechLab3DEditor.prototype._restoreScene = function (jsonStr) {
   const THREE = getTHREE();
   if (!jsonStr || jsonStr === "{}") {
     this._undoStack = [];
@@ -175,18 +171,8 @@ Pixaroma3DEditor.prototype._restoreScene = function (jsonStr) {
     this._updateFrame();
     if (d.objects) d.objects.forEach((od) => this._addObjFromData(od));
     if (d.camera) {
-      if (d.camera.position)
-        this.camera.position.set(
-          d.camera.position.x,
-          d.camera.position.y,
-          d.camera.position.z,
-        );
-      if (d.camera.target)
-        this.orbitCtrl.target.set(
-          d.camera.target.x,
-          d.camera.target.y,
-          d.camera.target.z,
-        );
+      if (d.camera.position) this.camera.position.set(d.camera.position.x, d.camera.position.y, d.camera.position.z);
+      if (d.camera.target) this.orbitCtrl.target.set(d.camera.target.x, d.camera.target.y, d.camera.target.z);
       this.orbitCtrl.update();
     }
     if (d.light) {
@@ -250,7 +236,7 @@ Pixaroma3DEditor.prototype._restoreScene = function (jsonStr) {
       // Load from server path — split into filename + subfolder for ComfyUI /view
       const parts = d.bgImage.path.replace(/\\/g, "/").split("/");
       const fname = parts.pop();
-      const subfolder = parts.join("/") || "pixaroma";
+      const subfolder = parts.join("/") || "linuxtechlab";
       const imgSrc =
         "/view?filename=" +
         encodeURIComponent(fname) +
@@ -339,7 +325,7 @@ function applyObjectData(m, od) {
   m.visible = od.visible !== false;
 }
 
-Pixaroma3DEditor.prototype._addObjFromData = function (od) {
+LinuxTechLab3DEditor.prototype._addObjFromData = function (od) {
   if (od.type === "import") {
     // User-uploaded model. The GLB/OBJ lives on disk under the path
     // we saved at upload time — rebuild the ComfyUI /view URL from it
@@ -355,10 +341,8 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
     applyObjectData(placeholder, od);
     import("./importer.mjs").then(async (mod) => {
       if (this._closed) return;
-      const {
-        loadGLBFromURL, loadOBJWithCompanions, prepareImportedGroup,
-        wrapImportPivot, viewURLForStoredPath,
-      } = mod;
+      const { loadGLBFromURL, loadOBJWithCompanions, prepareImportedGroup, wrapImportPivot, viewURLForStoredPath } =
+        mod;
       const url = viewURLForStoredPath(od.importPath);
       try {
         let innerGroup;
@@ -385,8 +369,7 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
         placeholder.geometry?.dispose();
         placeholder.material?.dispose();
         // Shared material prep so the Shape-panel toggle round-trips.
-        const { origMaterials, overrideMat } =
-          prepareImportedGroup(innerGroup, od.colorHex);
+        const { origMaterials, overrideMat } = prepareImportedGroup(innerGroup, od.colorHex);
         // Wrap so the gizmo pivot sits on the mesh's base-center —
         // matches the fresh-import flow so saved transforms apply to
         // an equivalently-anchored object. No auto-scale here: the
@@ -410,8 +393,7 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
           this.selectedObjs.add(group);
         }
         if (wasActive) this.activeObj = group;
-        if (wasAttached && !group.userData.locked)
-          this.transformCtrl.attach(group);
+        if (wasAttached && !group.userData.locked) this.transformCtrl.attach(group);
         if (this._syncOutlineSelection) this._syncOutlineSelection();
         this._updateLayers();
         this._updateShadowFrustum?.();
@@ -447,7 +429,7 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
       if (this._closed) return;
       const { loadGLBFromURL, prepareImportedGroup, wrapImportPivot } = mod;
       try {
-        const innerGroup = await loadGLBFromURL("/pixaroma/assets/models/bunny.glb");
+        const innerGroup = await loadGLBFromURL("/linuxtechlab/assets/models/bunny.glb");
         // Replace placeholder in-place so the layer panel entry and
         // object ordering don't shuffle.
         const idx = this.objects.indexOf(placeholder);
@@ -465,8 +447,7 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
         // so _applyImportMaterialMode can toggle later, and
         // applyObjectData can write the saved colour/rough/etc through
         // to the override material.
-        const { origMaterials, overrideMat } =
-          prepareImportedGroup(innerGroup, od.colorHex);
+        const { origMaterials, overrideMat } = prepareImportedGroup(innerGroup, od.colorHex);
         // Wrap pivot at mesh base-center — same as fresh bunny adds —
         // so the gizmo lands on the object instead of floating away.
         const { outer: group } = wrapImportPivot(innerGroup);
@@ -485,8 +466,7 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
           this.selectedObjs.add(group);
         }
         if (wasActive) this.activeObj = group;
-        if (wasAttached && !group.userData.locked)
-          this.transformCtrl.attach(group);
+        if (wasAttached && !group.userData.locked) this.transformCtrl.attach(group);
         if (this._syncOutlineSelection) this._syncOutlineSelection();
         this._updateLayers();
         this._updateShadowFrustum?.();
@@ -523,12 +503,9 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
       // sliders (e.g. expanded Tree / Pine Tree controls added recently)
       // still deserialize with safe values for missing keys.
       const cDefaults = getCompositeDefaults(od.type);
-      const params = od.geoParams
-        ? { ...cDefaults, ...od.geoParams }
-        : cDefaults;
+      const params = od.geoParams ? { ...cDefaults, ...od.geoParams } : cDefaults;
       const inner = buildComposite(od.type, params);
-      const { origMaterials, overrideMat } =
-        prepareImportedGroup(inner, od.colorHex);
+      const { origMaterials, overrideMat } = prepareImportedGroup(inner, od.colorHex);
       // Composites build with pivot at origin — no wrap. Snap Y to
       // floor as a safety net, then compute maxExtent for initial
       // size normalize (saved scale below overrides it anyway).
@@ -548,14 +525,10 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
         // Keep saved params so the Shape panel sliders land at the
         // same positions after reopen. Fall back to defaults if the
         // save predates composite params.
-        geoParams: params
-          ? { ...params }
-          : { ...(COMPOSITES[od.type]?.defaults || {}) },
+        geoParams: params ? { ...params } : { ...(COMPOSITES[od.type]?.defaults || {}) },
         // Composites default to true so baked colours render; user may
         // have toggled it off before save — honour whichever they chose.
-        keepOriginalMaterials: od.keepOriginalMaterials !== undefined
-          ? !!od.keepOriginalMaterials
-          : true,
+        keepOriginalMaterials: od.keepOriginalMaterials !== undefined ? !!od.keepOriginalMaterials : true,
         _origMaterials: origMaterials,
         _overrideMat: overrideMat,
       };
@@ -585,7 +558,7 @@ Pixaroma3DEditor.prototype._addObjFromData = function (od) {
   applyObjectData(m, od);
 };
 
-Pixaroma3DEditor.prototype._save = async function () {
+LinuxTechLab3DEditor.prototype._save = async function () {
   if (this._closed || !this.renderer) return;
   const THREE = getTHREE();
   this._layout.setSaving();
@@ -614,8 +587,7 @@ Pixaroma3DEditor.prototype._save = async function () {
 
     // For save render: temporarily restore scene bg if no bg image
     const hadBgImage = this.el.bgImgEl && this._bgImg.path;
-    if (!hadBgImage && this.scene.background === null)
-      this.scene.background = new THREE.Color(this.bgColor);
+    if (!hadBgImage && this.scene.background === null) this.scene.background = new THREE.Color(this.bgColor);
     this.renderer.render(this.scene, this.camera);
 
     let dataURL;
@@ -713,7 +685,7 @@ Pixaroma3DEditor.prototype._save = async function () {
   }
 };
 
-Pixaroma3DEditor.prototype._close = function () {
+LinuxTechLab3DEditor.prototype._close = function () {
   if (this._closed) return;
   if (this._shadowFitInterval) {
     clearInterval(this._shadowFitInterval);
@@ -750,8 +722,7 @@ Pixaroma3DEditor.prototype._close = function () {
     o.material?.dispose();
   });
   if (this._layout) this._layout.unmount();
-  else if (this.el.overlay?.parentNode)
-    this.el.overlay.parentNode.removeChild(this.el.overlay);
+  else if (this.el.overlay?.parentNode) this.el.overlay.parentNode.removeChild(this.el.overlay);
   this.scene = null;
   this.camera = null;
   this.renderer = null;
@@ -760,7 +731,7 @@ Pixaroma3DEditor.prototype._close = function () {
 
 // ─── Background Image (CSS 2D) ─────────────────────────────
 
-Pixaroma3DEditor.prototype._loadBgImage = function () {
+LinuxTechLab3DEditor.prototype._loadBgImage = function () {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = "image/*";
@@ -790,7 +761,7 @@ Pixaroma3DEditor.prototype._loadBgImage = function () {
   input.click();
 };
 
-Pixaroma3DEditor.prototype._showBgImage = function (src, autoFit) {
+LinuxTechLab3DEditor.prototype._showBgImage = function (src, autoFit) {
   const cont = this.el.bgContainer;
   if (!cont) return;
   cont.innerHTML = "";
@@ -821,7 +792,7 @@ Pixaroma3DEditor.prototype._showBgImage = function (src, autoFit) {
 // frame uses) made the bg overshoot the frame whenever the browser
 // window wasn't fullscreen — the frame shrinks for padding while the
 // bg keeps the un-padded size.
-Pixaroma3DEditor.prototype._getFrameRect = function () {
+LinuxTechLab3DEditor.prototype._getFrameRect = function () {
   const vp = this.el.viewport;
   if (!vp) return { x: 0, y: 0, w: 800, h: 600 };
   if (this._canvasFrame) {
@@ -843,7 +814,7 @@ Pixaroma3DEditor.prototype._getFrameRect = function () {
   return { x: (vpW - fw) / 2, y: (vpH - fh) / 2, w: fw, h: fh };
 };
 
-Pixaroma3DEditor.prototype._updateBgCSS = function () {
+LinuxTechLab3DEditor.prototype._updateBgCSS = function () {
   const img = this.el.bgImgEl;
   if (!img) return;
   if (!this._bgImg._natW || !this._bgImg._natH) return;
@@ -869,7 +840,7 @@ Pixaroma3DEditor.prototype._updateBgCSS = function () {
   img.style.opacity = this._bgImg.opacity / 100;
 };
 
-Pixaroma3DEditor.prototype._fitBg = function (mode) {
+LinuxTechLab3DEditor.prototype._fitBg = function (mode) {
   if (!this._bgImg._natW || !this._bgImg._natH) return;
   const natW = this._bgImg._natW,
     natH = this._bgImg._natH;
@@ -895,7 +866,7 @@ Pixaroma3DEditor.prototype._fitBg = function (mode) {
   this._updateBgCSS();
 };
 
-Pixaroma3DEditor.prototype._syncBgSliders = function () {
+LinuxTechLab3DEditor.prototype._syncBgSliders = function () {
   if (this.el.bgX) {
     this.el.bgX.value = this._bgImg.x;
     this.el.bgXV.value = this._bgImg.x;
@@ -918,7 +889,7 @@ Pixaroma3DEditor.prototype._syncBgSliders = function () {
   }
 };
 
-Pixaroma3DEditor.prototype._removeBgImage = function () {
+LinuxTechLab3DEditor.prototype._removeBgImage = function () {
   const THREE = getTHREE();
   const cont = this.el.bgContainer;
   if (cont) cont.innerHTML = "";

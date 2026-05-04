@@ -1,4 +1,4 @@
-export class PixaromaLayers {
+export class LinuxTechLabLayers {
   static getTransformedPoints(layer) {
     const w = layer.img.width * layer.scaleX;
     const h = layer.img.height * layer.scaleY;
@@ -42,8 +42,7 @@ export class PixaromaLayers {
     let w = layer.img.width;
     let h = layer.img.height;
     let visualWidth = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
-    let visualHeight =
-      Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+    let visualHeight = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
 
     let scale = 1;
     if (mode === "width") scale = docWidth / visualWidth;

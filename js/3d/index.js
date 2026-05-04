@@ -1,12 +1,12 @@
 // ============================================================
-// Pixaroma 3D Editor — Entry point (ComfyUI widget registration)
+// LinuxTechLab 3D Editor — Entry point (ComfyUI widget registration)
 // ============================================================
 import { app } from "../../../../scripts/app.js";
 
 // Import core class first, then mixin files (side-effect imports add methods to prototype)
-import { Pixaroma3DEditor } from "./core.mjs";
+import { LinuxTechLab3DEditor } from "./core.mjs";
 import "./engine.mjs";
-import "./shapes.mjs";  // shape registry (pure data module, no mixins)
+import "./shapes.mjs"; // shape registry (pure data module, no mixins)
 import "./objects.mjs";
 import "./shape_params.mjs";
 import "./interaction.mjs";
@@ -23,57 +23,54 @@ import {
 } from "../shared/index.mjs";
 
 app.registerExtension({
-  name: "Pixaroma.3DEditor",
+  name: "LinuxTechLab.3DEditor",
 
   settings: [
     {
-      id: "Pixaroma.3D.DefaultBgColor",
+      id: "LinuxTechLab.3D.DefaultBgColor",
       name: "Default Background Color — 3D Builder (default #6e6e6e)",
       type: "color",
       defaultValue: "#6e6e6e",
-      tooltip: "Color used as the background for new 3D scenes. Default is #6e6e6e (neutral gray). NOTE: ComfyUI's color field shows saved values without '#' but requires '#' when typing — enter '#6e6e6e' to reset, or use the color picker.",
-      category: ["👑 Pixaroma", "3D Builder"],
+      tooltip:
+        "Color used as the background for new 3D scenes. Default is #6e6e6e (neutral gray). NOTE: ComfyUI's color field shows saved values without '#' but requires '#' when typing — enter '#6e6e6e' to reset, or use the color picker.",
+      category: ["LinuxTechLab", "3D Builder"],
     },
   ],
 
   // Handle execution result (OUTPUT_NODE = True on python side)
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "Pixaroma3D") return;
+    if (nodeData.name !== "LinuxTechLab3D") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       originalOnExecuted?.apply(this, arguments);
-      if (allow_debug) console.log("Pixaroma3D executed");
+      if (allow_debug) console.log("LinuxTechLab3D executed");
     };
   },
 
   // DOM widget creation
   async nodeCreated(node) {
-    if (node.comfyClass !== "Pixaroma3D") return;
+    if (node.comfyClass !== "LinuxTechLab3D") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
 
     // ── Shared preview system ──
-    const parts = createNodePreview(
-      "3D Builder",
-      "Pixaroma",
-      "Click 'Open 3D Builder' to start",
-    );
+    const parts = createNodePreview("3D Builder", "LinuxTechLab", "Click 'Open 3D Builder' to start");
 
     // ── State ──
     let sceneJson = "{}";
 
     // ── Separate button widget ──
     node.addWidget("button", "Open 3D Builder", null, () => {
-      const editor = new Pixaroma3DEditor();
+      const editor = new LinuxTechLab3DEditor();
 
       // Apply default BG from ComfyUI settings (if user configured it).
       // ComfyUI's `color` setting type returns values without the leading
       // `#` (e.g. "c936c9"), and the legacy `text` type returns "#c936c9".
       // Accept either, and normalize to "#rrggbb".
       try {
-        let custom = app.ui.settings.getSettingValue("Pixaroma.3D.DefaultBgColor");
+        let custom = app.ui.settings.getSettingValue("LinuxTechLab.3D.DefaultBgColor");
         if (typeof custom === "string") {
           custom = custom.trim();
           if (custom && custom[0] !== "#") custom = "#" + custom;
@@ -109,8 +106,7 @@ app.registerExtension({
         node.setDirtyCanvas(true, true);
       };
 
-      editor.onSaveToDisk = (dataURL) =>
-        downloadDataURL(dataURL, "pixaroma_3d");
+      editor.onSaveToDisk = (dataURL) => downloadDataURL(dataURL, "linuxtechlab_3d");
 
       editor.onClose = () => {
         node.setDirtyCanvas(true, true);
@@ -144,4 +140,4 @@ app.registerExtension({
 });
 
 // Re-export for backward compatibility
-export { Pixaroma3DEditor } from "./core.mjs";
+export { LinuxTechLab3DEditor } from "./core.mjs";

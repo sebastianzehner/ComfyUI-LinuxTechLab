@@ -1,5 +1,5 @@
 # nodes/_audio_react_engine.py
-"""Shared effect engine for Audio React Pixaroma and AudioReact Pixaroma.
+"""Shared effect engine for Audio React LinuxTechLab and AudioReact LinuxTechLab.
 
 This module is the single source of truth for the audio-reactive video math.
 Both nodes are thin wrappers that build a `Params` dataclass and call
@@ -12,27 +12,26 @@ Design notes:
   functions — easy to test in isolation, easy to call from the parity script.
 - No JS or browser deps reach this file. It's torch-only.
 """
+
 from __future__ import annotations
 
 import gc
 import math
 from dataclasses import dataclass, fields
 
+import comfy.model_management
+import comfy.utils
 import torch
 import torch.nn.functional as F
-
-import comfy.utils
-import comfy.model_management
-
 
 # ---------------------------------------------------------------------
 # Constants — MUST stay in sync with docs/audio-react-math.md.
 # ---------------------------------------------------------------------
 
 AUDIO_BANDS_HZ: dict[str, tuple[float | None, float | None]] = {
-    "full":   (None, None),
-    "bass":   (20, 250),
-    "mids":   (250, 4000),
+    "full": (None, None),
+    "bass": (20, 250),
+    "mids": (250, 4000),
     "treble": (4000, 20000),
 }
 
@@ -63,7 +62,7 @@ ASPECT_OPTIONS: list[str] = [
 # Registries — populated below by static dict (functions register themselves
 # at module-bottom in tasks A4 / A5). Both registries: name -> callable.
 # Adding a new effect = drop a function + register it. Both
-# PixaromaAudioReact and PixaromaAudioStudio pick it up automatically.
+# LinuxTechLabAudioReact and LinuxTechLabAudioStudio pick it up automatically.
 MOTION_MODES: dict[str, callable] = {}
 OVERLAYS: dict[str, callable] = {}
 
@@ -71,6 +70,7 @@ OVERLAYS: dict[str, callable] = {}
 # ---------------------------------------------------------------------
 # Params dataclass — typed schema for both nodes.
 # ---------------------------------------------------------------------
+
 
 @dataclass
 class Params:
@@ -135,19 +135,20 @@ class Params:
 class MotionContext:
     """Inputs a motion function might need. Functions ignore fields they
     don't care about — keeps the dispatch uniform."""
-    base_grid: torch.Tensor   # [1, H, W, 2]
+
+    base_grid: torch.Tensor  # [1, H, W, 2]
     env_t: float
     onset_t: float
-    t: float                   # seconds since clip start
+    t: float  # seconds since clip start
     intensity: float
     motion_speed: float
-    direction: float           # +1 or -1, see Params.motion_direction
+    direction: float  # +1 or -1, see Params.motion_direction
     H: int
     W: int
     total_frames: int
     frame_index: int
     fps: int
-    onset_arr: torch.Tensor   # [F] — full onset track (used by shake)
+    onset_arr: torch.Tensor  # [F] — full onset track (used by shake)
     # Per-mode params (all default to a no-op for non-target modes).
     shake_axis: str = "both"
     ripple_density: float = 1.0
@@ -162,20 +163,21 @@ class MotionContext:
 class OverlayContext:
     """Per-frame inputs for an overlay function. Functions ignore fields
     they don't care about — keeps the dispatch uniform."""
-    frame: torch.Tensor   # [H, W, 3] in [0, 1]
+
+    frame: torch.Tensor  # [H, W, 3] in [0, 1]
     env_t: float
     onset_t: float
     strength: float
     H: int
     W: int
     device: torch.device
-    frame_index: int = 0   # for overlays that need a deterministic per-frame seed
-    t: float = 0.0         # seconds since clip start, for steady time-based motion
+    frame_index: int = 0  # for overlays that need a deterministic per-frame seed
+    t: float = 0.0  # seconds since clip start, for steady time-based motion
     loop_factor: float = 1.0  # 0..1 ramp at loop boundaries when loop_safe is on,
-                              # otherwise always 1.0. Steady overlays (scanlines,
-                              # grain) multiply their strength by this so the loop
-                              # seam doesn't pop. Env-gated overlays ignore it
-                              # (the envelope is already ramped).
+    # otherwise always 1.0. Steady overlays (scanlines,
+    # grain) multiply their strength by this so the loop
+    # seam doesn't pop. Env-gated overlays ignore it
+    # (the envelope is already ramped).
 
 
 def params_from_dict(cfg: dict) -> Params:
@@ -190,17 +192,24 @@ def validate_params(params: Params) -> list[str]:
     in generate_video(); this returns soft warnings (e.g. unusual values)."""
     out = []
     if params.intensity > 1.5:
-        out.append(f"intensity={params.intensity:.2f} is high (>1.5); motion may look cartoony.")
+        out.append(
+            f"intensity={params.intensity:.2f} is high (>1.5); motion may look cartoony."
+        )
     if params.motion_mode not in MOTION_MODES:
-        out.append(f"motion_mode={params.motion_mode!r} is unknown; will fail at generate.")
+        out.append(
+            f"motion_mode={params.motion_mode!r} is unknown; will fail at generate."
+        )
     if params.audio_band not in AUDIO_BANDS_HZ:
-        out.append(f"audio_band={params.audio_band!r} is unknown; will fail at generate.")
+        out.append(
+            f"audio_band={params.audio_band!r} is unknown; will fail at generate."
+        )
     return out
 
 
 # ---------------------------------------------------------------------
 # Helper functions — pure, side-effect-free.
 # ---------------------------------------------------------------------
+
 
 def bandpass_fft(waveform, sample_rate, low_hz, high_hz):
     """FFT-based bandpass on the last dim. waveform: [..., samples]."""
@@ -222,7 +231,9 @@ def onset_track(envelope, decay=0.85):
     >0.05), then exponential-decays between hits. Output in [0, 1]."""
     if envelope.numel() == 0:
         return envelope.clone()
-    diff = torch.cat([torch.zeros(1, device=envelope.device), envelope[1:] - envelope[:-1]])
+    diff = torch.cat(
+        [torch.zeros(1, device=envelope.device), envelope[1:] - envelope[:-1]]
+    )
     diff = torch.clamp(diff, min=0.0)
     # Threshold at top quartile of derivative + a small floor so quiet music
     # still produces some onsets.
@@ -289,14 +300,16 @@ def process_aspect(image, aspect_ratio, custom_w, custom_h, headroom=1.0):
     if current_ratio > target_ratio:
         new_w = int(h * target_ratio)
         left = (w - new_w) // 2
-        image = image[:, :, left:left + new_w, :]
+        image = image[:, :, left : left + new_w, :]
     elif current_ratio < target_ratio:
         new_h = int(w / target_ratio)
         top = (h - new_h) // 2
-        image = image[:, top:top + new_h, :, :]
+        image = image[:, top : top + new_h, :, :]
 
     image = image.permute(0, 3, 1, 2)
-    image = F.interpolate(image, size=(target_h, target_w), mode="bilinear", align_corners=False)
+    image = F.interpolate(
+        image, size=(target_h, target_w), mode="bilinear", align_corners=False
+    )
     image = image.permute(0, 2, 3, 1)
     return image, base_w, base_h
 
@@ -327,7 +340,7 @@ def audio_envelope(audio, target_frames, fps, device, audio_band, smoothing):
     waveform = waveform[:, :, :required_samples]
     waveform = waveform.view(-1, samples_per_frame)
 
-    rms = torch.sqrt(torch.mean(waveform ** 2, dim=1))
+    rms = torch.sqrt(torch.mean(waveform**2, dim=1))
     rms_min, rms_max = rms.min(), rms.max()
     if rms_max > rms_min:
         rms = (rms - rms_min) / (rms_max - rms_min)
@@ -366,6 +379,7 @@ def reset_motion_caches():
 # sampling grid for F.grid_sample.
 # ---------------------------------------------------------------------
 
+
 def motion_scale_pulse(ctx: MotionContext) -> torch.Tensor:
     """Uniform breathing zoom. env_t in [0,1], intensity in [0,2]."""
     s = ctx.env_t * ctx.intensity * 0.15  # max 30% zoom at intensity=2, env=1
@@ -397,8 +411,8 @@ def motion_shake(ctx: MotionContext) -> torch.Tensor:
                 dx[k] = dx_raw[k]
                 dy[k] = dy_raw[k]
             else:
-                dx[k] = dx[k-1] * decay + dx_raw[k] * (1.0 - decay)
-                dy[k] = dy[k-1] * decay + dy_raw[k] * (1.0 - decay)
+                dx[k] = dx[k - 1] * decay + dx_raw[k] * (1.0 - decay)
+                dy[k] = dy[k - 1] * decay + dy_raw[k] * (1.0 - decay)
         _SHAKE_CACHE[ctx.total_frames] = (
             dx.to(ctx.base_grid.device),
             dy.to(ctx.base_grid.device),
@@ -443,7 +457,9 @@ def motion_rotate_pulse(ctx: MotionContext) -> torch.Tensor:
     rotate visually circularly."""
     aspect = ctx.W / ctx.H
     sway = math.sin(2.0 * math.pi * ctx.motion_speed * ctx.t)
-    angle = sway * ctx.env_t * ctx.intensity * (math.pi / 12.0) * ctx.direction  # max ±15°
+    angle = (
+        sway * ctx.env_t * ctx.intensity * (math.pi / 12.0) * ctx.direction
+    )  # max ±15°
     c = math.cos(angle)
     s = math.sin(angle)
     xs = ctx.base_grid[0, ..., 0] * aspect
@@ -463,9 +479,15 @@ def motion_swirl(ctx: MotionContext) -> torch.Tensor:
     aspect = ctx.W / ctx.H
     xs = ctx.base_grid[0, ..., 0] * aspect
     ys = ctx.base_grid[0, ..., 1]
-    r = torch.sqrt(xs ** 2 + ys ** 2)
+    r = torch.sqrt(xs**2 + ys**2)
     theta = torch.atan2(ys, xs)
-    twist = ctx.env_t * ctx.intensity * (math.pi / 2.0) * (1.0 - r).clamp(min=0.0) * ctx.direction
+    twist = (
+        ctx.env_t
+        * ctx.intensity
+        * (math.pi / 2.0)
+        * (1.0 - r).clamp(min=0.0)
+        * ctx.direction
+    )
     new_theta = theta + twist
     new_x = r * torch.cos(new_theta) / aspect
     new_y = r * torch.sin(new_theta)
@@ -481,7 +503,7 @@ def motion_ripple(ctx: MotionContext) -> torch.Tensor:
     ys = torch.linspace(-1, 1, ctx.H, device=device).unsqueeze(1).expand(ctx.H, ctx.W)
     xs = torch.linspace(-1, 1, ctx.W, device=device).unsqueeze(0).expand(ctx.H, ctx.W)
     aspect = ctx.W / ctx.H
-    r = torch.sqrt((xs * aspect) ** 2 + ys ** 2)
+    r = torch.sqrt((xs * aspect) ** 2 + ys**2)
 
     k = 6.0 * math.pi * ctx.ripple_density
     omega = 2.0 * math.pi * max(ctx.motion_speed * 4.0, 0.5) * ctx.direction
@@ -580,7 +602,7 @@ def motion_pinch(ctx: MotionContext) -> torch.Tensor:
     aspect = ctx.W / ctx.H
     xs = ctx.base_grid[0, ..., 0] * aspect
     ys = ctx.base_grid[0, ..., 1]
-    r = torch.sqrt(xs ** 2 + ys ** 2)
+    r = torch.sqrt(xs**2 + ys**2)
     falloff = (1.0 - r).clamp(min=0.0, max=1.0)
     s = ctx.env_t * ctx.intensity * 0.30 * ctx.direction
     factor = 1.0 - s * falloff
@@ -656,21 +678,21 @@ def motion_squeeze(ctx: MotionContext) -> torch.Tensor:
 
 # Register in MOTION_MODES — order here drives the dropdown order in both
 # Audio React's widget and AudioReact's sidebar.
-MOTION_MODES["scale_pulse"]  = motion_scale_pulse
-MOTION_MODES["zoom_punch"]   = motion_zoom_punch
-MOTION_MODES["shake"]        = motion_shake
-MOTION_MODES["drift"]        = motion_drift
+MOTION_MODES["scale_pulse"] = motion_scale_pulse
+MOTION_MODES["zoom_punch"] = motion_zoom_punch
+MOTION_MODES["shake"] = motion_shake
+MOTION_MODES["drift"] = motion_drift
 MOTION_MODES["rotate_pulse"] = motion_rotate_pulse
-MOTION_MODES["ripple"]       = motion_ripple
-MOTION_MODES["swirl"]        = motion_swirl
-MOTION_MODES["slit_scan"]    = motion_slit_scan
-MOTION_MODES["glitch"]       = motion_glitch
-MOTION_MODES["pinch"]        = motion_pinch
-MOTION_MODES["wave"]         = motion_wave
-MOTION_MODES["tilt"]         = motion_tilt
-MOTION_MODES["pixelate"]     = motion_pixelate
-MOTION_MODES["rgb_split"]    = motion_rgb_split
-MOTION_MODES["squeeze"]      = motion_squeeze
+MOTION_MODES["ripple"] = motion_ripple
+MOTION_MODES["swirl"] = motion_swirl
+MOTION_MODES["slit_scan"] = motion_slit_scan
+MOTION_MODES["glitch"] = motion_glitch
+MOTION_MODES["pinch"] = motion_pinch
+MOTION_MODES["wave"] = motion_wave
+MOTION_MODES["tilt"] = motion_tilt
+MOTION_MODES["pixelate"] = motion_pixelate
+MOTION_MODES["rgb_split"] = motion_rgb_split
+MOTION_MODES["squeeze"] = motion_squeeze
 
 
 # ---------------------------------------------------------------------
@@ -678,6 +700,7 @@ MOTION_MODES["squeeze"]      = motion_squeeze
 # Each function takes an OverlayContext and returns the modified
 # [H, W, 3] frame tensor.
 # ---------------------------------------------------------------------
+
 
 def overlay_glitch(ctx: OverlayContext) -> torch.Tensor:
     """RGB shift on transients + scanline swap on big spikes."""
@@ -695,14 +718,14 @@ def overlay_glitch(ctx: OverlayContext) -> torch.Tensor:
     for c in range(3):
         ox = int(offsets[c].item())
         if ox > 0:
-            out[:, ox:, c] = frame[:, :W - ox, c]
+            out[:, ox:, c] = frame[:, : W - ox, c]
             # Replicate the leftmost moved-into column so the new edge
             # doesn't leave a "frozen sliver" of the original frame.
             out[:, :ox, c] = frame[:, 0:1, c].expand(-1, ox)
         elif ox < 0:
             ox = -ox
-            out[:, :W - ox, c] = frame[:, ox:, c]
-            out[:, W - ox:, c] = frame[:, W - 1:W, c].expand(-1, ox)
+            out[:, : W - ox, c] = frame[:, ox:, c]
+            out[:, W - ox :, c] = frame[:, W - 1 : W, c].expand(-1, ox)
 
     if onset_t * strength > 0.7:
         n_swap = max(1, H // 20)
@@ -727,7 +750,7 @@ def overlay_bloom(ctx: OverlayContext) -> torch.Tensor:
     ksize = 9
     sigma = 2.0
     coords = torch.arange(ksize, dtype=torch.float32, device=x.device) - (ksize - 1) / 2
-    g1 = torch.exp(-(coords ** 2) / (2 * sigma ** 2))
+    g1 = torch.exp(-(coords**2) / (2 * sigma**2))
     g1 = g1 / g1.sum()
     kx = g1.view(1, 1, 1, ksize).expand(3, 1, 1, ksize)
     ky = g1.view(1, 1, ksize, 1).expand(3, 1, ksize, 1)
@@ -751,7 +774,7 @@ def overlay_vignette(ctx: OverlayContext) -> torch.Tensor:
         return frame
     ys = torch.linspace(-1, 1, H, device=device).unsqueeze(1).expand(H, W)
     xs = torch.linspace(-1, 1, W, device=device).unsqueeze(0).expand(H, W)
-    r = torch.sqrt(xs ** 2 + ys ** 2).clamp(0, 1.4)
+    r = torch.sqrt(xs**2 + ys**2).clamp(0, 1.4)
     v = (r / 1.414).clamp(0, 1)
     mask = 1.0 - (v * env_t * strength * 0.5)
     return frame * mask.unsqueeze(-1)
@@ -772,11 +795,27 @@ def overlay_hue_shift(ctx: OverlayContext) -> torch.Tensor:
     # The 0.299 / 0.587 / 0.114 luma triples MUST be exact in every row
     # — typos drift the gray axis and produce a tint on neutrals at high
     # angles (review caught 0.300 / 0.588 / 0.302 typos here previously).
-    m = torch.tensor([
-        [0.299 + 0.701 * c + 0.168 * s, 0.587 - 0.587 * c + 0.330 * s, 0.114 - 0.114 * c - 0.497 * s],
-        [0.299 - 0.299 * c - 0.328 * s, 0.587 + 0.413 * c + 0.035 * s, 0.114 - 0.114 * c + 0.292 * s],
-        [0.299 - 0.299 * c + 1.250 * s, 0.587 - 0.587 * c - 1.050 * s, 0.114 + 0.886 * c - 0.203 * s],
-    ], device=frame.device, dtype=frame.dtype)
+    m = torch.tensor(
+        [
+            [
+                0.299 + 0.701 * c + 0.168 * s,
+                0.587 - 0.587 * c + 0.330 * s,
+                0.114 - 0.114 * c - 0.497 * s,
+            ],
+            [
+                0.299 - 0.299 * c - 0.328 * s,
+                0.587 + 0.413 * c + 0.035 * s,
+                0.114 - 0.114 * c + 0.292 * s,
+            ],
+            [
+                0.299 - 0.299 * c + 1.250 * s,
+                0.587 - 0.587 * c - 1.050 * s,
+                0.114 + 0.886 * c - 0.203 * s,
+            ],
+        ],
+        device=frame.device,
+        dtype=frame.dtype,
+    )
     out = frame @ m.T
     return out.clamp(0, 1)
 
@@ -828,7 +867,7 @@ def overlay_grade(ctx: OverlayContext) -> torch.Tensor:
     out = ctx.frame
     lum = 0.299 * out[..., 0:1] + 0.587 * out[..., 1:2] + 0.114 * out[..., 2:3]
     highlight_tint = torch.tensor([1.20, 1.00, 0.85], device=ctx.device).view(1, 1, 3)
-    shadow_tint    = torch.tensor([0.85, 1.00, 1.15], device=ctx.device).view(1, 1, 3)
+    shadow_tint = torch.tensor([0.85, 1.00, 1.15], device=ctx.device).view(1, 1, 3)
     tint = shadow_tint + (highlight_tint - shadow_tint) * lum
     graded = (out * tint).clamp(0.0, 1.0)
     return (out + (graded - out) * ctx.strength).clamp(0.0, 1.0)
@@ -844,28 +883,29 @@ def overlay_letterbox(ctx: OverlayContext) -> torch.Tensor:
         return ctx.frame
     out = ctx.frame.clone()
     out[:bar] = 0.0
-    out[ctx.H - bar:] = 0.0
+    out[ctx.H - bar :] = 0.0
     return out
 
 
 # Register OVERLAYS — order here drives the per-frame iteration order in
 # generate_video(). Glitch reads onset_t (transients), the rest read env_t.
-OVERLAYS["glitch"]    = overlay_glitch
-OVERLAYS["bloom"]     = overlay_bloom
-OVERLAYS["vignette"]  = overlay_vignette
+OVERLAYS["glitch"] = overlay_glitch
+OVERLAYS["bloom"] = overlay_bloom
+OVERLAYS["vignette"] = overlay_vignette
 OVERLAYS["hue_shift"] = overlay_hue_shift
 # Grade is registered BEFORE letterbox so the iteration order in
 # generate_video applies grade first, then letterbox bars overlay on top.
 # (Bars staying pure black requires letterbox to be the last operation.)
-OVERLAYS["grade"]     = overlay_grade
+OVERLAYS["grade"] = overlay_grade
 OVERLAYS["letterbox"] = overlay_letterbox
 OVERLAYS["scanlines"] = overlay_scanlines
-OVERLAYS["grain"]     = overlay_grain
+OVERLAYS["grain"] = overlay_grain
 
 
 # ---------------------------------------------------------------------
 # Generate entry point — populated in Task A6.
 # ---------------------------------------------------------------------
+
 
 def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Tensor:
     """Render the full audio-reactive clip. Returns [F, H, W, 3] in [0, 1].
@@ -876,16 +916,20 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
     """
     if image is None:
         raise ValueError(
-            "[Pixaroma] Audio engine — no image. Wire an IMAGE input or "
+            "[LinuxTechLab] Audio engine — no image. Wire an IMAGE input or "
             "use AudioReact's inline-image picker."
         )
-    if (audio is None or not isinstance(audio, dict)
-            or "waveform" not in audio or "sample_rate" not in audio
-            or audio["waveform"] is None
-            or not isinstance(audio["sample_rate"], (int, float))
-            or audio["sample_rate"] <= 0):
+    if (
+        audio is None
+        or not isinstance(audio, dict)
+        or "waveform" not in audio
+        or "sample_rate" not in audio
+        or audio["waveform"] is None
+        or not isinstance(audio["sample_rate"], (int, float))
+        or audio["sample_rate"] <= 0
+    ):
         raise ValueError(
-            "[Pixaroma] Audio engine — no valid audio. Wire AUDIO input or "
+            "[LinuxTechLab] Audio engine — no valid audio. Wire AUDIO input or "
             "use AudioReact's inline-audio picker."
         )
 
@@ -893,7 +937,10 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
 
     # process_aspect snaps to mult-of-8 and crops if needed
     image_proc, out_w, out_h = process_aspect(
-        image, params.aspect_ratio, params.custom_width, params.custom_height,
+        image,
+        params.aspect_ratio,
+        params.custom_width,
+        params.custom_height,
     )
     img_tensor = image_proc[0].permute(2, 0, 1).unsqueeze(0).to(device)
     _, _, H, W = img_tensor.shape
@@ -902,7 +949,7 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
     total_frames = int(audio_duration * params.fps)
     if total_frames <= 0:
         raise ValueError(
-            f"[Pixaroma] Audio engine — audio is too short to produce any "
+            f"[LinuxTechLab] Audio engine — audio is too short to produce any "
             f"frames at {params.fps} fps (audio_duration={audio_duration:.3f}s)."
         )
 
@@ -910,8 +957,12 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
     reset_motion_caches()
 
     envelope = audio_envelope(
-        audio, total_frames, params.fps, device,
-        params.audio_band, params.smoothing,
+        audio,
+        total_frames,
+        params.fps,
+        device,
+        params.audio_band,
+        params.smoothing,
     )
 
     # loop_safe needs at least 4 frames so fade_n is >= 2 — otherwise
@@ -954,30 +1005,32 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
     )
     base_grid = torch.stack([x, y], dim=-1).unsqueeze(0)  # [1, H, W, 2]
 
-    print(f"[Pixaroma] engine: {total_frames} frames @ {params.fps}fps, "
-          f"{W}x{H} -> {out_w}x{out_h}, mode={params.motion_mode}, "
-          f"band={params.audio_band}, intensity={params.intensity}, "
-          f"smooth={params.smoothing}")
+    print(
+        f"[LinuxTechLab] engine: {total_frames} frames @ {params.fps}fps, "
+        f"{W}x{H} -> {out_w}x{out_h}, mode={params.motion_mode}, "
+        f"band={params.audio_band}, intensity={params.intensity}, "
+        f"smooth={params.smoothing}"
+    )
     pbar = comfy.utils.ProgressBar(total_frames)
 
     motion_fn = MOTION_MODES.get(params.motion_mode)
     if motion_fn is None:
         raise ValueError(
-            f"[Pixaroma] engine — unhandled motion_mode {params.motion_mode!r}. "
+            f"[LinuxTechLab] engine — unhandled motion_mode {params.motion_mode!r}. "
             f"Known: {list(MOTION_MODES.keys())}"
         )
     overlay_strengths = {
-        "glitch":    params.glitch_strength,
-        "bloom":     params.bloom_strength,
-        "vignette":  params.vignette_strength,
+        "glitch": params.glitch_strength,
+        "bloom": params.bloom_strength,
+        "vignette": params.vignette_strength,
         "hue_shift": params.hue_shift_strength,
         # Grade BEFORE letterbox so the bars overlay on top of the tinted
         # frame and stay pure black (not tinted). Iteration order = OVERLAYS
         # registration order below.
-        "grade":     params.grade_strength,
+        "grade": params.grade_strength,
         "letterbox": params.letterbox_strength,
         "scanlines": params.scanline_strength,
-        "grain":     params.grain_strength,
+        "grain": params.grain_strength,
     }
 
     frames = []
@@ -986,12 +1039,18 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
         onset_t = onset[i].item()
 
         ctx = MotionContext(
-            base_grid=base_grid, env_t=env_t, onset_t=onset_t,
+            base_grid=base_grid,
+            env_t=env_t,
+            onset_t=onset_t,
             t=t_vec[i].item(),
-            intensity=params.intensity, motion_speed=params.motion_speed,
+            intensity=params.intensity,
+            motion_speed=params.motion_speed,
             direction=1.0 if params.motion_direction >= 0 else -1.0,
-            H=H, W=W,
-            total_frames=total_frames, frame_index=i, fps=params.fps,
+            H=H,
+            W=W,
+            total_frames=total_frames,
+            frame_index=i,
+            fps=params.fps,
             onset_arr=onset,
             shake_axis=params.shake_axis,
             ripple_density=params.ripple_density,
@@ -1012,29 +1071,55 @@ def generate_video(image: torch.Tensor, audio: dict, params: Params) -> torch.Te
             grid_r[..., 0] += offset
             grid_b = grid.clone()
             grid_b[..., 0] -= offset
-            sR = F.grid_sample(img_tensor, grid_r,
-                               mode="bilinear", padding_mode="border", align_corners=False)
-            sG = F.grid_sample(img_tensor, grid,
-                               mode="bilinear", padding_mode="border", align_corners=False)
-            sB = F.grid_sample(img_tensor, grid_b,
-                               mode="bilinear", padding_mode="border", align_corners=False)
+            sR = F.grid_sample(
+                img_tensor,
+                grid_r,
+                mode="bilinear",
+                padding_mode="border",
+                align_corners=False,
+            )
+            sG = F.grid_sample(
+                img_tensor,
+                grid,
+                mode="bilinear",
+                padding_mode="border",
+                align_corners=False,
+            )
+            sB = F.grid_sample(
+                img_tensor,
+                grid_b,
+                mode="bilinear",
+                padding_mode="border",
+                align_corners=False,
+            )
             warped = torch.cat([sR[:, 0:1], sG[:, 1:2], sB[:, 2:3]], dim=1)
         else:
             warped = F.grid_sample(
-                img_tensor, grid,
-                mode="bilinear", padding_mode="border", align_corners=False,
+                img_tensor,
+                grid,
+                mode="bilinear",
+                padding_mode="border",
+                align_corners=False,
             )
         frame = warped.squeeze(0).permute(1, 2, 0)  # [H, W, 3]
 
         for ov_name, ov_fn in OVERLAYS.items():
             s = overlay_strengths.get(ov_name, 0.0)
             if s > 0.0:
-                frame = ov_fn(OverlayContext(
-                    frame=frame, env_t=env_t, onset_t=onset_t,
-                    strength=s, H=H, W=W, device=device,
-                    frame_index=i, t=t_vec[i].item(),
-                    loop_factor=loop_factor[i].item(),
-                ))
+                frame = ov_fn(
+                    OverlayContext(
+                        frame=frame,
+                        env_t=env_t,
+                        onset_t=onset_t,
+                        strength=s,
+                        H=H,
+                        W=W,
+                        device=device,
+                        frame_index=i,
+                        t=t_vec[i].item(),
+                        loop_factor=loop_factor[i].item(),
+                    )
+                )
 
         frames.append(frame.cpu())
         pbar.update(1)

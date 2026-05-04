@@ -1,13 +1,8 @@
 // js/audio_studio/render.mjs
 import { AudioStudioEditor } from "./core.mjs";
-import {
-  VERTEX_SHADER, MOTION_SHADERS, OVERLAY_SHADER, compileProgram,
-} from "./shaders.mjs";
+import { VERTEX_SHADER, MOTION_SHADERS, OVERLAY_SHADER, compileProgram } from "./shaders.mjs";
 
-const QUAD_VERTS = new Float32Array([
-  -1, -1,  1, -1, -1,  1,
-  -1,  1,  1, -1,  1,  1,
-]);
+const QUAD_VERTS = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
 
 AudioStudioEditor.prototype._initRenderer = function () {
   if (this._gl) return;
@@ -20,7 +15,8 @@ AudioStudioEditor.prototype._initRenderer = function () {
 
   const gl = canvas.getContext("webgl2", { premultipliedAlpha: false, antialias: false });
   if (!gl) {
-    this.canvasHost.textContent = "WebGL2 unavailable — AudioReact requires WebGL2. Use the basic Audio React node instead.";
+    this.canvasHost.textContent =
+      "WebGL2 unavailable — AudioReact requires WebGL2. Use the basic Audio React node instead.";
     return;
   }
   // Required for R32F / RGBA32F texture filtering (renderable). Audio
@@ -47,8 +43,7 @@ AudioStudioEditor.prototype._initRenderer = function () {
   // Image texture — populated on source load (Milestone H)
   this._imageTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, this._imageTex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
-                new Uint8Array([128, 128, 128, 255]));
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([128, 128, 128, 255]));
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -57,7 +52,7 @@ AudioStudioEditor.prototype._initRenderer = function () {
   // Audio textures — placeholder zero arrays of length 16 until F lands
   this._envTex = gl.createTexture();
   this._onsetTex = gl.createTexture();
-  this._uploadAudioTexture(this._envTex, new Float32Array(16 * 4));    // 16 frames × 4 bands
+  this._uploadAudioTexture(this._envTex, new Float32Array(16 * 4)); // 16 frames × 4 bands
   this._uploadAudioTexture(this._onsetTex, new Float32Array(16 * 4));
   this._totalFrames = 16;
 
@@ -68,7 +63,8 @@ AudioStudioEditor.prototype._initRenderer = function () {
   this._resizeRenderTargets(512, 512);
 
   // Default canvas size — actual size set during _render based on canvasHost dims
-  this._canvasW = 512; this._canvasH = 512;
+  this._canvasW = 512;
+  this._canvasH = 512;
 };
 
 AudioStudioEditor.prototype._wireQuadAttrib = function (program) {
@@ -142,7 +138,7 @@ AudioStudioEditor.prototype._getMotionProgram = function (mode) {
   if (this._motionPrograms[mode]) return this._motionPrograms[mode];
   const src = MOTION_SHADERS[mode];
   if (!src) {
-    console.warn(`[Pixaroma] AudioReact: motion mode ${mode} has no shader yet — using scale_pulse fallback`);
+    console.warn(`[LinuxTechLab] AudioReact: motion mode ${mode} has no shader yet — using scale_pulse fallback`);
     return this._getMotionProgram("scale_pulse");
   }
   const prog = compileProgram(gl, VERTEX_SHADER, src, `motion_${mode}`);
@@ -156,7 +152,7 @@ AudioStudioEditor.prototype._currentFrameIndex = function () {
 };
 
 AudioStudioEditor.prototype._audioBandIndex = function () {
-  return ({ full: 0, bass: 1, mids: 2, treble: 3 })[this.cfg.audio_band] ?? 0;
+  return { full: 0, bass: 1, mids: 2, treble: 3 }[this.cfg.audio_band] ?? 0;
 };
 
 AudioStudioEditor.prototype._render = function () {
@@ -165,19 +161,31 @@ AudioStudioEditor.prototype._render = function () {
 
   // Resize backing buffer to canvas host size, preserving aspect.
   const hostRect = this.canvasHost.getBoundingClientRect();
-  const maxW = Math.max(64, hostRect.width  | 0);
+  const maxW = Math.max(64, hostRect.width | 0);
   const maxH = Math.max(64, hostRect.height | 0);
   let outW, outH;
   if (this._imageW && this._imageH) {
     const ar = this._imageW / this._imageH;
-    if (maxW / maxH > ar) { outH = maxH; outW = Math.round(maxH * ar); }
-    else                  { outW = maxW; outH = Math.round(maxW / ar); }
+    if (maxW / maxH > ar) {
+      outH = maxH;
+      outW = Math.round(maxH * ar);
+    } else {
+      outW = maxW;
+      outH = Math.round(maxW / ar);
+    }
   } else {
-    outW = maxW; outH = maxH;
+    outW = maxW;
+    outH = maxH;
   }
   // Cap at 1024 for perf
-  if (outW > 1024) { outH = Math.round(outH * (1024 / outW)); outW = 1024; }
-  if (outH > 1024) { outW = Math.round(outW * (1024 / outH)); outH = 1024; }
+  if (outW > 1024) {
+    outH = Math.round(outH * (1024 / outW));
+    outW = 1024;
+  }
+  if (outH > 1024) {
+    outW = Math.round(outW * (1024 / outH));
+    outH = 1024;
+  }
   if (this._canvasW !== outW || this._canvasH !== outH) {
     this.canvas.width = outW;
     this.canvas.height = outH;
@@ -213,28 +221,23 @@ AudioStudioEditor.prototype._render = function () {
   gl.uniform1i(gl.getUniformLocation(motionProg, "u_audio_band_idx"), this._audioBandIndex());
   gl.uniform1f(gl.getUniformLocation(motionProg, "u_intensity"), this.cfg.intensity);
   gl.uniform1f(gl.getUniformLocation(motionProg, "u_motion_speed"), this.cfg.motion_speed);
-  gl.uniform1f(gl.getUniformLocation(motionProg, "u_motion_direction"),
-               (this.cfg.motion_direction ?? 1.0) >= 0 ? 1.0 : -1.0);
+  gl.uniform1f(
+    gl.getUniformLocation(motionProg, "u_motion_direction"),
+    (this.cfg.motion_direction ?? 1.0) >= 0 ? 1.0 : -1.0,
+  );
   gl.uniform1f(gl.getUniformLocation(motionProg, "u_t"), t);
   gl.uniform1f(gl.getUniformLocation(motionProg, "u_aspect"), aspect);
   gl.uniform2f(gl.getUniformLocation(motionProg, "u_resolution"), outW, outH);
   // Per-mode uniforms — only the active motion shader actually reads them.
   // Unused-uniform locations come back as null and uniform calls no-op.
-  const axisVal = this.cfg.shake_axis === "x" ? 1
-               : this.cfg.shake_axis === "y" ? 2 : 0;
+  const axisVal = this.cfg.shake_axis === "x" ? 1 : this.cfg.shake_axis === "y" ? 2 : 0;
   gl.uniform1i(gl.getUniformLocation(motionProg, "u_shake_axis"), axisVal);
-  gl.uniform1f(gl.getUniformLocation(motionProg, "u_ripple_density"),
-               this.cfg.ripple_density ?? 1.0);
-  gl.uniform1f(gl.getUniformLocation(motionProg, "u_slit_density"),
-               this.cfg.slit_density ?? 1.0);
-  gl.uniform1f(gl.getUniformLocation(motionProg, "u_glitch_bands"),
-               this.cfg.glitch_bands ?? 30);
-  gl.uniform1f(gl.getUniformLocation(motionProg, "u_wave_density"),
-               this.cfg.wave_density ?? 1.0);
-  gl.uniform1f(gl.getUniformLocation(motionProg, "u_pixelate_blocks"),
-               this.cfg.pixelate_blocks ?? 24);
-  gl.uniform1i(gl.getUniformLocation(motionProg, "u_squeeze_axis"),
-               this.cfg.squeeze_axis === "y" ? 1 : 0);
+  gl.uniform1f(gl.getUniformLocation(motionProg, "u_ripple_density"), this.cfg.ripple_density ?? 1.0);
+  gl.uniform1f(gl.getUniformLocation(motionProg, "u_slit_density"), this.cfg.slit_density ?? 1.0);
+  gl.uniform1f(gl.getUniformLocation(motionProg, "u_glitch_bands"), this.cfg.glitch_bands ?? 30);
+  gl.uniform1f(gl.getUniformLocation(motionProg, "u_wave_density"), this.cfg.wave_density ?? 1.0);
+  gl.uniform1f(gl.getUniformLocation(motionProg, "u_pixelate_blocks"), this.cfg.pixelate_blocks ?? 24);
+  gl.uniform1i(gl.getUniformLocation(motionProg, "u_squeeze_axis"), this.cfg.squeeze_axis === "y" ? 1 : 0);
 
   gl.drawArrays(gl.TRIANGLES, 0, 6);
 
@@ -261,8 +264,10 @@ AudioStudioEditor.prototype._render = function () {
   gl.uniform1i(gl.getUniformLocation(ovProg, "u_audio_band_idx"), this._audioBandIndex());
   gl.uniform1f(gl.getUniformLocation(ovProg, "u_intensity"), this.cfg.intensity);
   gl.uniform1f(gl.getUniformLocation(ovProg, "u_motion_speed"), this.cfg.motion_speed);
-  gl.uniform1f(gl.getUniformLocation(ovProg, "u_motion_direction"),
-               (this.cfg.motion_direction ?? 1.0) >= 0 ? 1.0 : -1.0);
+  gl.uniform1f(
+    gl.getUniformLocation(ovProg, "u_motion_direction"),
+    (this.cfg.motion_direction ?? 1.0) >= 0 ? 1.0 : -1.0,
+  );
   gl.uniform1f(gl.getUniformLocation(ovProg, "u_t"), t);
   gl.uniform1f(gl.getUniformLocation(ovProg, "u_aspect"), aspect);
   gl.uniform2f(gl.getUniformLocation(ovProg, "u_resolution"), outW, outH);
@@ -307,6 +312,9 @@ AudioStudioEditor.prototype._destroyRenderer = function () {
   if (this._quadVBO) gl.deleteBuffer(this._quadVBO);
   // forceContextLoss to be polite
   const ext = gl.getExtension("WEBGL_lose_context");
-  if (ext) try { ext.loseContext(); } catch {}
+  if (ext)
+    try {
+      ext.loseContext();
+    } catch {}
   this._gl = null;
 };
