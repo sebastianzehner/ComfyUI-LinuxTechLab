@@ -55,4 +55,4 @@ class LinuxTechLabResolution:
 
 
 NODE_CLASS_MAPPINGS = {"LinuxTechLabResolution": LinuxTechLabResolution}
-NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabResolution": "Resolution LinuxTechLab"}
+NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabResolution": "Resolution"}

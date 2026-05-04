@@ -513,5 +513,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabImageComposition": "Image Composer LinuxTechLab",
+    "LinuxTechLabImageComposition": "Image Composer",
 }

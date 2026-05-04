@@ -34,5 +34,5 @@ NODE_CLASS_MAPPINGS = {
     "LinuxTechLabNote": LinuxTechLabNote,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabNote": "Note LinuxTechLab",
+    "LinuxTechLabNote": "Note",
 }

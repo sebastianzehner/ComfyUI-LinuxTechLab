@@ -99,5 +99,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabCrop": "Image Crop LinuxTechLab",
+    "LinuxTechLabCrop": "Image Crop",
 }

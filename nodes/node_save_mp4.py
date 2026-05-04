@@ -354,5 +354,5 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabSaveMp4": "Save Mp4 LinuxTechLab",
+    "LinuxTechLabSaveMp4": "Save MP4",
 }

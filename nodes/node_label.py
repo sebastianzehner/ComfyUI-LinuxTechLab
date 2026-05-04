@@ -28,5 +28,5 @@ NODE_CLASS_MAPPINGS = {
     "LinuxTechLabLabel": LinuxTechLabLabel,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabLabel": "Label LinuxTechLab",
+    "LinuxTechLabLabel": "Label",
 }

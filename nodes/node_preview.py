@@ -44,4 +44,4 @@ class LinuxTechLabPreview:
 
 
 NODE_CLASS_MAPPINGS = {"LinuxTechLabPreview": LinuxTechLabPreview}
-NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabPreview": "Preview Image LinuxTechLab"}
+NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabPreview": "Preview Image"}
