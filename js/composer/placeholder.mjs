@@ -136,7 +136,9 @@ LinuxTechLabEditor.prototype._getUpstreamImageUrl = function (layer) {
 
   const graph = this.node.graph;
   if (!graph) return null;
-  const link = graph.links[input.link];
+  // Vue Compat #3: graph.links can be a Map in newer ComfyUI versions
+  let link = graph.links?.[input.link];
+  if (!link && typeof graph.links?.get === "function") link = graph.links.get(input.link);
   if (!link) return null;
   const srcNode = graph.getNodeById(link.origin_id);
   if (!srcNode) return null;
@@ -200,8 +202,24 @@ LinuxTechLabEditor.prototype.previewPlaceholderInput = function (layerId) {
   const img = new Image();
   img.crossOrigin = "Anonymous";
   img.onload = () => {
-    const phW = layer.img.width;
-    const phH = layer.img.height;
+    const origPhW = layer.img.width;
+    const origPhH = layer.img.height;
+    const sw = img.naturalWidth || img.width;
+    const sh = img.naturalHeight || img.height;
+    // Quality fix: if the upstream source is larger than the placeholder slot
+    // in either dimension, scale the OUTPUT canvas up to match — preserves
+    // source resolution instead of permanently downsampling to slot size.
+    // Adjust scaleX/scaleY proportionally so the layer's visual size on the
+    // canvas stays exactly the same as before. Idempotent: re-running with
+    // the same source image is a no-op (upscale = 1).
+    const upscale = Math.max(1, sw / origPhW, sh / origPhH);
+    const phW = Math.round(origPhW * upscale);
+    const phH = Math.round(origPhH * upscale);
+    if (upscale > 1) {
+      const compensation = origPhW / phW; // == 1 / upscale
+      layer.scaleX = (layer.scaleX || 1) * compensation;
+      layer.scaleY = (layer.scaleY || 1) * compensation;
+    }
     layer._previewImg = img;
     layer.img = this._applyFillMode(img, phW, phH, layer.fillMode || "cover", (bitmapImg) => {
       layer.img = bitmapImg;
@@ -286,6 +304,13 @@ LinuxTechLabEditor.prototype.changePlaceholderRatio = function (layer, ratioKey)
   this.ui.updateActiveLayerUI();
   this.draw();
   this.pushHistory();
+
+  // If the placeholder is wired to an upstream image, re-fetch the preview so
+  // it doesn't visually revert to the blank slot until the next workflow run.
+  // previewPlaceholderInput is a no-op when no upstream is connected.
+  if (this.isPlaceholderConnected && this.isPlaceholderConnected(layer)) {
+    this.previewPlaceholderInput(layer.id);
+  }
 };
 
 LinuxTechLabEditor.prototype.syncNodeInputs = function () {

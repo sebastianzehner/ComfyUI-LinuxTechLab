@@ -101,6 +101,47 @@ LinuxTechLabEditor.prototype.attachEvents = function () {
 
   this.workspace.addEventListener("wheel", (e) => {
     e.preventDefault();
+
+    // Shift+Wheel: uniformly scale the selected (unlocked) layers, mirroring
+    // the Scale slider's behaviour. ±5% per tick. Slider range is 5..300% so
+    // clamp the result to that.
+    if (e.shiftKey && this.selectedLayerIds.size > 0) {
+      const factor = e.deltaY > 0 ? 0.95 : 1.05;
+      let touched = false;
+      this.layers.forEach((layer) => {
+        if (this.selectedLayerIds.has(layer.id) && !layer.locked) {
+          layer.scaleX = Math.max(0.05, Math.min(3.0, layer.scaleX * factor));
+          layer.scaleY = Math.max(0.05, Math.min(3.0, layer.scaleY * factor));
+          touched = true;
+        }
+      });
+      if (touched) {
+        // Sync the Transform Properties sliders to the first selected layer
+        const firstId = Array.from(this.selectedLayerIds)[0];
+        const layer = this.layers.find((l) => l.id === firstId);
+        if (layer) {
+          const sx = Math.round(layer.scaleX * 100);
+          const sy = Math.round(layer.scaleY * 100);
+          this.scaleSlider.value = sx;
+          this.scaleNum.value = sx;
+          this.stretchHSlider.value = sx;
+          this.stretchHNum.value = sx;
+          this.stretchVSlider.value = sy;
+          this.stretchVNum.value = sy;
+        }
+        if (!this._wheelRAF) {
+          this._wheelRAF = requestAnimationFrame(() => {
+            this._wheelRAF = null;
+            this.draw();
+          });
+        }
+        // Debounce history push so a wheel-burst is one undo step
+        clearTimeout(this._scaleWheelTimer);
+        this._scaleWheelTimer = setTimeout(() => this.pushHistory(), 300);
+      }
+      return;
+    }
+
     this.viewZoom *= e.deltaY > 0 ? 0.9 : 1.1;
     // Throttle transform updates to once per frame
     if (!this._wheelRAF) {
@@ -113,7 +154,15 @@ LinuxTechLabEditor.prototype.attachEvents = function () {
 
   this._composerKeyDown = (e) => {
     const tag = e.target?.tagName;
-    if ((tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") && !e.target?.dataset?.linuxtechlabTrap) return;
+    if ((tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") && !e.target?.dataset?.linuxtechlabTrap) {
+      // After dragging a range slider it keeps focus, which would swallow
+      // Ctrl+Z/Y. Range sliders have no native undo, so let those specific
+      // shortcuts fall through to the editor handler.
+      const isRangeSlider = tag === "INPUT" && e.target.type === "range";
+      const k = e.key?.toLowerCase();
+      const isUndoRedo = e.ctrlKey && (k === "z" || k === "y");
+      if (!(isRangeSlider && isUndoRedo)) return;
+    }
     if (e.code === "Space") {
       e.preventDefault();
       this.spacePressed = true;
@@ -319,6 +368,7 @@ LinuxTechLabEditor.prototype.attachEvents = function () {
           scaleY: 1,
           rotation: 0,
           opacity: 1,
+          blur: 0,
           visible: true,
           locked: false,
           flippedX: false,
@@ -372,6 +422,7 @@ LinuxTechLabEditor.prototype.attachEvents = function () {
   syncSliderTrans(this.opacitySlider, this.opacityNum, "opacity", 100);
   syncSliderTrans(this.rotateSlider, this.rotateNum, "rotation", 1);
   syncSliderTrans(this.scaleSlider, this.scaleNum, "scale", 100);
+  syncSliderTrans(this.blurSlider, this.blurNum, "blur", 1);
 
   const syncSliderStretch = (slider, num, prop, multiplier = 100) => {
     const updateCanvas = (val) => {
@@ -408,14 +459,19 @@ LinuxTechLabEditor.prototype.attachEvents = function () {
   this.btnFlipV.onclick = () => this.applyToSelection((l) => (l.flippedY = !l.flippedY));
   this.btnRotLeft.onclick = () => this.applyToSelection((l) => (l.rotation = (l.rotation - 90 + 360) % 360));
   this.btnRotRight.onclick = () => this.applyToSelection((l) => (l.rotation = (l.rotation + 90) % 360));
-  this.btnReset.onclick = () =>
+  this.btnReset.onclick = () => {
     this.applyToSelection((l) => {
       l.rotation = 0;
       l.flippedX = false;
       l.flippedY = false;
       l.opacity = 1;
+      l.blur = 0;
       LinuxTechLabLayers.fitLayerToCanvas(l, this.docWidth, this.docHeight, "width");
     });
+    // Sync the Transform Properties sliders (rotate/scale/opacity/blur)
+    // to the reset values. applyToSelection only redraws + pushes history.
+    this.ui.updateActiveLayerUI();
+  };
 
   this.btnDupLayer.onclick = () => {
     if (this.selectedLayerIds.size === 0) return;
@@ -606,6 +662,7 @@ LinuxTechLabEditor.prototype.attachEvents = function () {
         if (layer.bgRemovalQuality && layer.bgRemovalQuality !== "normal")
           layerEntry.bgRemovalQuality = layer.bgRemovalQuality;
         if (layer.blendMode && layer.blendMode !== "Normal") layerEntry.blendMode = layer.blendMode;
+        if (layer.blur && layer.blur > 0) layerEntry.blur = layer.blur;
         if (layer.isPlaceholder) {
           layerEntry.isPlaceholder = true;
           layerEntry.placeholderColor = layer.placeholderColor;

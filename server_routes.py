@@ -11,6 +11,8 @@ from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 from server import PromptServer
 
+from .nodes._save_helpers import _build_pnginfo, _safe_prefix
+
 # --- PORTABLE COMFYUI FIX ---
 # Force rembg to download and read AI models from ComfyUI/models/rembg
 # instead of the hidden C:\Users\name\.u2net folder.
@@ -224,13 +226,9 @@ def _decode_image(b64_data: str) -> Image.Image | None:
 def _embed_workflow_metadata(workflow, prompt) -> PngInfo:
     """Return a PngInfo with `prompt` and `workflow` tEXt chunks,
     matching the byte format ComfyUI's built-in SaveImage writes.
-    Either argument may be None (chunk is then skipped)."""
-    pnginfo = PngInfo()
-    if prompt is not None:
-        pnginfo.add_text("prompt", json.dumps(prompt))
-    if workflow is not None:
-        pnginfo.add_text("workflow", json.dumps(workflow))
-    return pnginfo
+    Either argument may be None (chunk is then skipped).
+    Thin compatibility wrapper around nodes._save_helpers._build_pnginfo."""
+    return _build_pnginfo(prompt=prompt, workflow=workflow)
 
 
 @PromptServer.instance.routes.post("/linuxtechlab/api/layer/upload")
@@ -769,11 +767,11 @@ async def api_preview_save(request):
     workflow = data.get("workflow")
     prompt = data.get("prompt")
 
-    if not isinstance(prefix_raw, str) or not prefix_raw:
-        return web.json_response({"error": "filename_prefix required"}, status=400)
-    if len(prefix_raw) > _MAX_ID_LEN or not _SAFE_ID_RE.match(prefix_raw):
+    prefix = _safe_prefix(prefix_raw)
+    if not prefix:
         return web.json_response(
-            {"error": "filename_prefix must match [A-Za-z0-9_-]{1,64}"}, status=400
+            {"error": "invalid filename_prefix: use [A-Za-z0-9_-] segments separated by '/', no '..'"},
+            status=400,
         )
 
     pil = _decode_image(image_b64)
@@ -783,7 +781,7 @@ async def api_preview_save(request):
     try:
         output_dir = folder_paths.get_output_directory()
         full_folder, name, counter, subfolder, _ = folder_paths.get_save_image_path(
-            prefix_raw, output_dir, pil.width, pil.height
+            prefix, output_dir, pil.width, pil.height
         )
         os.makedirs(full_folder, exist_ok=True)
         fname = f"{name}_{counter:05}_.png"
@@ -800,15 +798,19 @@ async def api_preview_save(request):
 
 @PromptServer.instance.routes.post("/linuxtechlab/api/preview/prepare")
 async def api_preview_prepare(request):
-    """Return an in-memory PNG with workflow metadata embedded.
-    Used by the Save-to-Disk flow to keep metadata-embedding logic in Python.
+    """Embed workflow metadata into a PNG and return it alongside an
+    auto-incremented suggested filename for Save-to-Disk.
 
     Request JSON: {
-        image_b64: data-URI PNG string (required),
-        workflow:  JSON object (optional),
-        prompt:    JSON object (optional),
+        image_b64:       data-URI PNG string (required),
+        filename_prefix: string, supports subfolder/prefix (default "Preview"),
+        workflow:        JSON object (optional),
+        prompt:          JSON object (optional),
     }
-    Response: image/png bytes on 200, JSON error on 400.
+    Response JSON: {
+        image_b64:          data-URI PNG with embedded metadata,
+        suggested_filename: e.g. "Preview_00012_.png" (next free counter),
+    }, 400 on invalid input.
     """
     try:
         data = await request.json()
@@ -816,19 +818,38 @@ async def api_preview_prepare(request):
         return web.json_response({"error": "invalid JSON"}, status=400)
 
     image_b64 = data.get("image_b64", "")
+    prefix_raw = data.get("filename_prefix", "Preview")
     workflow = data.get("workflow")
     prompt = data.get("prompt")
+
+    prefix = _safe_prefix(prefix_raw)
+    if not prefix:
+        return web.json_response(
+            {"error": "invalid filename_prefix: use [A-Za-z0-9_-] segments separated by '/', no '..'"},
+            status=400,
+        )
 
     pil = _decode_image(image_b64)
     if pil is None:
         return web.json_response({"error": "invalid image data"}, status=400)
 
     try:
-        pnginfo = _embed_workflow_metadata(workflow, prompt)
+        pnginfo = _build_pnginfo(prompt=prompt, workflow=workflow)
         buf = io.BytesIO()
         pil.save(buf, "PNG", pnginfo=pnginfo)
         body = buf.getvalue()
+
+        # Peek at the next free counter (read-only — no file written)
+        output_dir = folder_paths.get_output_directory()
+        _, name, counter, _, _ = folder_paths.get_save_image_path(
+            prefix, output_dir, pil.width, pil.height
+        )
+        suggested_filename = f"{name}_{counter:05}_.png"
     except Exception as e:
         return web.json_response({"error": f"prepare failed: {e}"}, status=500)
 
-    return web.Response(body=body, content_type="image/png")
+    image_data_uri = "data:image/png;base64," + base64.b64encode(body).decode("ascii")
+    return web.json_response({
+        "image_b64": image_data_uri,
+        "suggested_filename": suggested_filename,
+    })

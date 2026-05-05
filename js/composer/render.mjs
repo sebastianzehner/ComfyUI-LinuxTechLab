@@ -82,6 +82,50 @@ LinuxTechLabEditor.prototype.draw = function (cleanRender = false) {
   });
 };
 
+// Lazily grow the selection overlay canvas so heavily-scaled or off-canvas
+// layers don't have their bounding boxes clipped. Grow only — never shrink —
+// to avoid resize churn during slider drag. Capped to keep peak memory sane.
+LinuxTechLabEditor.prototype._ensureSelPad = function () {
+  const MIN_PAD = 500;
+  const MAX_PAD = 4000; // ~ (4K + 8K)² × 4B ≈ 600 MB worst case; layer clips beyond this
+  const HANDLE_BUFFER = 50; // room for corner handles + 30 px rotation handle stem
+  let needed = MIN_PAD;
+  for (const layer of this.layers) {
+    if (!layer.visible || !this.selectedLayerIds.has(layer.id)) continue;
+    if (!layer.img) continue;
+    const w = layer.img.width * Math.abs(layer.scaleX || 1);
+    const h = layer.img.height * Math.abs(layer.scaleY || 1);
+    const r = ((layer.rotation || 0) * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(r));
+    const sin = Math.abs(Math.sin(r));
+    const aabbW = w * cos + h * sin;
+    const aabbH = w * sin + h * cos;
+    const cx = layer.cx ?? this.docWidth / 2;
+    const cy = layer.cy ?? this.docHeight / 2;
+    needed = Math.max(
+      needed,
+      -(cx - aabbW / 2) + HANDLE_BUFFER,
+      cx + aabbW / 2 - this.docWidth + HANDLE_BUFFER,
+      -(cy - aabbH / 2) + HANDLE_BUFFER,
+      cy + aabbH / 2 - this.docHeight + HANDLE_BUFFER,
+    );
+  }
+  needed = Math.min(MAX_PAD, Math.ceil(needed));
+  if (needed > this.selPad) {
+    this.selPad = needed;
+    this.selCanvas.width = this.docWidth + 2 * needed;
+    this.selCanvas.height = this.docHeight + 2 * needed;
+    this.selCanvas.style.left = -needed + "px";
+    this.selCanvas.style.top = -needed + "px";
+    if (this.selHitArea) {
+      this.selHitArea.style.width = this.docWidth + 2 * needed + "px";
+      this.selHitArea.style.height = this.docHeight + 2 * needed + "px";
+      this.selHitArea.style.left = -needed + "px";
+      this.selHitArea.style.top = -needed + "px";
+    }
+  }
+};
+
 LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
   if (this._transparentExport) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -94,6 +138,10 @@ LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
   this.ctx.imageSmoothingEnabled = true;
   this.ctx.imageSmoothingQuality = "high";
 
+  // Grow the selection overlay if needed BEFORE we clear it (resize wipes it
+  // anyway, but doing it first keeps render order obvious).
+  if (!cleanRender && this.selCanvas) this._ensureSelPad();
+
   // Clear selection overlay
   const oc = this.selCtx;
   const pad = this.selPad || 0;
@@ -103,6 +151,9 @@ LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
 
   this.layers.forEach((layer) => {
     if (!layer.visible) return;
+    // Defensive: layer.img can briefly be null during async upload / restore.
+    // _ensureSelPad already skips this case; mirror that here.
+    if (!layer.img) return;
 
     const isSelected = this.selectedLayerIds.has(layer.id);
     this.ctx.save();
@@ -115,8 +166,22 @@ LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
 
     this.ctx.save();
     this.ctx.scale(layer.flippedX ? -1 : 1, layer.flippedY ? -1 : 1);
-    const w = layer.img.width * layer.scaleX;
-    const h = layer.img.height * layer.scaleY;
+    // Snap to integer pixels so strokeRect (selection box) and drawImage land on
+    // the same pixel grid — otherwise sub-pixel anti-aliasing makes the box look
+    // 1-2px larger than the image on bottom/right edges
+    const w = Math.round(layer.img.width * layer.scaleX);
+    const h = Math.round(layer.img.height * layer.scaleY);
+
+    // Per-layer Gaussian blur — non-destructive, applied to the final composited
+    // (post-mask) result. Selection box stroke is on the overlay canvas (oc),
+    // so it stays sharp regardless of this filter.
+    // Slider value (0-100) is mapped via a quadratic curve to actual blur radius
+    // (0-50 px) so the lower half of the slider gives finer control at small
+    // blur amounts. Mirror in js/composer/index.js + nodes/node_composition.py.
+    if (layer.blur && layer.blur > 0) {
+      const r = Math.pow(layer.blur / 100, 2) * 50;
+      this.ctx.filter = "blur(" + r + "px)";
+    }
 
     // NON-DESTRUCTIVE MASK RENDER
     if (layer.hasMask_internal && layer.eraserMaskCanvas_internal) {
@@ -134,6 +199,7 @@ LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
       this.ctx.drawImage(layer.img, -w / 2, -h / 2, w, h);
     }
 
+    this.ctx.filter = "none";
     this.ctx.restore();
     this.ctx.restore();
 
@@ -144,9 +210,11 @@ LinuxTechLabEditor.prototype._drawImpl = function (cleanRender) {
       oc.rotate((layer.rotation * Math.PI) / 180);
 
       oc.strokeStyle = layer.locked ? "#888" : this.selectedLayerIds.size > 1 ? "#0ea5e9" : "#f66744";
-      oc.lineWidth = 1.5;
+      oc.lineWidth = 1;
       if (layer.isPlaceholder) oc.setLineDash([6, 4]);
-      oc.strokeRect(-w / 2, -h / 2, w, h);
+      // Offset by 0.5 so a 1px stroke lands on the integer pixel grid (crisp,
+      // no anti-alias bleed). w/h are already integer-rounded above.
+      oc.strokeRect(-w / 2 + 0.5, -h / 2 + 0.5, w - 1, h - 1);
       oc.setLineDash([]);
 
       if (!layer.locked && this.selectedLayerIds.size === 1 && this.activeMode !== "eraser") {
@@ -279,6 +347,7 @@ LinuxTechLabEditor.prototype.attemptRestore = async function () {
           flippedX: mLayer.flippedX,
           flippedY: mLayer.flippedY,
           blendMode: mLayer.blendMode || "Normal",
+          blur: mLayer.blur || 0,
           rawB64_internal: null,
           rawServerPath: "__placeholder__",
           savedOnServer: true,
@@ -312,6 +381,7 @@ LinuxTechLabEditor.prototype.attemptRestore = async function () {
           flippedX: mLayer.flippedX,
           flippedY: mLayer.flippedY,
           blendMode: mLayer.blendMode || "Normal",
+          blur: mLayer.blur || 0,
           removeBgOnExec: !!mLayer.removeBgOnExec,
           bgRemovalQuality: mLayer.bgRemovalQuality || "auto",
           rawB64_internal: null,
@@ -353,6 +423,7 @@ LinuxTechLabEditor.prototype.attemptRestore = async function () {
             flippedX: mLayer.flippedX,
             flippedY: mLayer.flippedY,
             blendMode: mLayer.blendMode || "Normal",
+            blur: mLayer.blur || 0,
             rawB64_internal: null,
             rawServerPath: mLayer.src,
             savedOnServer: true,

@@ -17,12 +17,15 @@ function injectCSS() {
       flex-direction: column;
       gap: 8px;
     }
+    /* 6-col grid lets us mix 1/3-width ratio chips (span 2) with 1/2-width
+       custom chips (span 3) on the same row. */
     .pix-res-chips {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 5px;
     }
     .pix-res-chip {
+      grid-column: span 2; /* default = 1/3 width (3 chips per row) */
       background: #181825;
       border: 1px solid #45475a;
       border-radius: 4px;
@@ -40,7 +43,7 @@ function injectCSS() {
       color: #1e1e2e;
       border-color: var(--ltl-brand);
     }
-    .pix-res-chip.span-3 { grid-column: span 3; }
+    .pix-res-chip.span-half { grid-column: span 3; } /* 1/2 width — used by Custom Ratio + Custom Resolution */
     .pix-res-list {
       background: #181825;
       border: 1px solid #45475a;
@@ -210,6 +213,85 @@ function injectCSS() {
       color: #1e1e2e;
       border-color: var(--ltl-brand);
     }
+
+    /* Custom Ratio panel — Photoshop "lock-aspect" pattern. Sections top to
+       bottom: (1) ratio inputs (W:H typed once), (2) quick-pick width chips
+       (S/M/L/XL), (3) W and H math-aware inputs side-by-side (edit either,
+       counterpart auto-computes from ratio), (4) aspect preview, (5) footer
+       (snap picker + ratio·MP). Reuses .pix-res-custom-* layout for fields —
+       the wrap element gets both classes so it inherits the custom-mode shell
+       (padding, gap, flex column) without needing a duplicate rule here. */
+    .pix-res-ratio-input-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .pix-res-ratio-input-row .pix-res-ratio-label {
+      font-size: 9px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pix-res-ratio-input-row input {
+      width: 42px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 3px;
+      padding: 4px 6px;
+      color: ${BRAND};
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      font-family: ui-monospace, monospace;
+      box-sizing: border-box;
+    }
+    .pix-res-ratio-input-row input:focus { outline: none; border-color: ${BRAND}; }
+    .pix-res-ratio-swap {
+      width: 22px;
+      height: 22px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 3px;
+      color: #aaa;
+      cursor: pointer;
+      position: relative;
+      padding: 0;
+      display: inline-block;
+    }
+    .pix-res-ratio-swap::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: currentColor;
+      -webkit-mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
+              mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
+      pointer-events: none;
+    }
+    .pix-res-ratio-swap:hover { color: ${BRAND}; border-color: ${BRAND}; }
+    /* Quick-pick width chips — 4 evenly-spaced buttons under the ratio row. */
+    .pix-res-quickpicks {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .pix-res-quickpick {
+      background: #1d1d1d;
+      border: 1px solid #444;
+      border-radius: 3px;
+      color: #ccc;
+      padding: 5px 0;
+      font-size: 10px;
+      font-family: ui-monospace, monospace;
+      cursor: pointer;
+      transition: background 0.08s, border-color 0.08s;
+    }
+    .pix-res-quickpick:hover { border-color: #666; color: #fff; }
+    .pix-res-quickpick.active {
+      background: ${BRAND};
+      color: #fff;
+      border-color: ${BRAND};
+    }
   `;
   const style = document.createElement("style");
   style.id = "linuxtechlab-resolution-css";
@@ -228,7 +310,11 @@ injectCSS();
 // NODE_H sized so all 8 preset rows fit at 100% browser zoom with NO
 // scrollbar — exact content breakdown (in pixels of widget area):
 //   root padding (8 top + 8 bottom) ............... 16
-//   chip grid (3 rows × 26 + 2 × 5 gap) ........... 88
+//   chip grid (4 rows × 26 + 3 × 5 gap) ............ 119
+//     ├─ row 1: 1:1 / 16:9 / 9:16
+//     ├─ row 2: 2:1 / 3:2 / 2:3
+//     ├─ row 3: 4:3 / 3:4 / 4:5
+//     └─ row 4: Custom Ratio / Custom Resolution (half-width chips)
 //   gap between chips and list ..................... 8
 //   size list ..................................... 233
 //     ├─ borders (1 top + 1 bottom) ........  2
@@ -236,17 +322,15 @@ injectCSS();
 //     └─ inter-row borders (7 × 1) .........  7
 //   DOM widget `margin: 4` (top + bottom) ........... 8
 //                                                  ----
-//   widget content total ......................... 353
+//   widget content total ......................... 384
 //   chrome (titlebar + port row + frame margins) ... 46
 //                                                  ----
-//   NODE_H ....................................... 399
+//   NODE_H ....................................... 430
 //
-// 404 chosen with a 5-px safety margin for sub-pixel rounding, font metric
-// variance across browsers, and the focus-state border swap. Earlier 336/384
-// values both produced a thin scrollbar because they undercounted the 7
-// inter-row borders and the addDOMWidget margin.
+// 435 chosen with a 5-px safety margin for sub-pixel rounding, font metric
+// variance across browsers, and the focus-state border swap.
 const NODE_W = 240;
-const NODE_H = 404;
+const NODE_H = 435;
 
 // Python uses `hidden` inputs (no widget, no slot dot). State lives on
 // node.properties[STATE_PROP] which LiteGraph serializes natively in the
@@ -256,12 +340,17 @@ const STATE_PROP = "resolutionState";
 const HIDDEN_INPUT_NAME = "ResolutionState"; // matches Python INPUT_TYPES key
 
 const DEFAULT_STATE = {
-  mode: "preset",
+  mode: "preset", // "preset" | "custom" | "custom_ratio"
   ratio: "1:1",
   w: 1024,
   h: 1024,
   custom_w: 1024,
   custom_h: 1024,
+  // Custom Ratio mode — user types a ratio (e.g. 4:3) and picks from
+  // generated sizes. Defaults to a popular non-preset ratio so the panel
+  // shows useful sizes the moment the user clicks the chip.
+  custom_ratio_w: 4,
+  custom_ratio_h: 3,
   snap: 16, // px step for Custom mode commit + arrow-key nudge (8 / 16 / 32 / 64)
 };
 
@@ -312,12 +401,19 @@ const CHIPS = [
   { id: "2:1", label: "2:1" },
   { id: "3:2", label: "3:2" },
   { id: "2:3", label: "2:3" },
-  { id: "custom", label: "Custom Resolution", span3: true },
+  { id: "4:3", label: "4:3" },
+  { id: "3:4", label: "3:4" },
+  { id: "4:5", label: "4:5" },
+  { id: "custom_ratio", label: "Custom Ratio", spanHalf: true },
+  { id: "custom", label: "Custom Resolution", spanHalf: true },
 ];
 
 // Sizes per ratio — 8 entries each. The first two of 16:9/9:16/2:1 are the
 // de facto AI-video standards (Wan 2.2, CogVideoX, AnimateDiff) and aren't
 // mathematically exact for the ratio (e.g. 832×480 ≈ 1.733 vs 16:9 = 1.778).
+// 4:3, 3:4, 4:5 use strict ratios with /16-aligned dimensions (SDXL-friendly).
+// 4:5 includes 1152×1440 — the AI-friendly equivalent of Instagram portrait
+// (native 1080×1350), a frequent ask for social-media workflows.
 const SIZES = {
   "1:1": [
     [512, 512],
@@ -379,6 +475,36 @@ const SIZES = {
     [1152, 1728],
     [1280, 1920],
   ],
+  "4:3": [
+    [512, 384],
+    [640, 480],
+    [768, 576],
+    [1024, 768],
+    [1280, 960],
+    [1408, 1056],
+    [1600, 1200],
+    [1920, 1440],
+  ],
+  "3:4": [
+    [384, 512],
+    [480, 640],
+    [576, 768],
+    [768, 1024],
+    [960, 1280],
+    [1056, 1408],
+    [1200, 1600],
+    [1440, 1920],
+  ],
+  "4:5": [
+    [512, 640],
+    [640, 800],
+    [768, 960],
+    [832, 1040],
+    [1024, 1280],
+    [1152, 1440],
+    [1280, 1600],
+    [1536, 1920],
+  ],
 };
 
 // Default size auto-selected when the user clicks a ratio chip. Picked to be
@@ -390,6 +516,9 @@ const DEFAULT_PER_RATIO = {
   "2:1": [1280, 640],
   "3:2": [1152, 768],
   "2:3": [768, 1152],
+  "4:3": [1024, 768],
+  "3:4": [768, 1024],
+  "4:5": [1024, 1280], // SDXL-friendly portrait + Instagram-portrait equivalent
 };
 
 function gcd(a, b) {
@@ -407,7 +536,7 @@ function ratioLabel(w, h) {
   const g = gcd(w, h);
   const rw = w / g,
     rh = h / g;
-  const known = ["1:1", "16:9", "9:16", "2:1", "1:2", "3:2", "2:3"];
+  const known = ["1:1", "16:9", "9:16", "2:1", "1:2", "3:2", "2:3", "4:3", "3:4", "4:5", "5:4"];
   const simple = `${rw}:${rh}`;
   if (known.includes(simple)) return simple;
   const r = w / h;
@@ -425,17 +554,126 @@ function clampDim(n) {
   return Math.max(256, Math.min(4096, n));
 }
 
+// Return v if it's a finite positive integer, otherwise fallback. Used for
+// `custom_ratio_w` / `custom_ratio_h` reads — a corrupted/malicious workflow
+// JSON could supply a string ("0", "<img...>"), 0, or a negative number, all
+// of which slip past `?? 4` (nullish only). Coercing here closes both the
+// XSS vector (string into innerHTML) and the divide-by-zero / negative path.
+function safePositiveInt(v, fallback) {
+  const n = +v;
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
+// Quick-pick width values for Custom Ratio mode — common AI-friendly widths.
+// 512 (low-VRAM/draft), 768 (SD1.5 native), 1024 (SDXL native), 1536 (high-res).
+// Click sets W to this value; H auto-computes from the typed ratio + snap.
+const QUICK_PICK_WIDTHS = [512, 768, 1024, 1536];
+
+// Tiny safe math evaluator for the W/H inputs — supports `+ - * / ( )` and
+// decimals only. Hand-rolled recursive descent. NEVER use eval() / Function()
+// here: even though the field is per-node, accepting arbitrary JS would let a
+// shared workflow execute code on import. Returns NaN for any invalid input.
+// Examples: "1024", "1024+128", "512*2", "(1024+128)/2", "1024 + 128".
+function safeMathEval(str) {
+  if (typeof str !== "string") return NaN;
+  const s = str.trim();
+  if (!s) return NaN;
+  // Whitelist all chars up front so the parser never sees a stray identifier.
+  if (!/^[0-9+\-*/().\s]+$/.test(s)) return NaN;
+  // Hard length cap — defends against pathological inputs reaching the parser.
+  if (s.length > 256) return NaN;
+
+  let pos = 0;
+  // Recursion depth cap — prevents stack overflow from deeply-nested parens
+  // like "((((...1...))))". Threshold 64 is well above any realistic
+  // expression and safely below browser stack limits.
+  const MAX_DEPTH = 64;
+  let depth = 0;
+  const skipWs = () => {
+    while (pos < s.length && s[pos] === " ") pos++;
+  };
+  const eat = (ch) => {
+    skipWs();
+    if (s[pos] === ch) {
+      pos++;
+      return true;
+    }
+    return false;
+  };
+
+  function parseExpr() {
+    let v = parseTerm();
+    for (;;) {
+      skipWs();
+      if (eat("+")) v += parseTerm();
+      else if (eat("-")) v -= parseTerm();
+      else break;
+    }
+    return v;
+  }
+  function parseTerm() {
+    let v = parseFactor();
+    for (;;) {
+      skipWs();
+      if (eat("*")) v *= parseFactor();
+      else if (eat("/")) {
+        const d = parseFactor();
+        if (d === 0) return NaN;
+        v /= d;
+      } else break;
+    }
+    return v;
+  }
+  function parseFactor() {
+    if (++depth > MAX_DEPTH) return NaN;
+    skipWs();
+    if (eat("+")) {
+      const r = parseFactor();
+      depth--;
+      return r;
+    }
+    if (eat("-")) {
+      const r = -parseFactor();
+      depth--;
+      return r;
+    }
+    if (eat("(")) {
+      const v = parseExpr();
+      if (!eat(")")) {
+        depth--;
+        return NaN;
+      }
+      depth--;
+      return v;
+    }
+    let num = "";
+    while (pos < s.length && /[0-9.]/.test(s[pos])) num += s[pos++];
+    depth--;
+    if (!num) return NaN;
+    // Reject malformed numbers like "1.2.3" — parseFloat would silently
+    // truncate to 1.2 and the trailing-garbage check below wouldn't catch it.
+    if ((num.match(/\./g) || []).length > 1) return NaN;
+    return parseFloat(num);
+  }
+
+  const v = parseExpr();
+  skipWs();
+  if (pos !== s.length) return NaN; // trailing garbage
+  return v;
+}
+
 function renderChipGrid(state) {
   const wrap = document.createElement("div");
   wrap.className = "pix-res-chips";
   for (const c of CHIPS) {
     const el = document.createElement("div");
-    el.className = "pix-res-chip" + (c.span3 ? " span-3" : "");
+    el.className = "pix-res-chip" + (c.spanHalf ? " span-half" : "");
     el.textContent = c.label;
     el.dataset.chipId = c.id;
     const isActive =
       (c.id === "custom" && state.mode === "custom") ||
-      (c.id !== "custom" && state.mode === "preset" && state.ratio === c.id);
+      (c.id === "custom_ratio" && state.mode === "custom_ratio") ||
+      (c.id !== "custom" && c.id !== "custom_ratio" && state.mode === "preset" && state.ratio === c.id);
     if (isActive) el.classList.add("active");
     wrap.appendChild(el);
   }
@@ -478,15 +716,21 @@ function renderCustomPanel(node, state) {
   const row = document.createElement("div");
   row.className = "pix-res-custom-row";
 
+  // Inputs are `type="text"` (not `number`) so users can type math expressions
+  // like `1024+128` or `512*2`. We evaluate via safeMathEval on commit and on
+  // ArrowUp/Down (custom snap-stepping). `inputmode="decimal"` keeps mobile
+  // keypads numeric; the visible spinner buttons are gone but Up/Down arrows
+  // step by snap (replacing the native HTML5 number-input stepper).
   const wField = document.createElement("div");
   wField.className = "pix-res-custom-field";
   const wLabel = document.createElement("label");
   wLabel.textContent = "Width";
   const wInput = document.createElement("input");
-  wInput.type = "number";
-  wInput.min = "256";
-  wInput.max = "4096";
-  wInput.step = String(state.snap || 16);
+  wInput.type = "text";
+  wInput.inputMode = "decimal";
+  wInput.spellcheck = false;
+  wInput.autocomplete = "off";
+  wInput.title = "Math allowed: 1024+128, 512*2, (1024+128)/2";
   wInput.value = String(state.w);
 
   const hField = document.createElement("div");
@@ -494,10 +738,11 @@ function renderCustomPanel(node, state) {
   const hLabel = document.createElement("label");
   hLabel.textContent = "Height";
   const hInput = document.createElement("input");
-  hInput.type = "number";
-  hInput.min = "256";
-  hInput.max = "4096";
-  hInput.step = String(state.snap || 16);
+  hInput.type = "text";
+  hInput.inputMode = "decimal";
+  hInput.spellcheck = false;
+  hInput.autocomplete = "off";
+  hInput.title = "Math allowed: 1024+128, 512*2, (1024+128)/2";
   hInput.value = String(state.h);
 
   wField.append(wLabel, wInput);
@@ -544,8 +789,9 @@ function renderCustomPanel(node, state) {
     for (const b of snapBtnEls) {
       b.classList.toggle("active", parseInt(b.dataset.v, 10) === v);
     }
-    wInput.step = String(v);
-    hInput.step = String(v);
+    // Inputs are type="text" now (math support); no native step attr to update.
+    // Arrow-key stepping reads the snap value at keypress time, so this just
+    // needs to land in state and re-commit so the W/H snap to the new step.
     const cur = readState(node);
     writeState(node, { ...cur, snap: v });
     commit();
@@ -595,10 +841,12 @@ function renderCustomPanel(node, state) {
   function commit() {
     const cur = readState(node);
     const step = cur.snap || 16;
-    const wRaw = parseInt(wInput.value, 10);
-    const hRaw = parseInt(hInput.value, 10);
-    const wNew = clampDim(snapTo(Number.isFinite(wRaw) ? wRaw : 1024, step));
-    const hNew = clampDim(snapTo(Number.isFinite(hRaw) ? hRaw : 1024, step));
+    const wRaw = safeMathEval(wInput.value);
+    const hRaw = safeMathEval(hInput.value);
+    // Invalid expression / empty → fall back to the LAST committed value so a
+    // typo doesn't replace the user's working state with a default.
+    const wNew = clampDim(snapTo(Number.isFinite(wRaw) && wRaw > 0 ? wRaw : cur.w, step));
+    const hNew = clampDim(snapTo(Number.isFinite(hRaw) && hRaw > 0 ? hRaw : cur.h, step));
     wInput.value = String(wNew);
     hInput.value = String(hNew);
     refreshReadout(wNew, hNew);
@@ -612,36 +860,374 @@ function renderCustomPanel(node, state) {
   }
 
   function liveUpdate() {
-    const wLive = parseInt(wInput.value, 10);
-    const hLive = parseInt(hInput.value, 10);
-    if (Number.isFinite(wLive) && Number.isFinite(hLive)) refreshReadout(wLive, hLive);
+    const wLive = safeMathEval(wInput.value);
+    const hLive = safeMathEval(hInput.value);
+    // Only refresh the readout/preview when BOTH expressions evaluate cleanly.
+    // Otherwise the preview rectangle would jitter between valid keystrokes.
+    if (Number.isFinite(wLive) && Number.isFinite(hLive) && wLive > 0 && hLive > 0) {
+      refreshReadout(wLive, hLive);
+    }
   }
   wInput.addEventListener("input", liveUpdate);
   hInput.addEventListener("input", liveUpdate);
 
   wInput.addEventListener("blur", commit);
   hInput.addEventListener("blur", commit);
-  wInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") wInput.blur();
-  });
-  hInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") hInput.blur();
-  });
+
+  // Replace native HTML5 number-input stepping with snap-aware arrow stepping.
+  // Up/Down increments by the current snap value (8/16/32/64); Shift+Up/Down
+  // by 4× for coarse jumps. Evaluates the current expression first so users
+  // can do "1024+8" then ArrowUp without losing the math.
+  function stepInput(input, dir, multiplier) {
+    const cur = readState(node);
+    const step = (cur.snap || 16) * multiplier;
+    const v = safeMathEval(input.value);
+    const base = Number.isFinite(v) && v > 0 ? v : input === wInput ? cur.w : cur.h;
+    const next = clampDim(snapTo(base + dir * step, cur.snap || 16));
+    input.value = String(next);
+    liveUpdate();
+  }
 
   for (const inp of [wInput, hInput]) {
-    inp.addEventListener("keydown", (e) => e.stopPropagation());
+    inp.addEventListener("keydown", (e) => {
+      // Always block ComfyUI canvas shortcuts from firing while typing.
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        inp.blur();
+        return;
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const dir = e.key === "ArrowUp" ? 1 : -1;
+        const mult = e.shiftKey ? 4 : 1;
+        stepInput(inp, dir, mult);
+      }
+    });
   }
 
   swap.addEventListener("click", () => {
-    const w = parseInt(wInput.value, 10) || state.w;
-    const h = parseInt(hInput.value, 10) || state.h;
-    wInput.value = String(h);
-    hInput.value = String(w);
+    // Use safeMathEval too — the user may have typed math in either field.
+    const w = safeMathEval(wInput.value);
+    const h = safeMathEval(hInput.value);
+    const wOk = Number.isFinite(w) && w > 0 ? w : state.w;
+    const hOk = Number.isFinite(h) && h > 0 ? h : state.h;
+    wInput.value = String(hOk);
+    hInput.value = String(wOk);
     commit();
   });
 
   // swap is already inside `row` (between W and H fields), don't append again.
   wrap.append(row, readout, preview);
+  return wrap;
+}
+
+function renderCustomRatioPanel(node, state) {
+  // Photoshop "lock-aspect" pattern: user types W:H ratio once, then either
+  // (a) clicks a quick-pick width chip, or (b) types into the W or H input
+  // (math expressions allowed). The other dimension auto-computes from the
+  // ratio and is snapped to /8/16/32/64 for AI alignment.
+  const wrap = document.createElement("div");
+  wrap.className = "pix-res-list pix-res-custom pix-res-ratio";
+
+  // ── ratio inputs row (W : H, swap between) ──────────────────
+  const ratioRow = document.createElement("div");
+  ratioRow.className = "pix-res-ratio-input-row";
+
+  const lbl = document.createElement("span");
+  lbl.className = "pix-res-ratio-label";
+  lbl.textContent = "Ratio";
+
+  const rwInput = document.createElement("input");
+  rwInput.type = "text";
+  rwInput.inputMode = "numeric";
+  rwInput.spellcheck = false;
+  rwInput.autocomplete = "off";
+  rwInput.value = String(safePositiveInt(state.custom_ratio_w, 4));
+  rwInput.title = "Ratio width (positive integer)";
+
+  const rhInput = document.createElement("input");
+  rhInput.type = "text";
+  rhInput.inputMode = "numeric";
+  rhInput.spellcheck = false;
+  rhInput.autocomplete = "off";
+  rhInput.value = String(safePositiveInt(state.custom_ratio_h, 3));
+  rhInput.title = "Ratio height (positive integer)";
+
+  const ratioSwap = document.createElement("button");
+  ratioSwap.type = "button";
+  ratioSwap.className = "pix-res-ratio-swap";
+  ratioSwap.title = "Swap ratio W ↔ H";
+  ratioSwap.setAttribute("aria-label", "Swap ratio width and height");
+
+  ratioRow.append(lbl, rwInput, ratioSwap, rhInput);
+
+  // ── quick-pick width chips ──────────────────────────────────
+  const quickRow = document.createElement("div");
+  quickRow.className = "pix-res-quickpicks";
+  const quickBtnEls = [];
+  for (const w of QUICK_PICK_WIDTHS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pix-res-quickpick";
+    btn.textContent = String(w);
+    btn.dataset.w = String(w);
+    quickRow.appendChild(btn);
+    quickBtnEls.push(btn);
+  }
+
+  // ── W and H math-aware inputs (side-by-side, no swap between — ratio swap
+  //    above already handles orientation flip) ────────────────────────────
+  const fieldsRow = document.createElement("div");
+  fieldsRow.className = "pix-res-custom-row";
+  fieldsRow.style.gridTemplateColumns = "1fr 1fr"; // override 1fr auto 1fr (no swap col)
+
+  const wField = document.createElement("div");
+  wField.className = "pix-res-custom-field";
+  const wLabel = document.createElement("label");
+  wLabel.textContent = "Width";
+  const wInput = document.createElement("input");
+  wInput.type = "text";
+  wInput.inputMode = "decimal";
+  wInput.spellcheck = false;
+  wInput.autocomplete = "off";
+  wInput.title = "Math allowed: 1024+128, 512*2 — height auto-computes from ratio";
+  wInput.value = String(state.w);
+  wField.append(wLabel, wInput);
+
+  const hField = document.createElement("div");
+  hField.className = "pix-res-custom-field";
+  const hLabel = document.createElement("label");
+  hLabel.textContent = "Height";
+  const hInput = document.createElement("input");
+  hInput.type = "text";
+  hInput.inputMode = "decimal";
+  hInput.spellcheck = false;
+  hInput.autocomplete = "off";
+  hInput.title = "Math allowed: 1024+128, 512*2 — width auto-computes from ratio";
+  hInput.value = String(state.h);
+  hField.append(hLabel, hInput);
+
+  fieldsRow.append(wField, hField);
+
+  // ── readout (snap picker + ratio·MP) + aspect preview ─────────
+  const readout = document.createElement("div");
+  readout.className = "pix-res-readout";
+
+  const snapGroup = document.createElement("div");
+  snapGroup.className = "pix-res-snap-group";
+  snapGroup.title = "Snap step (also drives Up/Down arrow nudge)";
+  const snapIcon = document.createElement("span");
+  snapIcon.className = "pix-res-snap-icon";
+  const snapBtns = document.createElement("div");
+  snapBtns.className = "pix-res-snap-btns";
+  const snapBtnEls = [];
+  for (const v of SNAP_OPTIONS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
+    btn.textContent = String(v);
+    btn.dataset.v = String(v);
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const cur = readState(node);
+      writeState(node, { ...cur, snap: v });
+      for (const b of snapBtnEls) b.classList.toggle("active", parseInt(b.dataset.v, 10) === v);
+      // Re-snap current W and recompute H so visible values reflect new step.
+      const w = safeMathEval(wInput.value);
+      if (Number.isFinite(w) && w > 0) {
+        commitFromW(w);
+      }
+    });
+    snapBtns.appendChild(btn);
+    snapBtnEls.push(btn);
+  }
+  snapGroup.append(snapIcon, snapBtns);
+
+  const ratioMP = document.createElement("span");
+  readout.append(snapGroup, ratioMP);
+
+  const preview = document.createElement("div");
+  preview.className = "pix-res-preview";
+  const previewRect = document.createElement("div");
+  previewRect.className = "pix-res-preview-rect";
+  const previewLabel = document.createElement("div");
+  previewLabel.className = "pix-res-preview-label";
+  preview.append(previewRect, previewLabel);
+
+  const PREVIEW_MAX_W = 90;
+  const PREVIEW_MAX_H = 60;
+
+  function refreshPreview(w, h) {
+    const aspect = w / h;
+    let pw, ph;
+    if (aspect >= PREVIEW_MAX_W / PREVIEW_MAX_H) {
+      pw = PREVIEW_MAX_W;
+      ph = PREVIEW_MAX_W / aspect;
+    } else {
+      ph = PREVIEW_MAX_H;
+      pw = PREVIEW_MAX_H * aspect;
+    }
+    previewRect.style.width = `${pw}px`;
+    previewRect.style.height = `${ph}px`;
+    previewLabel.innerHTML = `<span class="accent">${w}</span> × <span class="accent">${h}</span>`;
+  }
+
+  function refreshReadout(w, h) {
+    // In Custom Ratio mode the user's TYPED ratio is the source of truth, so
+    // show that label even when /16 snap drifts the actual W:H slightly.
+    const cur = readState(node);
+    const rW = safePositiveInt(cur.custom_ratio_w, 4);
+    const rH = safePositiveInt(cur.custom_ratio_h, 3);
+    ratioMP.innerHTML = `<span class="accent">${rW}:${rH}</span> · ${megapixels(w, h)} MP`;
+    refreshPreview(w, h);
+    // Reflect quick-pick "active" chip if W matches an exact preset.
+    for (const b of quickBtnEls) {
+      b.classList.toggle("active", parseInt(b.dataset.w, 10) === w);
+    }
+  }
+  refreshReadout(state.w, state.h);
+
+  // ── core commit helpers ──────────────────────────────────────────
+  // Given a Width value, snap it and derive Height from current ratio.
+  // Writes both to state and updates the inputs / readout.
+  function commitFromW(rawW) {
+    const cur = readState(node);
+    const step = cur.snap || 16;
+    const rW = safePositiveInt(cur.custom_ratio_w, 4);
+    const rH = safePositiveInt(cur.custom_ratio_h, 3);
+    const w = clampDim(snapTo(rawW, step));
+    const h = clampDim(snapTo((w * rH) / rW, step));
+    wInput.value = String(w);
+    hInput.value = String(h);
+    refreshReadout(w, h);
+    writeState(node, { ...cur, w, h });
+  }
+
+  // Given a Height value, snap it and derive Width from current ratio.
+  function commitFromH(rawH) {
+    const cur = readState(node);
+    const step = cur.snap || 16;
+    const rW = safePositiveInt(cur.custom_ratio_w, 4);
+    const rH = safePositiveInt(cur.custom_ratio_h, 3);
+    const h = clampDim(snapTo(rawH, step));
+    const w = clampDim(snapTo((h * rW) / rH, step));
+    wInput.value = String(w);
+    hInput.value = String(h);
+    refreshReadout(w, h);
+    writeState(node, { ...cur, w, h });
+  }
+
+  // ── live preview while typing (no commit until blur) ─────────────
+  function liveUpdate(input, isWidth) {
+    const v = safeMathEval(input.value);
+    if (!Number.isFinite(v) || v <= 0) return;
+    const cur = readState(node);
+    const rW = safePositiveInt(cur.custom_ratio_w, 4);
+    const rH = safePositiveInt(cur.custom_ratio_h, 3);
+    if (isWidth) {
+      refreshReadout(Math.round(v), Math.round((v * rH) / rW));
+    } else {
+      refreshReadout(Math.round((v * rW) / rH), Math.round(v));
+    }
+  }
+  wInput.addEventListener("input", () => liveUpdate(wInput, true));
+  hInput.addEventListener("input", () => liveUpdate(hInput, false));
+
+  // ── input commit on blur ─────────────────────────────────────────
+  wInput.addEventListener("blur", () => {
+    const v = safeMathEval(wInput.value);
+    const cur = readState(node);
+    commitFromW(Number.isFinite(v) && v > 0 ? v : cur.w);
+  });
+  hInput.addEventListener("blur", () => {
+    const v = safeMathEval(hInput.value);
+    const cur = readState(node);
+    commitFromH(Number.isFinite(v) && v > 0 ? v : cur.h);
+  });
+
+  // ── arrow-key stepping (same pattern as Custom Resolution) ─────
+  function stepInput(input, dir, multiplier, isWidth) {
+    const cur = readState(node);
+    const step = (cur.snap || 16) * multiplier;
+    const v = safeMathEval(input.value);
+    const base = Number.isFinite(v) && v > 0 ? v : isWidth ? cur.w : cur.h;
+    const next = base + dir * step;
+    if (isWidth) commitFromW(next);
+    else commitFromH(next);
+  }
+
+  for (const [inp, isW] of [
+    [wInput, true],
+    [hInput, false],
+  ]) {
+    inp.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        inp.blur();
+        return;
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const dir = e.key === "ArrowUp" ? 1 : -1;
+        const mult = e.shiftKey ? 4 : 1;
+        stepInput(inp, dir, mult, isW);
+      }
+    });
+  }
+
+  // ── quick-pick chip clicks set W and recompute H ─────────────────
+  quickRow.addEventListener("click", (e) => {
+    const btn = e.target.closest(".pix-res-quickpick");
+    if (!btn) return;
+    e.stopPropagation();
+    commitFromW(parseInt(btn.dataset.w, 10));
+  });
+
+  // ── ratio input commit + validation ──────────────────────────────
+  function commitRatio() {
+    const rWraw = parseInt(rwInput.value, 10);
+    const rHraw = parseInt(rhInput.value, 10);
+    const cur = readState(node);
+    const rW = Number.isFinite(rWraw) && rWraw > 0 ? rWraw : safePositiveInt(cur.custom_ratio_w, 4);
+    const rH = Number.isFinite(rHraw) && rHraw > 0 ? rHraw : safePositiveInt(cur.custom_ratio_h, 3);
+    rwInput.value = String(rW);
+    rhInput.value = String(rH);
+    const ratioChanged = rW !== cur.custom_ratio_w || rH !== cur.custom_ratio_h;
+    if (ratioChanged) {
+      // Recompute H from current W at the new ratio so the visible image
+      // matches what the workflow will receive. Single combined write so
+      // the workflow can never observe a half-updated state mid-blur.
+      const step = cur.snap || 16;
+      const w = clampDim(snapTo(cur.w, step));
+      const h = clampDim(snapTo((w * rH) / rW, step));
+      wInput.value = String(w);
+      hInput.value = String(h);
+      writeState(node, { ...cur, custom_ratio_w: rW, custom_ratio_h: rH, w, h });
+      refreshReadout(w, h);
+    }
+  }
+
+  for (const inp of [rwInput, rhInput]) {
+    inp.addEventListener("blur", commitRatio);
+    inp.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        inp.blur();
+      }
+    });
+  }
+
+  ratioSwap.addEventListener("click", () => {
+    const a = rwInput.value;
+    rwInput.value = rhInput.value;
+    rhInput.value = a;
+    commitRatio();
+  });
+
+  wrap.append(ratioRow, quickRow, fieldsRow, readout, preview);
   return wrap;
 }
 
@@ -672,6 +1258,8 @@ function renderUI(node) {
   root.appendChild(renderChipGrid(state));
   if (state.mode === "custom") {
     root.appendChild(renderCustomPanel(node, state));
+  } else if (state.mode === "custom_ratio") {
+    root.appendChild(renderCustomRatioPanel(node, state));
   } else {
     root.appendChild(renderSizeList(state));
   }
@@ -733,6 +1321,16 @@ function setupResolutionNode(node) {
           w: cur.custom_w ?? 1024,
           h: cur.custom_h ?? 1024,
         });
+      } else if (id === "custom_ratio") {
+        // Preserve current W if it's reasonable (>= 256); otherwise default
+        // to 1024 (SDXL native). Height auto-computes from the saved ratio
+        // and snaps to the current step so the panel opens with valid dims.
+        const rW = safePositiveInt(cur.custom_ratio_w, 4);
+        const rH = safePositiveInt(cur.custom_ratio_h, 3);
+        const step = cur.snap || 16;
+        const w = clampDim(snapTo(cur.w >= 256 ? cur.w : 1024, step));
+        const h = clampDim(snapTo((w * rH) / rW, step));
+        writeState(node, { ...cur, mode: "custom_ratio", w, h });
       } else {
         const sizes = SIZES[id];
         if (!sizes) return;
@@ -758,11 +1356,13 @@ function setupResolutionNode(node) {
     }
   };
 
-  // Arrow-key navigation in preset mode. The list is `tabindex=0` so it can
-  // receive focus; we delegate at root level so the listener survives every
-  // re-render. `stopPropagation` prevents ComfyUI's canvas from interpreting
-  // the arrow keys as graph pan.
+  // Arrow-key navigation in preset mode (size list). The list is `tabindex=0`
+  // so it can receive focus; we delegate at root level so the listener
+  // survives every re-render. `stopPropagation` prevents ComfyUI's canvas
+  // from interpreting the arrow keys as graph pan. Custom modes have their
+  // own per-input arrow handlers (snap-step), not list-row navigation.
   const _onKeydown = (e) => {
+    if (e.target instanceof HTMLInputElement) return;
     const list = e.target.closest(".pix-res-list");
     if (!list || list.classList.contains("pix-res-custom")) return;
     if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
@@ -779,7 +1379,7 @@ function setupResolutionNode(node) {
     else if (e.key === "Home") idx = 0;
     else if (e.key === "End") idx = sizes.length - 1;
     const [w, h] = sizes[idx];
-    if (w === cur.w && h === cur.h) return; // no-op (already at boundary)
+    if (w === cur.w && h === cur.h) return;
     writeState(node, { ...cur, w, h });
     renderUI(node);
     const newList = root.querySelector(".pix-res-list:not(.pix-res-custom)");
@@ -807,6 +1407,8 @@ function setupResolutionNode(node) {
     root.appendChild(renderChipGrid(state));
     if (state.mode === "custom") {
       root.appendChild(renderCustomPanel(node, state));
+    } else if (state.mode === "custom_ratio") {
+      root.appendChild(renderCustomRatioPanel(node, state));
     } else {
       root.appendChild(renderSizeList(state));
     }
@@ -842,10 +1444,12 @@ app.registerExtension({
     };
   },
 
-  // nodeCreated fires AFTER node construction including configure, so widget
-  // values restored from a saved workflow are already in place. This is the
-  // proven LinuxTechLab pattern (see js/note/index.js) for hidden-JSON-widget
-  // state restoration.
+  // nodeCreated fires DURING node construction, BEFORE configure() is called
+  // to restore saved widget values (CLAUDE.md Pattern #8). The initial
+  // populate of the DOM widget is therefore deferred to queueMicrotask
+  // inside setupResolutionNode so configure has a chance to land the saved
+  // value first — without that defer, the panel renders defaults and flashes
+  // to the saved state milliseconds later.
   nodeCreated(node) {
     if (node.comfyClass !== "LinuxTechLabResolution") return;
     setupResolutionNode(node);

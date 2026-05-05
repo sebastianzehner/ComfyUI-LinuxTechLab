@@ -1,15 +1,7 @@
 // ============================================================
 // LinuxTechLab Paint Studio — Core + Full UI  v4 (Framework)
 // ============================================================
-import {
-  BrushEngine,
-  hexToRgb,
-  rgbToHex,
-  rgbToHsv,
-  hsvToRgb,
-  rgbToHsl,
-  hslToRgb,
-} from "./engine.mjs";
+import { BrushEngine, hexToRgb, rgbToHex, rgbToHsv, hsvToRgb, rgbToHsl, hslToRgb } from "./engine.mjs";
 import { PaintAPI } from "./api.mjs";
 import {
   createEditorLayout,
@@ -25,11 +17,12 @@ import {
   createRow,
 } from "../framework/index.mjs";
 
-const PAINT_STYLE_ID = "linuxtechlab-paint-extra-styles-v4";
+const PAINT_STYLE_ID = "linuxtechlab-paint-extra-styles-v5";
 
 function injectPaintExtraStyles() {
   if (document.getElementById(PAINT_STYLE_ID)) return;
   // remove old versions
+  document.getElementById("linuxtechlab-paint-extra-styles-v4")?.remove();
   document.getElementById("linuxtechlab-paint-styles-v3")?.remove();
   document.getElementById("linuxtechlab-paint-styles-v2")?.remove();
   const s = document.createElement("style");
@@ -39,7 +32,7 @@ function injectPaintExtraStyles() {
 /* Paint-specific: canvas viewport */
 .ppx-canvas-viewport { position:absolute; top:0; left:0; transform-origin:0 0; overflow:visible; }
 .ppx-canvas-viewport canvas { display:block; }
-.ppx-canvas-viewport canvas:first-child { box-shadow:0 4px 32px rgba(0,0,0,.7); border:2px solid rgba(137,180,250,0.45); }
+.ppx-canvas-viewport canvas:first-child { box-shadow:0 4px 32px rgba(0,0,0,.7), 0 0 0 2px rgba(137,180,250,0.45); }
 .ppx-cursor-canvas { position:absolute; top:0; left:0; pointer-events:none; }
 .ppx-color-area { display:flex; flex-direction:column; gap:6px; }
 /* Paint-specific: SV/Hue color picker canvases */
@@ -249,16 +242,12 @@ export class PaintStudio {
         this.selectedIndices.add(this.activeIdx);
         this._renderDisplay();
         this._updateLayersPanel();
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => this._fitToView()),
-        );
+        requestAnimationFrame(() => requestAnimationFrame(() => this._fitToView()));
       });
     } else {
       this._addLayer("Background");
       this._renderDisplay();
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => this._fitToView()),
-      );
+      requestAnimationFrame(() => requestAnimationFrame(() => this._fitToView()));
     }
 
     this._updateColorUI();
@@ -407,8 +396,7 @@ export class PaintStudio {
     this._buildWorkspaceContent(layout.workspace);
 
     // Enable drag & drop on workspace
-    if (this._canvasToolbar)
-      this._canvasToolbar.setupDropZone(layout.workspace);
+    if (this._canvasToolbar) this._canvasToolbar.setupDropZone(layout.workspace);
 
     // ── Build right sidebar content (before sidebarFooter) ──
     this._buildRightContent(layout.rightSidebar, layout.sidebarFooter);
@@ -420,8 +408,7 @@ export class PaintStudio {
     // Tools section
     const toolPanel = createPanel("Tools", { collapsible: true });
     const toolbox = document.createElement("div");
-    toolbox.style.cssText =
-      "display:grid;grid-template-columns:repeat(4,1fr);gap:4px;";
+    toolbox.style.cssText = "display:grid;grid-template-columns:repeat(4,1fr);gap:4px;";
     const UI_ICON = "/linuxtechlab/assets/icons/ui/";
     const TOOLS = [
       {
@@ -572,8 +559,7 @@ export class PaintStudio {
 
     // HSL sliders
     const hslLbl = document.createElement("div");
-    hslLbl.style.cssText =
-      "font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;";
+    hslLbl.style.cssText = "font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;";
     hslLbl.textContent = "HSL Adjust";
     colorArea.appendChild(hslLbl);
 
@@ -581,8 +567,7 @@ export class PaintStudio {
     this._hslBaseColor = this.fgColor;
 
     const captureBase = () => {
-      this._hslBaseColor =
-        this.colorMode === "fg" ? this.fgColor : this.bgColor2;
+      this._hslBaseColor = this.colorMode === "fg" ? this.fgColor : this.bgColor2;
       // Reset all sliders to 0 so deltas start fresh from current color
       if (this.el.hsl_h) {
         this.el.hsl_h.slider.value = 0;
@@ -634,8 +619,7 @@ export class PaintStudio {
 
     // ── Recent colors (1 row of 8) ──
     const recentLbl = document.createElement("div");
-    recentLbl.style.cssText =
-      "font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;";
+    recentLbl.style.cssText = "font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;";
     recentLbl.textContent = "Recent";
     colorArea.appendChild(recentLbl);
     const recentGrid = document.createElement("div");
@@ -653,8 +637,7 @@ export class PaintStudio {
 
     // ── Fixed popular colors (2 rows of 8) ──
     const paletteLbl = document.createElement("div");
-    paletteLbl.style.cssText =
-      "font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;";
+    paletteLbl.style.cssText = "font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;";
     paletteLbl.textContent = "Palette";
     colorArea.appendChild(paletteLbl);
     const paletteColors = [
@@ -746,11 +729,7 @@ export class PaintStudio {
           const img = new Image();
           img.onload = () => {
             const ly = this._makeLayer(file.name.replace(/\.[^.]+$/, ""));
-            const scale = Math.min(
-              this.docW / img.width,
-              this.docH / img.height,
-              1,
-            );
+            const scale = Math.min(this.docW / img.width, this.docH / img.height, 1);
             const dw = img.width * scale,
               dh = img.height * scale;
             const dx = (this.docW - dw) / 2,
@@ -764,9 +743,7 @@ export class PaintStudio {
             this._pushHistory();
             this._updateLayersPanel();
             this._renderDisplay();
-            this._setStatus(
-              `Image "${file.name}" loaded \u2014 Move tool selected`,
-            );
+            this._setStatus(`Image "${file.name}" loaded \u2014 Move tool selected`);
             this._setTool("transform");
           };
           img.src = ev.target.result;
@@ -897,10 +874,8 @@ export class PaintStudio {
         const v = parseFloat(pct) / 100;
         ly.transform.scaleX = v;
         ly.transform.scaleY = v;
-        if (this._transformPanel.setStretchH)
-          this._transformPanel.setStretchH(pct);
-        if (this._transformPanel.setStretchV)
-          this._transformPanel.setStretchV(pct);
+        if (this._transformPanel.setStretchH) this._transformPanel.setStretchH(pct);
+        if (this._transformPanel.setStretchV) this._transformPanel.setStretchV(pct);
         this._renderDisplay();
       },
       onStretchHChange: (pct) => {
@@ -932,14 +907,10 @@ export class PaintStudio {
     // Warning shown when transform is pending (Enter to apply manually)
     const warnDiv = document.createElement("div");
     warnDiv.className = "ppx-transform-warn";
-    warnDiv.textContent =
-      "Transform auto-applies when switching tools. Enter = apply now.";
+    warnDiv.textContent = "Transform auto-applies when switching tools. Enter = apply now.";
     warnDiv.style.display = "none";
     this.el.transformWarn = warnDiv;
-    this._transformPanel.content.insertBefore(
-      warnDiv,
-      this._transformPanel.content.firstChild,
-    );
+    this._transformPanel.content.insertBefore(warnDiv, this._transformPanel.content.firstChild);
 
     // Store ref for old code that checks this.el.transformPanel
     this.el.transformPanel = this._transformPanel.el;
@@ -996,10 +967,7 @@ export class PaintStudio {
     this.el.dimLabel = dimLabel;
 
     ws.addEventListener("mouseleave", () => {
-      if (this.el.cursorCvs)
-        this.el.cursorCvs
-          .getContext("2d")
-          .clearRect(0, 0, this.docW, this.docH);
+      if (this.el.cursorCvs) this.el.cursorCvs.getContext("2d").clearRect(0, 0, this.docW, this.docH);
     });
 
     // Use framework zoom bar — store reference for zoom label updates
@@ -1097,10 +1065,8 @@ export class PaintStudio {
       variant: "accent",
       onClick: () => this._removeBgFromActiveLayer(),
     });
-    this._bgRemovalBtn.style.cssText =
-      "width:100%;margin-bottom:8px;opacity:0.3;pointer-events:none;";
-    this._bgRemovalBtn.title =
-      "Enabled on layers added from an image. Draw layers stay disabled.";
+    this._bgRemovalBtn.style.cssText = "width:100%;margin-bottom:8px;opacity:0.3;pointer-events:none;";
+    this._bgRemovalBtn.title = "Enabled on layers added from an image. Draw layers stay disabled.";
     panel.content.appendChild(this._bgRemovalBtn);
 
     const select = createSelectInput({
@@ -1117,13 +1083,10 @@ export class PaintStudio {
     });
     select.style.width = "100%";
     this._bgRemovalSelect = select;
-    panel.content.appendChild(
-      createRow("Model", select, { labelWidth: "80px" }),
-    );
+    panel.content.appendChild(createRow("Model", select, { labelWidth: "80px" }));
 
     const statusLine = document.createElement("div");
-    statusLine.style.cssText =
-      "font-size:10px;color:#888;margin:4px 2px 2px;line-height:1.4;";
+    statusLine.style.cssText = "font-size:10px;color:#888;margin:4px 2px 2px;line-height:1.4;";
     statusLine.textContent = "Checking rembg installation...";
     panel.content.appendChild(statusLine);
     this._bgRemovalStatusLine = statusLine;
@@ -1160,17 +1123,14 @@ export class PaintStudio {
           }
           select.value = "auto";
         }
-        const firstMissing = models.find(
-          (m) => m.available && !m.downloaded && m.id !== "auto",
-        );
+        const firstMissing = models.find((m) => m.available && !m.downloaded && m.id !== "auto");
         const hint = firstMissing
           ? `First use of a new model will download to <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>.`
           : `Models: <code style="background:#1c1c1c;padding:1px 4px;border-radius:2px;">${info.modelDir || "rembg"}</code>`;
         statusLine.innerHTML = `<span style="color:#4a7">\u2713 rembg ${info.rembgVersion || ""}</span> \u00b7 ${hint}`;
       })
       .catch(() => {
-        statusLine.textContent =
-          "Couldn't query rembg status \u2014 backend unreachable.";
+        statusLine.textContent = "Couldn't query rembg status \u2014 backend unreachable.";
       });
 
     container.insertBefore(panel.el, sidebarFooter);
@@ -1180,11 +1140,7 @@ export class PaintStudio {
     const btn = this._bgRemovalBtn;
     if (!btn) return;
     const ly = this.layers[this.activeIdx];
-    const enabled =
-      !this._bgRemovalUnavailable &&
-      !!ly &&
-      !ly.locked &&
-      ly.sourceKind === "image";
+    const enabled = !this._bgRemovalUnavailable && !!ly && !ly.locked && ly.sourceKind === "image";
     btn.style.opacity = enabled ? "1" : "0.3";
     btn.style.pointerEvents = enabled ? "auto" : "none";
     btn.disabled = !enabled;

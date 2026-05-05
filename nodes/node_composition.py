@@ -5,7 +5,7 @@ import time
 import folder_paths
 import numpy as np
 import torch
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageFilter
 from server import PromptServer
 
 from .node_ref import FlexibleOptionalInputType, any_type
@@ -420,6 +420,22 @@ class LinuxTechLabImageComposition:
                                 layer_img = _remove_background(
                                     layer_img, layer.get("bgRemovalQuality", "auto")
                                 )
+                            # Quality fix: scale the slot up to source resolution
+                            # if the upstream image is larger. Adjust scaleX/Y in
+                            # a layer copy so the visual size matches the editor.
+                            # Mirrors js/composer/placeholder.mjs previewPlaceholderInput.
+                            sw, sh = layer_img.size
+                            upscale = max(1.0, sw / ph_w, sh / ph_h)
+                            if upscale > 1.0:
+                                new_ph_w = int(round(ph_w * upscale))
+                                new_ph_h = int(round(ph_h * upscale))
+                                compensation = ph_w / new_ph_w
+                                ph_w, ph_h = new_ph_w, new_ph_h
+                                layer = {
+                                    **layer,
+                                    "scaleX": layer.get("scaleX", 1.0) * compensation,
+                                    "scaleY": layer.get("scaleY", 1.0) * compensation,
+                                }
                             layer_img = _fit_to_placeholder(
                                 layer_img, ph_w, ph_h, layer.get("fillMode", "cover")
                             )
@@ -444,6 +460,15 @@ class LinuxTechLabImageComposition:
                     if mask_src:
                         layer_img = _apply_eraser_mask(layer_img, mask_src, input_dir)
                     composed = _apply_layer_transform(layer_img, layer, doc_w, doc_h)
+                    # Quadratic curve: slider 0-100 maps to actual blur 0-50px
+                    # (finer control at low end). Mirrored in
+                    # js/composer/render.mjs + js/composer/index.js.
+                    blur_slider = layer.get("blur", 0)
+                    if blur_slider and blur_slider > 0:
+                        blur_radius = (blur_slider / 100.0) ** 2 * 50.0
+                        composed = composed.filter(
+                            ImageFilter.GaussianBlur(radius=blur_radius)
+                        )
                     canvas = _blend_over(
                         canvas, composed, layer.get("blendMode", "Normal")
                     )

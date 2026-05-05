@@ -163,7 +163,22 @@ export function injectCSS() {
 .pix-lbl-range-wrap .pix-lbl-val {
     color: #6c7086; font-size: 11px; min-width: 28px; text-align: right; font-variant-numeric: tabular-nums;
 }
-.pix-lbl-vsep { width: 1px; height: 16px; background: #45475a; margin: 0 3px; flex-shrink: 0; }
+.pix-lbl-range-wrap input.pix-lbl-num {
+    width: 44px; box-sizing: border-box;
+    background: var(--ltl-background-darkest); border: 1px solid var(--ltl-surface); border-radius: 3px;
+    color: var(--ltl-subtext); padding: 3px 5px; font-size: 11px; font-family: monospace;
+    text-align: center; outline: none; font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    -moz-appearance: textfield;
+}
+.pix-lbl-range-wrap input.pix-lbl-num::-webkit-outer-spin-button,
+.pix-lbl-range-wrap input.pix-lbl-num::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+}
+.pix-lbl-range-wrap input.pix-lbl-num:focus { border-color: var(--ltl-brand); }
+/* Divider inside button row */
+.pix-lbl-vsep { width: 1px; height: 16px; background: var(--ltl-overlay); margin: 0 3px; flex-shrink: 0; }
+/* 2-col color grid */
 .pix-lbl-color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pix-lbl-color-col { min-width: 0; }
 .pix-lbl-swatches { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 5px; }

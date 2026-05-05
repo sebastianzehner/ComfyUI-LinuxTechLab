@@ -156,6 +156,8 @@ export class LinuxTechLabUI {
         if (core._layerPanel && core._layerPanel.setBlend) core._layerPanel.setBlend(layer.blendMode || "Normal");
         core.opacitySlider.value = Math.round(layer.opacity * 100);
         core.opacityNum.value = Math.round(layer.opacity * 100);
+        core.blurSlider.value = layer.blur || 0;
+        core.blurNum.value = layer.blur || 0;
         core.rotateSlider.value = layer.rotation;
         core.rotateNum.value = layer.rotation;
         core.scaleSlider.value = Math.round(layer.scaleX * 100);
@@ -351,6 +353,7 @@ export class LinuxTechLabUI {
     <b>Space+drag</b><span>Pan the canvas</span>
     <b>Middle-click</b><span>Pan the canvas</span>
     <b>Scroll wheel</b><span>Zoom in / out at cursor</span>
+    <b>Shift+Scroll wheel</b><span>Scale selected layer</span>
   </div>
 </div>
 <div class="pxf-help-section">
@@ -496,6 +499,7 @@ export class LinuxTechLabUI {
             scaleY: 1,
             rotation: 0,
             opacity: 1,
+            blur: 0,
             visible: true,
             locked: false,
             flippedX: false,
@@ -724,6 +728,11 @@ export class LinuxTechLabUI {
       showScaleSlider: true,
       showStretchSliders: true,
       showOpacitySlider: true,
+      showBlurSlider: true,
+      // No onBlurChange here — wired via syncSliderTrans below so pushHistory
+      // only fires on slider release (matching Opacity, Scale, Rotate, etc.).
+      // If we pushed on every input event a single drag would create dozens of
+      // history entries and Ctrl+Z would only step back 1 pixel of blur at a time.
       startCollapsed: false,
     });
 
@@ -749,6 +758,8 @@ export class LinuxTechLabUI {
     core.stretchVNum = tp.stretchVNum;
     core.opacitySlider = tp.opacitySlider;
     core.opacityNum = tp.opacityNum;
+    core.blurSlider = tp.blurSlider;
+    core.blurNum = tp.blurNum;
 
     layout.leftSidebar.appendChild(core.toolsPanel);
 
@@ -788,7 +799,8 @@ export class LinuxTechLabUI {
     core.canvasContainer.appendChild(core.selCanvas);
 
     // Orange frame border + dimension label on the canvas container
-    core.canvasContainer.style.border = "2px solid rgba(249,115,22,0.45)";
+    // Use box-shadow (not border) so the frame doesn't push the selection overlay off by 2px
+    core.canvasContainer.style.boxShadow = "0 0 0 2px rgba(249,115,22,0.45)";
     const dimLabel = document.createElement("div");
     dimLabel.className = "pxf-canvas-frame-label";
     dimLabel.textContent = `${core.docWidth}\u00d7${core.docHeight}`;
@@ -904,6 +916,7 @@ export class LinuxTechLabUI {
               visible: true,
               locked: false,
               opacity: 1,
+              blur: 0,
               cx: core.docWidth / 2,
               cy: core.docHeight / 2,
               scaleX: 1,
