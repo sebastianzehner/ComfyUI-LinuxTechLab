@@ -5,8 +5,6 @@ from .nodes.node_3d import NODE_CLASS_MAPPINGS as _MAPS_3D
 from .nodes.node_3d import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_3D
 from .nodes.node_audio_studio import NODE_CLASS_MAPPINGS as _MAPS_AUDIO_STUDIO
 from .nodes.node_audio_studio import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_AUDIO_STUDIO
-from .nodes.node_compare import NODE_CLASS_MAPPINGS as _MAPS_COMPARE
-from .nodes.node_compare import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPARE
 from .nodes.node_composition import NODE_CLASS_MAPPINGS as _MAPS_COMPOSITION
 from .nodes.node_composition import NODE_DISPLAY_NAME_MAPPINGS as _NAMES_COMPOSITION
 from .nodes.node_crop import NODE_CLASS_MAPPINGS as _MAPS_CROP
@@ -41,7 +39,6 @@ NODE_CLASS_MAPPINGS = {
     **_MAPS_PAINT,
     **_MAPS_PREVIEW,
     **_MAPS_RESOLUTION,
-    **_MAPS_COMPARE,
     **_MAPS_CROP,
     **_MAPS_LABEL,
     **_MAPS_NOTE,
@@ -54,7 +51,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **_NAMES_COMPOSITION,
     **_NAMES_3D,
     **_NAMES_AUDIO_STUDIO,
-    **_NAMES_COMPARE,
     **_NAMES_CROP,
     **_NAMES_LABEL,
     **_NAMES_NOTE,
@@ -121,11 +117,6 @@ def display_linuxtechlab_log_startup(node_mappings, list_all_nodes=False):
     if list_all_nodes:
         for line in lines_to_print:
             print(f"  {CLR_GREY}{line}{CLR_RESET}")
-
-    print(
-        f"[LinuxTechLab] {CLR_BLUE}Some LinuxTechLab nodes conflict with Nodes 2.0 — "
-        f"consider turning it off from ComfyUI Menu.{CLR_RESET}"
-    )
 
 
 # display the log startup when the module is loaded

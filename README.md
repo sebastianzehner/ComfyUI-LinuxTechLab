@@ -23,7 +23,7 @@ A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furn
 ![3D Builder — Node](workflows/3D_Builder_Workflow.jpg)
 ![3D Builder — Editor](workflows/3D_Builder_Workflow_v2.jpg)
 
-### 🎚️ AudioReact LinuxTechLab
+### 🎚️ AudioReact
 Audio-reactive image-to-video. **No extra models needed**, just an image and an audio track. Open the fullscreen editor, scrub the audio, and watch 15 motion modes (Pulse Zoom, Camera Shake, Glitch, Pinch, Wave, Tilt, Pixelate, RGB Split, and more) react to the beat in real time with a live WebGL preview. Stack 8 overlay effects on top: chroma shift, bloom, vignette, hue shift, cinematic teal/orange grade, letterbox, scanlines, and film grain. Pairs with **Save Mp4 LinuxTechLab** to write the clip directly to MP4 with audio muxed in. Requires WebGL2.
 
 📥 [Download example workflow](workflows/AudioReact_Workflow.json)
@@ -46,29 +46,24 @@ No more guessing crop sizes with numbers! Visually draw your crop box. It includ
 ![Image Crop — Node](workflows/Crop_Workflow.jpg)
 ![Image Crop — Editor](workflows/Crop_Workflow_v2.jpg)
 
-### 🌓 Interactive Compare
-The best way to see the difference between two images. Easily compare them side-by-side with a slider, overlap them, or highlight exactly what changed between the two versions.
-![Image Compare — Node](workflows/Image_Compare_Workflow.jpg)
-![Image Compare — Editor](workflows/Image_Compare_Workflow_v2.jpg)
-
-### 📝 Note LinuxTechLab
+### 📝 Note
 A beautiful, simple text editor to document your workflows right on the canvas. Write normally using bold, italics, lists, and headings. Add custom colored buttons, icons, or links to YouTube and Discord. You can even color-code your notes to match your style. It perfectly saves and restores exactly how you styled it.
 ![Note LinuxTechLab — Node](workflows/Note_Workflow.jpg)
 ![Note LinuxTechLab — Editor](workflows/Note_Workflow_v2.jpg)
 
-### 🏷️ Label LinuxTechLab
+### 🏷️ Label
 Keep your workflows tidy with clean, custom labels.
 
 ![Labels — Node](workflows/Labels_Workflow.jpg)
 ![Labels — Editor](workflows/Labels_Workflow_v2.jpg)
 
-### 🎬 Save Mp4 LinuxTechLab
+### 🎬 Save Mp4
 Encode video frames + optional audio straight to MP4. Built-in `<video>` preview right on the node so you can watch the result without leaving ComfyUI. Pairs with AudioReact, but works with any source that produces frames + AUDIO.
 
-### 🖼️ Preview Image LinuxTechLab
+### 🖼️ Preview Image
 A handy way to preview your image right on the node, but better! It gives you two simple buttons: **Save to Disk** (choose any folder on your computer) and **Save to Output** (saves to your ComfyUI output folder). Both options safely embed your workflow into the image, so you can drag the image back in later to restore everything.
 
-### 📐 Resolution LinuxTechLab
+### 📐 Resolution
 A simple, one-click resolution picker. Choose from standard aspect ratios (like 1:1, 16:9, or 9:16) and instantly get the exact width and height you need, including popular sizes for AI video. Or, use Custom mode to type in your exact dimensions. It perfectly saves all your settings with your workflow!
 
 ---
