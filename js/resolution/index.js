@@ -239,14 +239,14 @@ function injectCSS() {
       border: 1px solid #444;
       border-radius: 3px;
       padding: 4px 6px;
-      color: ${BRAND};
+      color: var(--ltl-brand);
       font-size: 12px;
       font-weight: 600;
       text-align: center;
       font-family: ui-monospace, monospace;
       box-sizing: border-box;
     }
-    .pix-res-ratio-input-row input:focus { outline: none; border-color: ${BRAND}; }
+    .pix-res-ratio-input-row input:focus { outline: none; border-color: var(--ltl-brand); }
     .pix-res-ratio-swap {
       width: 22px;
       height: 22px;
@@ -268,7 +268,7 @@ function injectCSS() {
               mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
       pointer-events: none;
     }
-    .pix-res-ratio-swap:hover { color: ${BRAND}; border-color: ${BRAND}; }
+    .pix-res-ratio-swap:hover { color: var(--ltl-brand); border-color: var(--ltl-brand); }
     /* Quick-pick width chips — 4 evenly-spaced buttons under the ratio row. */
     .pix-res-quickpicks {
       display: grid;
@@ -288,9 +288,9 @@ function injectCSS() {
     }
     .pix-res-quickpick:hover { border-color: #666; color: #fff; }
     .pix-res-quickpick.active {
-      background: ${BRAND};
+      background: var(--ltl-brand);
       color: #fff;
-      border-color: ${BRAND};
+      border-color: var(--ltl-brand);
     }
   `;
   const style = document.createElement("style");

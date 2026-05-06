@@ -414,7 +414,7 @@ function createButtonsWidget() {
 
 // ---- image strip widget ----
 // Renders all batch frames (or one) below the buttons. Selection UI added
-// in Task 6 (click → orange BRAND border + "i / N" badge). Returning a
+// in Task 6 (click → orange getBrand() border + "i / N" badge). Returning a
 // custom UI key (`pixaroma_preview_frames`) instead of `ui.images` from
 // the Python node prevents LiteGraph from drawing its native strip
 // underneath this one (Save Mp4 pattern).
@@ -618,7 +618,7 @@ function createStripWidget() {
           const badgeW = textW + BADGE_PAD * 2;
           const bx = slot.x + slot.w - badgeW - 4;
           const by = slot.y + slot.h - BADGE_H - 4;
-          ctx.fillStyle = isSel ? BRAND : "rgba(0,0,0,0.72)";
+          ctx.fillStyle = isSel ? getBrand() : "rgba(0,0,0,0.72)";
           ctx.beginPath();
           ctx.roundRect(bx, by, badgeW, BADGE_H, 3);
           ctx.fill();
@@ -631,7 +631,7 @@ function createStripWidget() {
             // Orange selection border around the FITTED image (not the slot),
             // so the highlight wraps the visible content
             ctx.save();
-            ctx.strokeStyle = BRAND;
+            ctx.strokeStyle = getBrand();
             ctx.lineWidth = IMG_STRIP_BORDER_W;
             ctx.strokeRect(
               imgRect.x + IMG_STRIP_BORDER_W / 2,
