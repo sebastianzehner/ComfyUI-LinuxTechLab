@@ -6,11 +6,13 @@ from . import server_routes  # side-effect import for route registration
 from .nodes.label import LinuxTechLabLabel
 from .nodes.math_operator import LinuxTechLabMathOperator
 from .nodes.note import LinuxTechLabNote
+from .nodes.preview import LinuxTechLabPreview
 
 V3_NODES = [
     LinuxTechLabNote,
     LinuxTechLabLabel,
     LinuxTechLabMathOperator,
+    LinuxTechLabPreview,
 ]
 
 
