@@ -83,7 +83,7 @@ function buildViewUrl(entry) {
 app.registerExtension({
   name: "LinuxTechLab.SaveMp4",
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "LinuxTechLabSaveMp4") return;
+    if (nodeData.name !== "LinuxTechLab_SaveMp4") return;
 
     const onNodeCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function () {
@@ -146,12 +146,10 @@ app.registerExtension({
       });
       video._linuxtechlabMetadataAttached = true;
 
-      const widget = this.addDOMWidget(
-        "linuxtechlab_video_preview",
-        "video_preview",
-        wrap,
-        { serialize: false, hideOnZoom: false },
-      );
+      const widget = this.addDOMWidget("linuxtechlab_video_preview", "video_preview", wrap, {
+        serialize: false,
+        hideOnZoom: false,
+      });
 
       // Vue's layout loop reads `widget.computedHeight` directly, NOT the
       // return value of computeSize. We must SET it here every time the
@@ -166,10 +164,7 @@ app.registerExtension({
         // ceil + buffer so we never under-allocate. If the computed area
         // ends up slightly taller than the video, the wrap shows a thin
         // dark strip below — strictly better than clipping the bottom.
-        const h = Math.max(
-          PLACEHOLDER_H,
-          Math.ceil(w / aspect) + HEIGHT_BUFFER,
-        );
+        const h = Math.max(PLACEHOLDER_H, Math.ceil(w / aspect) + HEIGHT_BUFFER);
         this.computedHeight = h;
         return [width, h];
       };

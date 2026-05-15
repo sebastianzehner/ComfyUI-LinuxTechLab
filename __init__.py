@@ -10,6 +10,7 @@ from .nodes.math_operator import LinuxTechLabMathOperator
 from .nodes.note import LinuxTechLabNote
 from .nodes.paint import LinuxTechLabPaint
 from .nodes.preview import LinuxTechLabPreview
+from .nodes.save_mp4 import LinuxTechLabSaveMp4
 
 V3_NODES = [
     LinuxTechLab3D,
@@ -19,6 +20,7 @@ V3_NODES = [
     LinuxTechLabMathOperator,
     LinuxTechLabPaint,
     LinuxTechLabPreview,
+    LinuxTechLabSaveMp4,
 ]
 
 

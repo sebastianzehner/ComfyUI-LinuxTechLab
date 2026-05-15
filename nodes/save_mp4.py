@@ -10,12 +10,10 @@ import comfy.model_management
 import folder_paths
 import numpy as np
 import torch
+from comfy_api.latest import io
 
 
 def _resolve_ffmpeg():
-    """Locate the ffmpeg binary. Prefer imageio-ffmpeg's bundled exe (already
-    on disk if comfyui-videohelpersuite or imageio is installed), then fall
-    back to ffmpeg on PATH."""
     try:
         import imageio_ffmpeg
 
@@ -37,12 +35,6 @@ _COUNTER_LOCK = threading.Lock()
 
 
 def _next_mp4_counter(folder, prefix):
-    """Find the next free counter N for `<folder>/<prefix>_<N:05d>.mp4`.
-    folder_paths.get_save_image_path's built-in counter assumes Comfy's
-    `<prefix>_<N>_.<ext>` pattern (note the trailing underscore) and parses
-    `int("00001.mp4")` for our cleaner `<prefix>_<N>.mp4` — which raises and
-    silently returns 1, so every save overwrites Video_00001.mp4. We scan
-    ourselves instead."""
     if not os.path.isdir(folder):
         return 1
     pat = prefix + "_"
@@ -61,9 +53,6 @@ def _next_mp4_counter(folder, prefix):
 
 
 def _write_wav_pcm16(path, waveform, sample_rate):
-    """Write a Comfy AUDIO waveform tensor [C, samples] (or [B, C, samples])
-    as 16-bit PCM WAV using only stdlib + numpy. Avoids torchaudio backend
-    issues on Windows."""
     if waveform.dim() == 3:
         waveform = waveform[0]
     n_ch = int(waveform.shape[0])
@@ -80,114 +69,87 @@ def _write_wav_pcm16(path, waveform, sample_rate):
         f.writeframes(interleaved)
 
 
-class LinuxTechLabSaveMp4:
-    """Encode an IMAGE batch (and optional AUDIO) to a single H.264 mp4.
-    save_mode=save writes to ComfyUI's output/ folder; save_mode=preview
-    writes to ComfyUI's temp/ folder (auto-cleared on restart) so users can
-    iterate without cluttering output/. No conflict with VHS Video Combine —
-    separate class, separate category, fewer knobs, opinionated defaults."""
+class LinuxTechLabSaveMp4(io.ComfyNode):
+    """Encode an IMAGE batch (and optional AUDIO) to a single H.264 mp4."""
 
-    # Hardcoded encoder defaults — exposed as widgets earlier, removed for a
-    # cleaner UI. Bring them back to INPUT_TYPES if a workflow needs control.
     _CRF = 19
     _PIX_FMT = "yuv420p"
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "video_frames": (
-                    "IMAGE",
-                    {
-                        "tooltip": "Frame batch to encode. Wire Audio React LinuxTechLab's video_frames output here."
-                    },
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="LinuxTechLab_SaveMp4",
+            display_name="Save MP4",
+            category="LinuxTechLab",
+            is_output_node=True,
+            inputs=[
+                io.Image.Input(
+                    "video_frames",
+                    tooltip="Frame batch to encode. Wire Audio React LinuxTechLab's video_frames output here.",
                 ),
-                "fps": (
-                    "FLOAT",
-                    {
-                        "default": 24.0,
-                        "min": 1.0,
-                        "max": 120.0,
-                        "step": 1.0,
-                        "tooltip": "Output frame rate. Wire Audio React LinuxTechLab's fps output here so it always matches what produced the frames.",
-                    },
+                io.Float.Input(
+                    "fps",
+                    default=24.0,
+                    min=1.0,
+                    max=120.0,
+                    step=1.0,
+                    tooltip="Output frame rate. Wire Audio React LinuxTechLab's fps output here so it always matches what produced the frames.",
                 ),
-                "filename_prefix": (
-                    "STRING",
-                    {
-                        "default": "Video",
-                        "tooltip": "Filename stem. The node appends a 5-digit counter and .mp4 (e.g. Video_00001.mp4).",
-                    },
+                io.String.Input(
+                    "filename_prefix",
+                    default="Video",
+                    tooltip="Filename stem. The node appends a 5-digit counter and .mp4 (e.g. Video_00001.mp4).",
                 ),
-                "save_mode": (
-                    ["save", "preview"],
-                    {
-                        "default": "save",
-                        "tooltip": "save: write to ComfyUI's output/ folder, kept across restarts. preview: write to ComfyUI's temp/ folder, auto-cleared on restart — use while iterating so you don't clutter output/. The in-node video preview works the same in both modes.",
-                    },
+                io.Combo.Input(
+                    "save_mode",
+                    options=["save", "preview"],
+                    default="save",
+                    tooltip="save: write to ComfyUI's output/ folder. preview: write to ComfyUI's temp/ folder, auto-cleared on restart.",
                 ),
-                "trim_to_audio": (
-                    "BOOLEAN",
-                    {
-                        "default": True,
-                        "tooltip": "When audio is connected, end the video at the audio's length (uses ffmpeg -shortest). Off = keep all video frames even if longer than audio.",
-                    },
+                io.Boolean.Input(
+                    "trim_to_audio",
+                    default=True,
+                    tooltip="When audio is connected, end the video at the audio's length. Off = keep all video frames even if longer than audio.",
                 ),
-            },
-            "optional": {
-                "audio": (
-                    "AUDIO",
-                    {
-                        "tooltip": "Optional audio track to mux into the mp4 as AAC 192k. Connect Audio React LinuxTechLab's audio output here."
-                    },
+                io.Audio.Input(
+                    "audio",
+                    optional=True,
+                    tooltip="Optional audio track to mux into the mp4 as AAC 192k.",
                 ),
-            },
-        }
+            ],
+            outputs=[],
+        )
 
-    RETURN_TYPES = ()
-    FUNCTION = "save"
-    OUTPUT_NODE = True
-    CATEGORY = "LinuxTechLab"
-
-    def save(
-        self, video_frames, fps, filename_prefix, save_mode, trim_to_audio, audio=None
-    ):
+    @classmethod
+    def execute(
+        cls, video_frames, fps, filename_prefix, save_mode, trim_to_audio, audio=None
+    ) -> io.NodeOutput:
         if video_frames is None or video_frames.shape[0] == 0:
             raise ValueError(
                 "[LinuxTechLab] Save Mp4 — input video_frames batch is empty."
             )
 
         ffmpeg_path = _resolve_ffmpeg()
-        crf = self._CRF
-        pix_fmt = self._PIX_FMT
+        crf = cls._CRF
+        pix_fmt = cls._PIX_FMT
         fps_int = max(1, int(round(float(fps))))
 
         frames = video_frames
         n_frames, H, W, _ = frames.shape
 
-        # yuv420p requires even dimensions; surface a clear error rather than
-        # the opaque "height not divisible by 2" ffmpeg crash.
         if pix_fmt == "yuv420p" and (W % 2 != 0 or H % 2 != 0):
             raise ValueError(
                 f"[LinuxTechLab] Save Mp4 — encoder requires even width and "
-                f"height, got {W}x{H}. Resize input frames to even dimensions "
-                f"(Audio React LinuxTechLab snaps to multiples of 8 automatically)."
+                f"height, got {W}x{H}. Resize input frames to even dimensions."
             )
 
-        # Resolve subfolder + base filename via folder_paths (handles
-        # filename_prefix that contains a subfolder like "videos/clip"); use
-        # our own counter scan because Comfy's built-in one assumes the
-        # `<prefix>_<N>_.<ext>` trailing-underscore convention and silently
-        # returns 1 for our cleaner `<prefix>_<N>.mp4` naming.
-        # save_mode picks the destination root: output/ for keepers, temp/
-        # for ad-hoc previews (auto-cleared on ComfyUI restart). The JS
-        # reads entry.type, so the in-node <video> works for both via /view.
         if save_mode == "preview":
             out_dir = folder_paths.get_temp_directory()
             file_type = "temp"
         else:
             out_dir = folder_paths.get_output_directory()
             file_type = "output"
+
         full_folder, fname, _ignored, subfolder, _ = folder_paths.get_save_image_path(
             filename_prefix,
             out_dir,
@@ -195,27 +157,19 @@ class LinuxTechLabSaveMp4:
             H,
         )
         os.makedirs(full_folder, exist_ok=True)
-        # Hold a lock around scan + claim so two save_mp4 nodes in the
-        # same workflow can't both pick the same counter and overwrite
-        # each other. Touch the file inside the lock to claim it.
+
         with _COUNTER_LOCK:
             counter = _next_mp4_counter(full_folder, fname)
             out_filename = f"{fname}_{counter:05d}.mp4"
             out_path = os.path.join(full_folder, out_filename)
             try:
-                # O_EXCL guarantees atomic create-if-not-exists across processes too
                 fd = os.open(out_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
                 os.close(fd)
             except FileExistsError:
-                # Extremely unlikely: counter scan saw N as the max, but
-                # something else just created N+1 in the same instant.
-                # Bump and retry once.
                 counter += 1
                 out_filename = f"{fname}_{counter:05d}.mp4"
                 out_path = os.path.join(full_folder, out_filename)
 
-        # If audio is supplied, write it to a temp wav alongside so ffmpeg can
-        # mux both inputs in a single pass.
         temp_audio_path = None
         if (
             audio is not None
@@ -229,7 +183,6 @@ class LinuxTechLabSaveMp4:
             os.makedirs(os.path.dirname(temp_audio_path), exist_ok=True)
             _write_wav_pcm16(temp_audio_path, audio["waveform"], audio["sample_rate"])
 
-        # Build ffmpeg command. Frames piped on stdin as raw RGB24.
         cmd = [
             ffmpeg_path,
             "-y",
@@ -278,10 +231,6 @@ class LinuxTechLabSaveMp4:
             stderr=subprocess.PIPE,
             stdout=subprocess.DEVNULL,
         )
-
-        # Drain stderr in a background thread. Otherwise the OS pipe buffer
-        # (4 KB on Windows) fills if ffmpeg emits any output and the next
-        # stdin.write() blocks forever.
         stderr_chunks = []
 
         def _drain(pipe):
@@ -307,13 +256,9 @@ class LinuxTechLabSaveMp4:
             if proc.returncode != 0:
                 stderr = b"".join(stderr_chunks).decode("utf-8", errors="replace")
                 raise RuntimeError(
-                    f"[LinuxTechLab] Save Mp4 — ffmpeg failed (exit {proc.returncode}):\n"
-                    f"{stderr}"
+                    f"[LinuxTechLab] Save Mp4 — ffmpeg failed (exit {proc.returncode}):\n{stderr}"
                 )
         finally:
-            # On the exception path the explicit close above never ran. Close
-            # the pipe so the OS handle isn't leaked (Windows is sensitive to
-            # this) before killing.
             try:
                 if proc.stdin and not proc.stdin.closed:
                     proc.stdin.close()
@@ -331,28 +276,14 @@ class LinuxTechLabSaveMp4:
                     pass
 
         if save_mode == "preview":
-            print(
-                f"[LinuxTechLab] Save Mp4 — preview written to temp/ (auto-cleared on restart): {out_path}"
-            )
+            print(f"[LinuxTechLab] Save Mp4 — preview written to temp/: {out_path}")
         else:
             print(f"[LinuxTechLab] Save Mp4 — saved {out_path}")
 
-        # Two output keys so the file is visible BOTH in ComfyUI's standard
-        # output panel and in our in-node <video> preview (js/save_mp4/index.js
-        # listens for `linuxtechlab_videos`).
         entry = {
             "filename": out_filename,
             "subfolder": subfolder,
             "type": file_type,
             "format": "video/mp4",
         }
-        return {"ui": {"images": [entry], "linuxtechlab_videos": [entry]}}
-
-
-NODE_CLASS_MAPPINGS = {
-    "LinuxTechLabSaveMp4": LinuxTechLabSaveMp4,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabSaveMp4": "Save MP4",
-}
+        return io.NodeOutput(ui={"images": [entry], "linuxtechlab_videos": [entry]})
