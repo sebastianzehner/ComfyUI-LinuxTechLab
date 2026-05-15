@@ -39,7 +39,7 @@ app.registerExtension({
 
   // Handle execution result (OUTPUT_NODE = True on python side)
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "LinuxTechLab3D") return;
+    if (nodeData.name !== "LinuxTechLab_3D") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
@@ -50,7 +50,7 @@ app.registerExtension({
 
   // DOM widget creation
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLab3D") return;
+    if (node.comfyClass !== "LinuxTechLab_3D") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview

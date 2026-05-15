@@ -3,15 +3,19 @@ import os
 from comfy_api.latest import ComfyExtension, io
 
 from . import server_routes  # side-effect import for route registration
+from .nodes.editor_3d import LinuxTechLab3D
 from .nodes.label import LinuxTechLabLabel
 from .nodes.math_operator import LinuxTechLabMathOperator
 from .nodes.note import LinuxTechLabNote
+from .nodes.paint import LinuxTechLabPaint
 from .nodes.preview import LinuxTechLabPreview
 
 V3_NODES = [
+    LinuxTechLab3D,
     LinuxTechLabNote,
     LinuxTechLabLabel,
     LinuxTechLabMathOperator,
+    LinuxTechLabPaint,
     LinuxTechLabPreview,
 ]
 

@@ -4,29 +4,32 @@ import os
 import folder_paths
 import numpy as np
 import torch
+from comfy_api.latest import io
 from PIL import Image
 
-from .node_ref import FlexibleOptionalInputType, any_type
 
-
-class LinuxTechLab3D:
-    @classmethod
-    def INPUT_TYPES(self):
-        return {
-            "required": {},
-            "optional": FlexibleOptionalInputType(any_type),
-        }
-
-    CATEGORY = "LinuxTechLab"
-    RETURN_TYPES = ("IMAGE", "INT", "INT")
-    RETURN_NAMES = ("image", "width", "height")
-    FUNCTION = "load_render"
-    DESCRIPTION = "3D Builder — create 3D scenes with shapes, materials, and lighting"
-    OUTPUT_NODE = True
+class LinuxTechLab3D(io.ComfyNode):
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
-        """Force re-execution when the render file on disk changes."""
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="LinuxTechLab_3D",
+            display_name="3D Builder",
+            category="LinuxTechLab",
+            description="3D Builder — create 3D scenes with shapes, materials, and lighting",
+            is_output_node=True,
+            inputs=[
+                io.Custom("SCENE_WIDGET").Input("SceneWidget", optional=True),
+            ],
+            outputs=[
+                io.Image.Output(display_name="image"),
+                io.Int.Output(display_name="width"),
+                io.Int.Output(display_name="height"),
+            ],
+        )
+
+    @classmethod
+    def fingerprint_inputs(cls, **kwargs):
         scene_data = kwargs.get("SceneWidget")
         if not scene_data:
             return ""
@@ -43,35 +46,34 @@ class LinuxTechLab3D:
             pass
         return str(scene_data)
 
-    def load_render(self, **kwargs):
+    @classmethod
+    def execute(cls, SceneWidget=None, **kwargs) -> io.NodeOutput:
         empty_image = torch.zeros((1, 1024, 1024, 3), dtype=torch.float32)
 
-        # Extract scene data from the DOM widget
-        scene_data = kwargs.get("SceneWidget")
-        if not scene_data:
-            return (empty_image, 1024, 1024)
+        if not SceneWidget:
+            return io.NodeOutput(empty_image, 1024, 1024)
 
         scene_json = (
-            scene_data.get("scene_json", "{}")
-            if isinstance(scene_data, dict)
-            else str(scene_data)
+            SceneWidget.get("scene_json", "{}")
+            if isinstance(SceneWidget, dict)
+            else str(SceneWidget)
         )
 
         if not scene_json or scene_json.strip() in ("", "{}"):
-            return (empty_image, 1024, 1024)
+            return io.NodeOutput(empty_image, 1024, 1024)
 
         try:
             meta = json.loads(scene_json)
             if not isinstance(meta, dict):
-                return (empty_image, 1024, 1024)
+                return io.NodeOutput(empty_image, 1024, 1024)
 
             doc_w = int(meta.get("doc_w", 1024))
             doc_h = int(meta.get("doc_h", 1024))
-
             composite_path = meta.get("composite_path", "")
+
             if not composite_path:
                 arr = np.zeros((doc_h, doc_w, 3), dtype=np.float32)
-                return (torch.from_numpy(arr)[None,], doc_w, doc_h)
+                return io.NodeOutput(torch.from_numpy(arr)[None,], doc_w, doc_h)
 
             input_dir = os.path.realpath(folder_paths.get_input_directory())
             full_path = os.path.realpath(os.path.join(input_dir, composite_path))
@@ -80,24 +82,15 @@ class LinuxTechLab3D:
                 print(
                     "[LinuxTechLab3D] Security: composite_path escapes input directory, blocked."
                 )
-                return (empty_image, doc_w, doc_h)
+                return io.NodeOutput(empty_image, doc_w, doc_h)
 
             if not os.path.exists(full_path):
-                return (empty_image, doc_w, doc_h)
+                return io.NodeOutput(empty_image, doc_w, doc_h)
 
             img = Image.open(full_path).convert("RGB")
             arr = np.array(img).astype(np.float32) / 255.0
-            return (torch.from_numpy(arr)[None,], doc_w, doc_h)
+            return io.NodeOutput(torch.from_numpy(arr)[None,], doc_w, doc_h)
 
         except Exception as e:
             print(f"[LinuxTechLab3D] Load error: {e}")
-            return (empty_image, 1024, 1024)
-
-
-NODE_CLASS_MAPPINGS = {
-    "LinuxTechLab3D": LinuxTechLab3D,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLab3D": "3D Builder",
-}
+            return io.NodeOutput(empty_image, 1024, 1024)

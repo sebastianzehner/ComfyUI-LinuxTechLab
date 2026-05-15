@@ -26,27 +26,23 @@ app.registerExtension({
   name: "LinuxTechLab.Paint",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "LinuxTechLabPaint") return;
+    if (nodeData.name !== "LinuxTechLab_Paint") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
       originalOnExecuted?.apply(this, arguments);
-      if (allow_debug) console.log("LinuxTechLabPaint executed");
+      if (allow_debug) console.log("LinuxTechLab_Paint executed");
     };
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLabPaint") return;
+    if (node.comfyClass !== "LinuxTechLab_Paint") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
 
     // ── Shared preview system ──
-    const parts = createNodePreview(
-      "Paint",
-      "LinuxTechLab",
-      "Click 'Open Paint' to start",
-    );
+    const parts = createNodePreview("Paint", "LinuxTechLab", "Click 'Open Paint' to start");
 
     // ── State — mirrors the hidden paint_json widget ──
     let paintJson = "{}";
@@ -69,8 +65,7 @@ app.registerExtension({
         }
       };
 
-      studio.onSaveToDisk = (dataURL) =>
-        downloadDataURL(dataURL, "linuxtechlab_paint");
+      studio.onSaveToDisk = (dataURL) => downloadDataURL(dataURL, "linuxtechlab_paint");
 
       studio.onClose = () => {
         node.setDirtyCanvas(true, true);
