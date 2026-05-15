@@ -88,7 +88,7 @@ app.registerExtension({
   name: "LinuxTechLab.Crop",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "LinuxTechLabCrop") return;
+    if (nodeData.name !== "LinuxTechLab_Crop") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
@@ -96,7 +96,7 @@ app.registerExtension({
       // Re-suppress native ComfyUI preview -- ComfyUI may repopulate node.imgs
       // after execution, which would flash a strip below our custom preview.
       this.imgs = null;
-      if (allow_debug) console.log("LinuxTechLabCrop executed");
+      if (allow_debug) console.log("LinuxTechLab_Crop executed");
     };
 
     // Vue Compat #11 — onConfigure fires AFTER the workflow is fully
@@ -121,7 +121,7 @@ app.registerExtension({
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLabCrop") return;
+    if (node.comfyClass !== "LinuxTechLab_Crop") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview

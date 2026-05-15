@@ -4,33 +4,32 @@ import os
 import folder_paths
 import numpy as np
 import torch
+from comfy_api.latest import io
 from PIL import Image
 
-from .node_ref import FlexibleOptionalInputType, any_type
 
-
-class LinuxTechLabCrop:
-    @classmethod
-    def INPUT_TYPES(self):
-        return {
-            "required": {},
-            "optional": FlexibleOptionalInputType(any_type),
-        }
-
-    RETURN_TYPES = ("IMAGE", "INT", "INT")
-    RETURN_NAMES = ("image", "width", "height")
-    FUNCTION = "load_crop"
-    CATEGORY = "LinuxTechLab"
-    OUTPUT_NODE = True
+class LinuxTechLabCrop(io.ComfyNode):
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
-        """Force re-execution when crop metadata changes.
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="LinuxTechLab_Crop",
+            display_name="Image Crop",
+            category="LinuxTechLab",
+            is_output_node=True,
+            inputs=[
+                io.Custom("CROP_WIDGET").Input("CropWidget", optional=True),
+                io.Image.Input("image", optional=True),
+            ],
+            outputs=[
+                io.Image.Output(display_name="image"),
+                io.Int.Output(display_name="width"),
+                io.Int.Output(display_name="height"),
+            ],
+        )
 
-        Upstream IMAGE changes are already detected by ComfyUI's input-hash
-        mechanism, so we only need to bust the cache on rect edits. For the
-        disk-composite fallback path, we additionally key on the file mtime.
-        """
+    @classmethod
+    def fingerprint_inputs(cls, **kwargs):
         crop_data = kwargs.get("CropWidget")
         if not crop_data:
             return ""
@@ -42,12 +41,8 @@ class LinuxTechLabCrop:
             )
             meta = json.loads(crop_json)
             rect_key = f"{meta.get('crop_x','')}-{meta.get('crop_y','')}-{meta.get('crop_w','')}-{meta.get('crop_h','')}"
-
-            # If upstream is wired, the rect alone determines our output (the
-            # upstream tensor is hashed by ComfyUI itself).
             if kwargs.get("image") is not None:
                 return rect_key
-
             composite_path = meta.get("composite_path", "")
             if composite_path:
                 input_dir = folder_paths.get_input_directory()
@@ -58,23 +53,19 @@ class LinuxTechLabCrop:
             pass
         return str(crop_data)
 
-    def load_crop(self, **kwargs):
+    @classmethod
+    def execute(cls, CropWidget=None, image=None, **kwargs) -> io.NodeOutput:
         empty_image = torch.ones((1, 1024, 1024, 3), dtype=torch.float32)
 
-        crop_data = kwargs.get("CropWidget")
-        upstream = kwargs.get("image")
+        if not CropWidget and image is None:
+            return io.NodeOutput(empty_image, 1024, 1024)
 
-        # No widget AND no upstream → return empty
-        if not crop_data and upstream is None:
-            return (empty_image, 1024, 1024)
-
-        # Parse crop metadata (may be empty if user just wired upstream and never opened editor)
         meta = {}
-        if crop_data:
+        if CropWidget:
             crop_json = (
-                crop_data.get("crop_json", "{}")
-                if isinstance(crop_data, dict)
-                else str(crop_data)
+                CropWidget.get("crop_json", "{}")
+                if isinstance(CropWidget, dict)
+                else str(CropWidget)
             )
             if crop_json and crop_json.strip() not in ("", "{}"):
                 try:
@@ -84,40 +75,27 @@ class LinuxTechLabCrop:
                 except Exception as e:
                     print(f"[LinuxTechLabCrop] crop_json parse error: {e}")
 
-        # ── Upstream tensor path ──────────────────────────────────────────────
-        # If an IMAGE is wired in, prefer it over the on-disk composite. This is
-        # the "drop-in after Load Image" workflow the user wants.
-        if isinstance(upstream, torch.Tensor):
+        if isinstance(image, torch.Tensor):
             try:
-                return self._crop_tensor(upstream, meta)
+                w, h, cropped = cls._crop_tensor(image, meta)
+                return io.NodeOutput(cropped, w, h)
             except Exception as e:
                 print(f"[LinuxTechLabCrop] upstream crop error: {e}")
-                # Fall through to disk path
 
-        # ── Disk composite path (back-compat) ─────────────────────────────────
-        return self._load_disk_composite(meta, empty_image)
+        result, w, h = cls._load_disk_composite(meta, empty_image)
+        return io.NodeOutput(result, w, h)
 
-    # ─────────────────────────────────────────────────────────────────────────
-
-    def _crop_tensor(self, tensor, meta):
-        """Crop an upstream IMAGE tensor [B,H,W,C] using the saved rect.
-
-        Rect coords are scaled proportionally if upstream dims differ from the
-        original_w/original_h captured at editor save time. If meta is empty
-        (user wired upstream but never opened the editor), pass through unmodified.
-        """
+    @classmethod
+    def _crop_tensor(cls, tensor, meta):
         if tensor.dim() != 4 or tensor.shape[0] == 0:
-            # Unexpected shape -- pass through unmodified
             if tensor.dim() >= 3:
-                return (tensor, int(tensor.shape[-2]), int(tensor.shape[-3]))
-            return (tensor, 0, 0)
+                return (int(tensor.shape[-2]), int(tensor.shape[-3]), tensor)
+            return (0, 0, tensor)
 
         b, h, w, c = tensor.shape
 
-        # No saved rect → pass through (gives the user a sensible preview before
-        # they open the editor for the first time).
         if not meta or meta.get("crop_w") in (None, 0):
-            return (tensor, int(w), int(h))
+            return (int(w), int(h), tensor)
 
         crop_x = float(meta.get("crop_x", 0))
         crop_y = float(meta.get("crop_y", 0))
@@ -126,7 +104,6 @@ class LinuxTechLabCrop:
         orig_w = float(meta.get("original_w", w))
         orig_h = float(meta.get("original_h", h))
 
-        # Scale rect proportionally if upstream dims changed since save
         if orig_w > 0 and orig_h > 0 and (orig_w != w or orig_h != h):
             sx = w / orig_w
             sy = h / orig_h
@@ -144,13 +121,13 @@ class LinuxTechLabCrop:
             print(
                 f"[LinuxTechLabCrop] degenerate rect ({x0},{y0},{x1},{y1}) for {w}x{h} — passing through"
             )
-            return (tensor, int(w), int(h))
+            return (int(w), int(h), tensor)
 
         cropped = tensor[:, y0:y1, x0:x1, :].contiguous()
-        return (cropped, int(x1 - x0), int(y1 - y0))
+        return (int(x1 - x0), int(y1 - y0), cropped)
 
-    def _load_disk_composite(self, meta, empty_image):
-        """Original behavior: load the editor-saved cropped PNG from input/linuxtechlab/."""
+    @classmethod
+    def _load_disk_composite(cls, meta, empty_image):
         doc_w = int(meta.get("doc_w", 1024))
         doc_h = int(meta.get("doc_h", 1024))
 
@@ -178,12 +155,3 @@ class LinuxTechLabCrop:
         except Exception as e:
             print(f"[LinuxTechLabCrop] Load error: {e}")
             return (empty_image, 1024, 1024)
-
-
-NODE_CLASS_MAPPINGS = {
-    "LinuxTechLabCrop": LinuxTechLabCrop,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "LinuxTechLabCrop": "Image Crop",
-}
