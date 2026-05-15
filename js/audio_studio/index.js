@@ -94,7 +94,7 @@ app.registerExtension({
         if (!out) return result;
         for (const id in out) {
           const entry = out[id];
-          if (!entry || entry.class_type !== "LinuxTechLabAudioStudio") continue;
+          if (!entry || entry.class_type !== "LinuxTechLab_AudioStudio") continue;
           // Resolve the node from the graph by id (subgraph-safe: try both
           // exact id and parseInt fallback, same defensive pattern as Resolution).
           let node = null;
@@ -121,7 +121,7 @@ app.registerExtension({
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLabAudioStudio") return;
+    if (node.comfyClass !== "LinuxTechLab_AudioStudio") return;
 
     if (!node.properties) node.properties = {};
     if (!node.properties[STATE_KEY]) {
@@ -135,6 +135,11 @@ app.registerExtension({
     queueMicrotask(() => {
       // Currently no DOM widget to populate — the node is button-only
       // until Milestone H adds the upstream-aware preview.
+      const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`);
+      if (nodeEl) {
+        const footer = nodeEl.querySelector("button:has(span.truncate)");
+        if (footer?.parentElement) footer.parentElement.style.display = "none";
+      }
     });
 
     node.size = node.size || [240, 100];

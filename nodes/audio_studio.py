@@ -23,6 +23,7 @@ from pathlib import Path
 import folder_paths
 import numpy as np
 import torch
+from comfy_api.latest import io
 from PIL import Image
 
 from ._audio_react_engine import generate_video, params_from_dict, validate_params
@@ -31,17 +32,12 @@ LINUXTECHLAB_INPUT_ROOT = Path(folder_paths.get_input_directory()) / "linuxtechl
 
 
 def _migrate_cfg(cfg: dict) -> dict:
-    """Apply schema_version migrations. v1 is the only version at ship --
-    this is here so future migrations have an obvious home."""
     version = cfg.get("schema_version", 1)
-    # Future: if version < N: ... apply migration ...; version = N
     cfg["schema_version"] = version
     return cfg
 
 
 def _load_inline_image(rel_path: str) -> torch.Tensor:
-    """Load PNG/JPG/WebP from input/linuxtechlab/audio_studio/... -> IMAGE tensor
-    [1, H, W, 3] in [0, 1]."""
     abs_path = LINUXTECHLAB_INPUT_ROOT / rel_path
     if not abs_path.exists():
         raise ValueError(
@@ -53,13 +49,6 @@ def _load_inline_image(rel_path: str) -> torch.Tensor:
 
 
 def _load_inline_audio(rel_path: str) -> dict:
-    """Load WAV from input/linuxtechlab/audio_studio/... -> AUDIO dict
-    {waveform: [1, C, S], sample_rate: int}.
-
-    WAV-only -- the browser converts other formats (MP3 / OGG / AAC) to WAV
-    before upload via the Web Audio API + an inline 16-bit PCM writer.
-    Keeps the Python side dependency-free (stdlib `wave` module).
-    """
     abs_path = LINUXTECHLAB_INPUT_ROOT / rel_path
     if not abs_path.exists():
         raise ValueError(
@@ -84,48 +73,48 @@ def _load_inline_audio(rel_path: str) -> dict:
             f"{sample_width} bytes. Re-encode to 16-bit PCM WAV."
         )
     if n_channels > 1:
-        data = data.reshape(-1, n_channels).T  # [C, S]
+        data = data.reshape(-1, n_channels).T
     else:
-        data = data.reshape(1, -1)  # [1, S]
-    waveform = torch.from_numpy(data).unsqueeze(0)  # [1, C, S]
+        data = data.reshape(1, -1)
+    waveform = torch.from_numpy(data).unsqueeze(0)
     return {"waveform": waveform, "sample_rate": sample_rate}
 
 
-class LinuxTechLabAudioStudio:
-    """Audio-reactive image-to-video, sibling to Audio React LinuxTechLab.
-
-    No widget UI on the node itself -- config is stored in node.properties
-    and surfaced via a fullscreen JS editor (Milestone D+).
-    """
+class LinuxTechLabAudioStudio(io.ComfyNode):
+    """Audio-reactive image-to-video. Config stored in node.properties,
+    surfaced via a fullscreen JS editor."""
 
     @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "optional": {
-                "image": (
-                    "IMAGE",
-                    {
-                        "tooltip": "Optional upstream image. If wired, used as the source. If unwired, the editor's inline-loaded image is used."
-                    },
+    def define_schema(cls) -> io.Schema:
+        return io.Schema(
+            node_id="LinuxTechLab_AudioStudio",
+            display_name="AudioReact",
+            category="LinuxTechLab",
+            inputs=[
+                io.Image.Input(
+                    "image",
+                    optional=True,
+                    tooltip="Optional upstream image. If wired, used as the source. "
+                    "If unwired, the editor's inline-loaded image is used.",
                 ),
-                "audio": (
-                    "AUDIO",
-                    {
-                        "tooltip": "Optional upstream audio. Same dual-source pattern as image."
-                    },
+                io.Audio.Input(
+                    "audio",
+                    optional=True,
+                    tooltip="Optional upstream audio. Same dual-source pattern as image.",
                 ),
-            },
-            "hidden": {
-                "studio_json": ("STRING", {"default": "{}"}),
-            },
-        }
+                io.String.Input(
+                    "studio_json", default="{}", advanced=True, socketless=True
+                ),
+            ],
+            outputs=[
+                io.Image.Output(display_name="video_frames"),
+                io.Audio.Output(display_name="audio"),
+                io.Float.Output(display_name="fps"),
+            ],
+        )
 
-    RETURN_TYPES = ("IMAGE", "AUDIO", "FLOAT")
-    RETURN_NAMES = ("video_frames", "audio", "fps")
-    FUNCTION = "generate"
-    CATEGORY = "LinuxTechLab"
-
-    def generate(self, studio_json="{}", image=None, audio=None):
+    @classmethod
+    def execute(cls, studio_json="{}", image=None, audio=None) -> io.NodeOutput:
         try:
             cfg = json.loads(studio_json or "{}")
         except json.JSONDecodeError as exc:
@@ -136,19 +125,6 @@ class LinuxTechLabAudioStudio:
         cfg = _migrate_cfg(cfg)
         params = params_from_dict(cfg)
 
-        # Source resolution priority:
-        #   1. cfg.image_force_inline + cfg.image_path  -> inline (override)
-        #   2. upstream wired (image is not None)        -> upstream
-        #   3. cfg.image_path                            -> inline (fallback)
-        #   4. else                                       -> error
-        #
-        # The force_inline flag is set by the JS editor when the user
-        # explicitly picks/drag-drops a file in the studio while upstream
-        # is wired -- that user action signals "use this new upload, not
-        # the wire". Toggled off by clicking the pill again. This handles
-        # both directions: wiring a new upstream auto-takes effect (since
-        # force_inline is false by default), AND a fresh in-editor upload
-        # wins even when upstream is wired.
         if cfg.get("image_force_inline") and cfg.get("image_path"):
             image = _load_inline_image(cfg["image_path"])
         elif image is None:
@@ -174,8 +150,4 @@ class LinuxTechLabAudioStudio:
         for diag in validate_params(params):
             print(f"[LinuxTechLab] AudioReact -- {diag}")
         frames = generate_video(image, audio, params)
-        return (frames, audio, float(params.fps))
-
-
-NODE_CLASS_MAPPINGS = {"LinuxTechLabAudioStudio": LinuxTechLabAudioStudio}
-NODE_DISPLAY_NAME_MAPPINGS = {"LinuxTechLabAudioStudio": "AudioReact"}
+        return io.NodeOutput(frames, audio, float(params.fps))
