@@ -6,6 +6,7 @@ from . import server_routes  # side-effect import for route registration
 from .nodes.audio_studio import LinuxTechLabAudioStudio
 from .nodes.crop import LinuxTechLabCrop
 from .nodes.editor_3d import LinuxTechLab3D
+from .nodes.image_composer import LinuxTechLabImageComposer
 from .nodes.label import LinuxTechLabLabel
 from .nodes.math_operator import LinuxTechLabMathOperator
 from .nodes.note import LinuxTechLabNote
@@ -18,9 +19,10 @@ V3_NODES = [
     LinuxTechLab3D,
     LinuxTechLabAudioStudio,
     LinuxTechLabCrop,
-    LinuxTechLabNote,
+    LinuxTechLabImageComposer,
     LinuxTechLabLabel,
     LinuxTechLabMathOperator,
+    LinuxTechLabNote,
     LinuxTechLabPaint,
     LinuxTechLabPreview,
     LinuxTechLabResolution,

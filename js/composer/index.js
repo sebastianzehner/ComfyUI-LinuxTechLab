@@ -69,7 +69,7 @@ app.registerExtension({
   name: "LinuxTechLab.ImageComposer",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "LinuxTechLabImageComposition") return;
+    if (nodeData.name !== "LinuxTechLab_ImageComposer") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
@@ -102,7 +102,7 @@ app.registerExtension({
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLabImageComposition") return;
+    if (node.comfyClass !== "LinuxTechLab_ImageComposer") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
