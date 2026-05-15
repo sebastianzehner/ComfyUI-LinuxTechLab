@@ -1271,6 +1271,14 @@ function setupResolutionNode(node) {
   // hide it. With the current Python (hidden input), no widget is created
   // and this is a no-op.
   hideJsonWidget(node.widgets, HIDDEN_INPUT_NAME);
+  // Hide the "Show advanced inputs" footer button (V3 advanced=True pattern)
+  requestAnimationFrame(() => {
+    const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`);
+    if (nodeEl) {
+      const footer = nodeEl.querySelector("button:has(span.truncate)");
+      if (footer?.parentElement) footer.parentElement.style.display = "none";
+    }
+  });
 
   // Branded default colors. Only applied when the node has no override yet —
   // workflow-restored colors and right-click Color-menu picks both land on
@@ -1419,7 +1427,7 @@ app.registerExtension({
   name: "LinuxTechLab.Resolution",
 
   beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "LinuxTechLabResolution") return;
+    if (nodeData.name !== "LinuxTechLab_Resolution") return;
 
     // onConfigure fires whenever configure() is called — catches the case
     // where a user opens a different workflow into an already-constructed
@@ -1451,7 +1459,7 @@ app.registerExtension({
   // value first — without that defer, the panel renders defaults and flashes
   // to the saved state milliseconds later.
   nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLabResolution") return;
+    if (node.comfyClass !== "LinuxTechLab_Resolution") return;
     setupResolutionNode(node);
   },
 });
@@ -1478,7 +1486,7 @@ function buildLinuxTechLabNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "LinuxTechLabResolution" || n.type === "LinuxTechLabResolution") {
+      if (n.comfyClass === "LinuxTechLab_Resolution" || n.type === "LinuxTechLab_Resolution") {
         index.set(String(n.id), n);
       }
       // ComfyUI subgraph instances expose their inner graph at one of these
@@ -1509,7 +1517,7 @@ app.graphToPrompt = async function (...args) {
     let index = null;
     for (const id in out) {
       const entry = out[id];
-      if (!entry || entry.class_type !== "LinuxTechLabResolution") continue;
+      if (!entry || entry.class_type !== "LinuxTechLab_Resolution") continue;
       if (!index) index = buildLinuxTechLabNodeIndex();
       const node = findLinuxTechLabNode(index, id);
       const state = node?.properties?.[STATE_PROP] || JSON.stringify(DEFAULT_STATE);
