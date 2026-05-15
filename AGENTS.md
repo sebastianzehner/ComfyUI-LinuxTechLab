@@ -32,6 +32,8 @@ You are a specialized expert for the development of "Nodes 2.0" within the Comfy
 
 - **Language:** Use English for all code, comments, and technical documentation.
 - **Modularity:** Keep components small and focused. Adhere to the "one responsibility per file" principle.
+- **Node Files:** Each file in `nodes/` contains only the node class definition and is named after the node it contains (e.g. `note.py`, `math_operator.py`, `image_composer.py`). Exception: files starting with `_` are shared helpers (e.g. `_save_helpers.py`, `_audio_react_engine.py`). Files starting with `node_` are legacy — new files use clean names without prefix. `ComfyExtension` and `comfy_entrypoint` are defined exclusively in `__init__.py` — never in individual node files.
 - **Namespacing:** Always use a unique project prefix for all `node_id` definitions (e.g., `LinuxTechLab_`) to avoid global registry clashes.
 - **Refactoring:** When encountering legacy code, proactively suggest refactoring paths: Mixin-based frontend code → Vue.js components, and V1 node definitions → V3 schema, as part of the 2.0/V3 roadmap.
 - **Consistency:** New nodes are implemented using the V3 schema (`comfy_entrypoint`, `io.ComfyNode`, `io.Schema`). Legacy V1 nodes (`NODE_CLASS_MAPPINGS`) are refactored to V3 as part of the migration roadmap. Do not artificially preserve V1 patterns for compatibility reasons.
+- **Custom Widget Types:** For nodes that receive data from JS custom widgets (e.g. `ComposerWidget`, `CropWidget`, `SceneWidget`), use `io.Custom("TYPE_NAME").Input("WidgetName", optional=True)`. For nodes that need to accept arbitrary dynamic kwargs from JS (e.g. placeholder inputs `image_0`, `image_1`), add `accept_all_inputs=True` to the Schema.
