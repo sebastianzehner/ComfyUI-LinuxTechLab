@@ -31,6 +31,6 @@ You are a specialized expert for the development of "Nodes 2.0" within the Comfy
 
 - **Language:** Use English for all code, comments, and technical documentation.
 - **Modularity:** Keep components small and focused. Adhere to the "one responsibility per file" principle.
-- **Namespacing:** Always use a unique project prefix for all `node_id` definitions (e.g., `LT_...`) to avoid global registry clashes.
+- **Namespacing:** Always use a unique project prefix for all `node_id` definitions (e.g., `LinuxTechLab_`) to avoid global registry clashes.
 - **Refactoring:** When encountering legacy code, proactively suggest refactoring paths: Mixin-based frontend code → Vue.js components, and V1 node definitions → V3 schema, as part of the 2.0/V3 roadmap.
 - **Consistency:** New nodes are implemented using the V3 schema (`comfy_entrypoint`, `io.ComfyNode`, `io.Schema`). Legacy V1 nodes (`NODE_CLASS_MAPPINGS`) are refactored to V3 as part of the migration roadmap. Do not artificially preserve V1 patterns for compatibility reasons.
