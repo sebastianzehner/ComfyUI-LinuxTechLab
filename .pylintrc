@@ -1,0 +1,12 @@
+[MASTER]
+init-hook='import sys; sys.path.insert(0, "/mnt/sumpf/ai/ComfyUI")'
+source-roots=/mnt/sumpf/ai/ComfyUI
+
+[FORMAT]
+max-line-length=88
+
+[MESSAGES CONTROL]
+disable=
+    missing-function-docstring,
+    invalid-name,
+    bad-classmethod-argument
