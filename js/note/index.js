@@ -74,6 +74,16 @@ function openEditor(node) {
 function setupNote(node) {
   try {
     hideJsonWidget(node.widgets, "note_json");
+
+    // Hide the "Show advanced inputs" footer button
+    requestAnimationFrame(() => {
+      const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`);
+      if (nodeEl) {
+        const footer = nodeEl.querySelector("button:has(span.truncate)");
+        if (footer?.parentElement) footer.parentElement.style.display = "none";
+      }
+    });
+
     node._noteCfg = parseCfg(node);
 
     // Build and register the DOM widget. nodeCreated only fires once per node
@@ -96,7 +106,7 @@ app.registerExtension({
   name: "LinuxTechLab.Note",
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "LinuxTechLabNote") return;
+    if (nodeData.name !== "LinuxTechLab_Note") return;
 
     // Prototype-level: suppress double-click so only the hover-reveal Edit
     // button can open the editor. Applies to all instances of this type.
@@ -160,7 +170,7 @@ app.registerExtension({
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLabNote") return;
+    if (node.comfyClass !== "LinuxTechLab_Note") return;
 
     setupNote(node);
 
@@ -171,6 +181,6 @@ app.registerExtension({
       node.size = [node._noteCfg?.width || 420, node._noteCfg?.height || 320];
     }
 
-    if (allow_debug) console.log("LinuxTechLabNote created", node);
+    if (allow_debug) console.log("LinuxTechLab_Note created", node);
   },
 });

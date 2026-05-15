@@ -9,6 +9,16 @@ const NO_TITLE = (typeof LiteGraph !== "undefined" && LiteGraph.NO_TITLE) || 1;
 function setupLabel(node) {
   try {
     hideJsonWidget(node.widgets, "label_json");
+
+    // Hide the "Show advanced inputs" footer button
+    requestAnimationFrame(() => {
+      const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`);
+      if (nodeEl) {
+        const footer = nodeEl.querySelector("button:has(span.truncate)");
+        if (footer?.parentElement) footer.parentElement.style.display = "none";
+      }
+    });
+
     node._labelCfg = parseCfg(node);
     node.color = "transparent";
     node.bgcolor = "transparent";
@@ -31,7 +41,7 @@ app.registerExtension({
   name: "LinuxTechLab.Label",
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== "LinuxTechLabLabel") return;
+    if (nodeData.name !== "LinuxTechLab_Label") return;
 
     nodeType.title_mode = NO_TITLE;
 
@@ -41,7 +51,7 @@ app.registerExtension({
       const r = _origCreated?.apply(this, arguments);
       setupLabel(this);
       this.badges = [];
-      if (allow_debug) console.log("LinuxTechLabLabel", this);
+      if (allow_debug) console.log("LinuxTechLab_Label", this);
       return r;
     };
 
@@ -118,7 +128,7 @@ app.registerExtension({
 if (typeof LGraphCanvas !== "undefined") {
   const oldDrawNode = LGraphCanvas.prototype.drawNode;
   LGraphCanvas.prototype.drawNode = function (node, ctx) {
-    if (node.type === "LinuxTechLabLabel") {
+    if (node.type === "LinuxTechLab_Label") {
       node.bgcolor = "transparent";
       node.color = "transparent";
       const r = oldDrawNode.apply(this, arguments);
