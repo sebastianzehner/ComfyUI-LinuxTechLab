@@ -29,6 +29,14 @@ V3_NODES = [
     LinuxTechLabSaveMp4,
 ]
 
+# development mode — set to True to load reference/test nodes
+dev_mode = False
+
+if dev_mode:
+    from .nodes.node_ref import LinuxTechLabVueReferenceNode
+
+    V3_NODES.append(LinuxTechLabVueReferenceNode)
+
 
 class LinuxTechLabExtension(ComfyExtension):
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
