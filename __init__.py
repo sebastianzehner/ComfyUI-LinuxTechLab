@@ -39,7 +39,7 @@ async def comfy_entrypoint() -> LinuxTechLabExtension:
     return LinuxTechLabExtension()
 
 
-WEB_DIRECTORY = "./js"
+WEB_DIRECTORY = "./web/js"
 __all__ = ["comfy_entrypoint", "WEB_DIRECTORY"]
 
 
