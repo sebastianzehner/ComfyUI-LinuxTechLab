@@ -1,7 +1,7 @@
 [project]
 name = "ComfyUI-LinuxTechLab"
 description = "Creative suite for ComfyUI — 3D Builder, AudioReact, Paint Studio, Image Composer, Save Mp4, Image Crop, Note, Label, Resolution, Preview Image, with layers, transforms, AI background removal, audio-reactive video, and more."
-version = "1.3.9"
+version = "2.0.0"
 license = { file = "LICENSE" }
 keywords = ["comfyui", "image-editor", "3d", "paint", "layers", "compositor", "crop", "label", "audio-reactive", "video", "mp4", "linuxtechlab"]
 
