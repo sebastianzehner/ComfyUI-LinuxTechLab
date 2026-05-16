@@ -14,6 +14,7 @@ from .nodes.paint import LinuxTechLabPaint
 from .nodes.preview import LinuxTechLabPreview
 from .nodes.resolution import LinuxTechLabResolution
 from .nodes.save_mp4 import LinuxTechLabSaveMp4
+from .nodes.seed_generator import LinuxTechLabSeedGenerator
 
 V3_NODES = [
     LinuxTechLab3D,
@@ -27,6 +28,7 @@ V3_NODES = [
     LinuxTechLabPreview,
     LinuxTechLabResolution,
     LinuxTechLabSaveMp4,
+    LinuxTechLabSeedGenerator,
 ]
 
 # development mode — set to True to load reference/test nodes
@@ -47,7 +49,7 @@ async def comfy_entrypoint() -> LinuxTechLabExtension:
     return LinuxTechLabExtension()
 
 
-WEB_DIRECTORY = "./web/js"
+WEB_DIRECTORY = "./web"
 __all__ = ["comfy_entrypoint", "WEB_DIRECTORY"]
 
 
