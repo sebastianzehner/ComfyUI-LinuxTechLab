@@ -5,18 +5,16 @@
     <strong style="font-size: 1.2em;">Native-first, design-driven creative tools for the modern ComfyUI workflow.</strong><br />
     Built by enthusiasts, for enthusiasts. Optimized for precision, aesthetics, and deep integration.
   </p>
-
   <p align="center">
     <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab/blob/main/LICENSE">
       <img src="https://img.shields.io/github/license/sebastianzehner/ComfyUI-LinuxTechLab?style=flat-square&color=89b4fa&labelColor=1e1e2e" alt="License">
     </a>
+    &nbsp;
     <a href="https://www.youtube.com/@LinuxTechLab">
       <img src="https://img.shields.io/badge/youtube-LinuxTechLab-89b4fa?style=flat-square&logo=youtube&logoColor=cdd6f4&labelColor=1e1e2e" alt="YouTube">
     </a>
   </p>
 </div>
-
----
 
 ## 🐧 The LinuxTechLab Way
 
@@ -25,8 +23,6 @@ Our approach is simple: **Native-first.** If ComfyUI provides the functionality,
 We are enthusiasts of Linux, AI, and the terminal. For us, this project is a continuous journey of learning—diving deep into Python, JavaScript (Vue.js), and the inner workings of ComfyUI. Our aesthetic is guided by the **Catppuccin Mocha** theme, ensuring a beautiful and cohesive look across our entire Arch Linux ecosystem.
 
 We build with precision, staying close to the command line and working with local AI and the **Pi Agent** to push the boundaries of what's possible in a node-based environment.
-
----
 
 ## 🎨 Creative Suite
 
@@ -90,6 +86,11 @@ A simple, one-click resolution picker. Choose from standard aspect ratios (like 
 ### 🔢 Math Operator
 
 A lightweight utility node for performing basic arithmetic (Addition, Subtraction, Multiplication, Division) directly within your node graph.
+
+### 🎲 Seed Generator
+
+Take full control over your seeds. Switch between random, incremental, or manual modes, and use the built-in history to reuse seeds from previous runs. Perfect for systematic exploration or locking in a favorite seed.
+![Seed Generator](web/docs/LinuxTechLab_SeedGenerator/seed_generator.webp)
 
 ---
 
