@@ -1,9 +1,9 @@
 [project]
 name = "ComfyUI-LinuxTechLab"
-description = "Creative suite for ComfyUI — 3D Builder, AudioReact, Paint Studio, Image Composer, Save Mp4, Image Crop, Note, Label, Resolution, Preview Image, with layers, transforms, AI background removal, audio-reactive video, and more."
+description = "Native-first, design-driven creative tools for the modern ComfyUI workflow."
 version = "2.0.0"
 license = { file = "LICENSE" }
-keywords = ["comfyui", "image-editor", "3d", "paint", "layers", "compositor", "crop", "label", "audio-reactive", "video", "mp4", "linuxtechlab"]
+keywords = ["comfyui", "creative-suite", "3d-builder", "audioreact", "image-composer", "paint-studio", "linuxtechlab", "nodes2"]
 
 dependencies = []
 
