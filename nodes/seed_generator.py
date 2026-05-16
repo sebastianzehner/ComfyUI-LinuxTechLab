@@ -24,6 +24,7 @@ class LinuxTechLabSeedGenerator(io.ComfyNode):
             node_id="LinuxTechLab_SeedGenerator",
             display_name="Seed Generator",
             category="LinuxTechLab",
+            description="Control seed generation and history.",
             inputs=[
                 io.String.Input(
                     "seed_json",
