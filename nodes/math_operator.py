@@ -15,15 +15,15 @@ class LinuxTechLabMathOperator(io.ComfyNode):
             category="LinuxTechLab",
             description="Performs basic arithmetic operations.",
             inputs=[
-                io.Float.Input("a", default=0.0),
-                io.Float.Input("b", default=0.0),
+                io.Float.Input("a", default=0.0, step=0.1),
+                io.Float.Input("b", default=0.0, step=0.1),
                 io.Combo.Input(
                     "operation",
                     options=["add", "subtract", "multiply", "divide"],
                     default="add",
                 ),
             ],
-            outputs=[io.Float.Output()],
+            outputs=[io.Float.Output("result")],
         )
 
     @classmethod
