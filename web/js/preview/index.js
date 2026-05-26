@@ -92,7 +92,7 @@ function injectCSS() {
     .ltl-preview-slot {
       flex: 1;
       position: relative;
-      cursor: pointer;
+      cursor: default;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -126,6 +126,7 @@ function injectCSS() {
     .ltl-preview-slot.selected {
       outline: 2px solid var(--ltl-brand, #89b4fa);
       outline-offset: -2px;
+      cursor: zoom-in;
     }
 
     /* ---- fullscreen overlay ---- */
@@ -206,6 +207,12 @@ function injectCSS() {
       align-items: center;
       justify-content: center;
       z-index: 100000;
+    }
+    .ltl-preview-overlay-nav.prev {
+      left: 20px;
+    }
+    .ltl-preview-overlay-nav.next {
+      right: 20px;
     }
     .ltl-preview-overlay-nav:hover {
       background: rgba(137,180,250,0.3);
@@ -551,7 +558,6 @@ function createPreviewWidget(node) {
       const f = frames[i];
       const slot = document.createElement("div");
       slot.className = "ltl-preview-slot" + (i === sel && frames.length > 1 ? " selected" : "");
-      slot.style.cursor = "zoom-in";
 
       const img = document.createElement("img");
       img.src = f.url;
@@ -571,10 +577,14 @@ function createPreviewWidget(node) {
 
       slot.addEventListener("click", (e) => {
         e.stopPropagation();
-        node._ltlSelectedFrame = i;
-        node.properties = node.properties || {};
-        node.properties.ltlSelected = i;
-        openOverlay(i);
+        if (i === node._ltlSelectedFrame) {
+          openOverlay(i);
+        } else {
+          node._ltlSelectedFrame = i;
+          node.properties = node.properties || {};
+          node.properties.ltlSelected = i;
+          renderStrip();
+        }
       });
 
       strip.appendChild(slot);
