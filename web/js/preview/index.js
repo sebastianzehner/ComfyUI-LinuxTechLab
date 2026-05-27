@@ -124,9 +124,11 @@ function injectCSS() {
       color: #1e1e2e;
     }
     .ltl-preview-slot.selected {
+      cursor: zoom-in;
+    }
+    .ltl-preview-slot.selected.has-batch {
       outline: 2px solid var(--ltl-brand, #89b4fa);
       outline-offset: -2px;
-      cursor: zoom-in;
     }
 
     /* ---- fullscreen overlay ---- */
@@ -572,7 +574,10 @@ function createPreviewWidget(node) {
     for (let i = 0; i < frames.length; i++) {
       const f = frames[i];
       const slot = document.createElement("div");
-      slot.className = "ltl-preview-slot" + (i === sel && frames.length > 1 ? " selected" : "");
+      slot.className = "ltl-preview-slot" + (i === sel ? " selected" : "");
+      if (frames.length > 1) {
+        slot.classList.add("has-batch");
+      }
 
       const img = document.createElement("img");
       img.src = f.url;
