@@ -298,6 +298,11 @@ async function saveToOutput(node, toastEl) {
     showToast(toastEl, "Run the workflow first");
     return;
   }
+  const saveModeWidget = node.widgets?.find((w) => w.name === "save_mode");
+  if (saveModeWidget?.value === "save") {
+    showToast(toastEl, "Manual saving is disabled in 'save' mode");
+    return;
+  }
   try {
     const blob = await getPreviewBlob(node);
     if (!blob) throw new Error("no preview blob");
@@ -327,6 +332,11 @@ async function saveToOutput(node, toastEl) {
 async function saveToDisk(node, toastEl) {
   if (!node._ltlFrames?.length) {
     showToast(toastEl, "Run the workflow first");
+    return;
+  }
+  const saveModeWidget = node.widgets?.find((w) => w.name === "save_mode");
+  if (saveModeWidget?.value === "save") {
+    showToast(toastEl, "Manual saving is disabled in 'save' mode");
     return;
   }
   const idx = node._ltlSelectedFrame ?? 0;
@@ -432,9 +442,14 @@ function createPreviewWidget(node) {
 
   // Update button active state
   function updateButtons() {
-    const active = !!node._ltlFrames?.length;
-    diskBtn.classList.toggle("active", active);
-    outputBtn.classList.toggle("active", active);
+    const hasFrames = !!node._ltlFrames?.length;
+    const saveModeWidget = node.widgets?.find((w) => w.name === "save_mode");
+    const isPreviewMode = saveModeWidget?.value !== "save";
+
+    const canManualSave = hasFrames && isPreviewMode;
+
+    diskBtn.classList.toggle("active", canManualSave);
+    outputBtn.classList.toggle("active", canManualSave);
   }
 
   // ---- fullscreen overlay ----
