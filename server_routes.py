@@ -12,6 +12,13 @@ from PIL.PngImagePlugin import PngInfo
 from server import PromptServer
 
 from .nodes._save_helpers import _build_pnginfo, _safe_prefix
+from .nodes.crop_video import (
+    VIDEO_EXTENSIONS,
+    _get_ffmpeg_version,
+    get_video_info,
+    get_video_list,
+    resolve_video_path,
+)
 
 # --- PORTABLE COMFYUI FIX ---
 # Force rembg to download and read AI models from ComfyUI/models/rembg
@@ -770,7 +777,9 @@ async def api_preview_save(request):
     prefix = _safe_prefix(prefix_raw)
     if not prefix:
         return web.json_response(
-            {"error": "invalid filename_prefix: use [A-Za-z0-9_-] segments separated by '/', no '..'"},
+            {
+                "error": "invalid filename_prefix: use [A-Za-z0-9_-] segments separated by '/', no '..'"
+            },
             status=400,
         )
 
@@ -825,7 +834,9 @@ async def api_preview_prepare(request):
     prefix = _safe_prefix(prefix_raw)
     if not prefix:
         return web.json_response(
-            {"error": "invalid filename_prefix: use [A-Za-z0-9_-] segments separated by '/', no '..'"},
+            {
+                "error": "invalid filename_prefix: use [A-Za-z0-9_-] segments separated by '/', no '..'"
+            },
             status=400,
         )
 
@@ -849,7 +860,84 @@ async def api_preview_prepare(request):
         return web.json_response({"error": f"prepare failed: {e}"}, status=500)
 
     image_data_uri = "data:image/png;base64," + base64.b64encode(body).decode("ascii")
-    return web.json_response({
-        "image_b64": image_data_uri,
-        "suggested_filename": suggested_filename,
-    })
+    return web.json_response(
+        {
+            "image_b64": image_data_uri,
+            "suggested_filename": suggested_filename,
+        }
+    )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Crop Video Routes
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+@PromptServer.instance.routes.get("/linuxtechlab/api/video/serve")
+async def serve_video_route(request):
+    path = resolve_video_path(request.rel_url.query.get("path", "").strip())
+    if not path or not os.path.isfile(path):
+        return web.Response(status=404, text="Not found")
+    mime = {
+        "mp4": "video/mp4",
+        "mkv": "video/x-matroska",
+        "webm": "video/webm",
+        "mov": "video/quicktime",
+        "avi": "video/x-msvideo",
+    }.get(os.path.splitext(path)[1].lower().lstrip("."), "video/mp4")
+    return web.FileResponse(
+        path, headers={"Content-Type": mime, "Accept-Ranges": "bytes"}
+    )
+
+
+@PromptServer.instance.routes.get("/linuxtechlab/api/video/ffmpeg_version")
+async def ffmpeg_version_route(request):
+    return web.json_response({"version": _get_ffmpeg_version()})
+
+
+@PromptServer.instance.routes.get("/linuxtechlab/api/video/refresh")
+async def refresh_videos_route(request):
+    return web.json_response({"videos": get_video_list(refresh=True)})
+
+
+@PromptServer.instance.routes.get("/linuxtechlab/api/video/meta")
+async def video_meta_route(request):
+    path = resolve_video_path(request.rel_url.query.get("path", "").strip())
+    if not path or not os.path.isfile(path):
+        return web.json_response({"error": "Not found"}, status=404)
+    try:
+        return web.json_response(get_video_info(path))
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@PromptServer.instance.routes.get("/linuxtechlab/api/video/browse")
+async def browse_route(request):
+    partial = request.rel_url.query.get("path", "")
+    try:
+        scan_dir = (
+            partial
+            if (partial.endswith(os.sep) or partial.endswith("/"))
+            else (os.path.dirname(partial) or "/")
+        )
+        prefix = (
+            ""
+            if (partial.endswith(os.sep) or partial.endswith("/"))
+            else os.path.basename(partial).lower()
+        )
+        if not os.path.isdir(scan_dir):
+            return web.json_response({"suggestions": []})
+        entries = []
+        with os.scandir(scan_dir) as it:
+            for entry in sorted(it, key=lambda e: (not e.is_dir(), e.name.lower())):
+                if prefix and not entry.name.lower().startswith(prefix):
+                    continue
+                if entry.is_dir():
+                    entries.append(os.path.join(scan_dir, entry.name) + os.sep)
+                elif os.path.splitext(entry.name)[1].lower() in VIDEO_EXTENSIONS:
+                    entries.append(os.path.join(scan_dir, entry.name))
+                if len(entries) >= 40:
+                    break
+        return web.json_response({"suggestions": entries})
+    except Exception as e:
+        return web.json_response({"suggestions": [], "error": str(e)})

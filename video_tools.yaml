@@ -1,0 +1,17 @@
+# LinuxTechLab FFmpeg Video Tools – Configuration
+#
+# By default (when this list is empty), the node scans:
+#   - ComfyUI/input/
+#   - ComfyUI/output/
+#
+# If you add paths here, ONLY those paths will be scanned
+# (input/ and output/ are then ignored, for a cleaner list).
+#
+# Paths are scanned recursively. Supports ~ for home directory.
+#
+# Example:
+#   video_paths:
+#     - ~/Videos
+#     - /mnt/footage
+
+video_paths: [/mnt/sumpf/ai/ComfyUI/video]
