@@ -402,8 +402,8 @@ app.registerExtension({
           const deltaX = (e.clientX - cropStartX) / scale;
           let cropW, cropH2;
           if (arKey === "Custom") {
-            cropW = node._lastCropW || 608;
-            cropH2 = node._lastCropH || 1080;
+            cropW = node._lastCropW || 960;
+            cropH2 = node._lastCropH || 1088;
           } else {
             const [rw, rh] = CROP_RATIOS[arKey] || [9, 16];
             cropW = calcCropWidth(srcHeight, rw, rh);
@@ -477,8 +477,8 @@ app.registerExtension({
           // custom_width/height are optional input sockets – not widgets.
           // Use values cached from the last execution (onExecuted),
           // or fall back to defaults until the first run.
-          cropW = node._lastCropW || 608;
-          cropH2 = node._lastCropH || 1080;
+          cropW = node._lastCropW || 960;
+          cropH2 = node._lastCropH || 1088;
           // ensure even
           cropW = cropW % 2 === 0 ? cropW : cropW - 1;
           cropH2 = cropH2 % 2 === 0 ? cropH2 : cropH2 - 1;

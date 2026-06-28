@@ -347,7 +347,7 @@ class LinuxTechLabCropVideo(io.ComfyNode):
                 io.Custom("VIDEO").Input("video_input", optional=True),
                 io.Int.Input(
                     "custom_width",
-                    default=608,
+                    default=960,
                     min=2,
                     max=7680,
                     step=2,
@@ -357,7 +357,7 @@ class LinuxTechLabCropVideo(io.ComfyNode):
                 ),
                 io.Int.Input(
                     "custom_height",
-                    default=1080,
+                    default=1088,
                     min=2,
                     max=4320,
                     step=2,
