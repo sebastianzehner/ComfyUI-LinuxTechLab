@@ -18,15 +18,31 @@
 
 ## 🐧 The LinuxTechLab Way
 
-Our approach is simple: **Native-first.** If ComfyUI provides the functionality, we use it. We only develop custom nodes when a feature is missing or when we can elevate the user experience through our own design standards.
+Our approach is simple: **Native-first.** If ComfyUI provides the functionality,
+we use it. We only develop custom nodes when a feature is missing or when we can
+elevate the user experience through our own design standards.
 
-We are enthusiasts of Linux, AI, and the terminal. For us, this project is a continuous journey of learning—diving deep into Python, JavaScript (Vue.js), and the inner workings of ComfyUI. Our aesthetic is guided by the **Catppuccin Mocha** theme, ensuring a beautiful and cohesive look across our entire Arch Linux ecosystem.
+We are enthusiasts of Linux, AI, and the terminal. For us, this project is a
+continuous journey of learning—diving deep into Python, JavaScript (Vue.js), and
+the inner workings of ComfyUI. Our aesthetic is guided by the **Catppuccin
+Mocha** theme, ensuring a beautiful and cohesive look across our entire Arch
+Linux ecosystem.
 
-We build with precision, staying close to the command line and working with local AI and the **Pi Agent** to push the boundaries of what's possible in a node-based environment.
+We build with precision, staying close to the command line and working with
+local AI and the **Pi Agent** to push the boundaries of what's possible in a
+node-based environment.
 
 ## 🎨 Creative Suite
 
 LinuxTechLab turns ComfyUI into a powerful, intuitive design space.
+
+### Crop Video
+
+Crop a video to a specific aspect ratio or custom resolution using FFmpeg.
+Includes a live video preview with a draggable crop overlay, a timeline
+scrubber, and IN/OUT trim controls.
+
+![Crop Video - Node](workflows/crop_video_workflow.webp)
 
 ### 🧊 3D Builder
 
