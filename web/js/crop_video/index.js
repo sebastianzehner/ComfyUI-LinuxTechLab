@@ -62,6 +62,7 @@ app.registerExtension({
     const onNodeCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function () {
       if (onNodeCreated) onNodeCreated.apply(this, arguments);
+      this.size = [350, 600];
       const node = this;
       const wgt = (name) => node.widgets?.find((w) => w.name === name);
       const getV = (name) => Number(wgt(name)?.value) || 0;
