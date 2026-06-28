@@ -32,7 +32,7 @@ We build with precision, staying close to the command line and working with
 local AI and the **Pi Agent** to push the boundaries of what's possible in a
 node-based environment.
 
-## 🎨 Creative Suite
+## Creative Suite
 
 LinuxTechLab turns ComfyUI into a powerful, intuitive design space.
 
@@ -44,48 +44,56 @@ scrubber, and IN/OUT trim controls.
 
 ![Crop Video - Node](workflows/crop_video_workflow.webp)
 
-### 🧊 3D Builder
+### 3D Builder
 
 A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furniture, or import your own 3D models. You get easy camera controls, realistic lighting, undo/redo, and live previews. Perfect for making reference scenes for ControlNet or depth maps!
 ![3D Builder — Node](workflows/3D_Builder_Workflow.jpg)
 ![3D Builder — Editor](workflows/3D_Builder_Workflow_v2.jpg)
 
-### 🎚️ AudioReact
+### AudioReact
 
 Audio-reactive image-to-video. **No extra models needed**, just an image and an audio track. Open the fullscreen editor, scrub the audio, and watch 15 motion modes react to the beat in real time with a live WebGL preview. Pairs with **Save Mp4 LinuxTechLab** to write the clip directly to MP4 with audio muxed in.
 ![AudioReact Node](workflows/AudioReact_Workflow.jpg)
 ![AudioReact Editor](workflows/AudioReact_Workflow_v2.jpg)
 📥 [Download example workflow](workflows/AudioReact_Workflow.json)
 
-### ✨ Image Composer
+### Image Composer
 
 Easily combine and arrange multiple images. Move, scale, and rotate layers using a simple visual editor. Use the eraser to tweak things by hand, or let our AI background removal tool isolate objects for you instantly.
 ![Image Composer — Node](workflows/Image_Composer_Workflow.jpg)
 ![Image Composer — Editor](workflows/Image_Composer_Workflow_v2.jpg)
 
-### 🖌️ Paint Studio
+### Paint Studio
 
 A fast, easy-to-use painting tool. It features layers, custom brushes, and a smudge tool for smooth blending. Perfect for fixing details, drawing custom masks, or painting from scratch.
 ![Paint — Node](workflows/Paint_Workflow.jpg)
 ![Paint — Editor](workflows/Paint_Workflow_v2.jpg)
 
-### ✂️ Precision Crop
+### Precision Crop
 
 No more guessing crop sizes with numbers! Visually draw your crop box. It includes standard presets (like 1:1 or 16:9) so your image is always framed perfectly for social media or video.
 ![Image Crop — Node](workflows/Crop_Workflow.jpg)
 ![Image Crop — Editor](workflows/Crop_Workflow_v2.jpg)
 
-### 📝 Note
+### Note
 
 A beautiful, simple text editor to document your workflows right on the canvas. Write normally using bold, italics, lists, and headings. Add custom colored buttons, icons, or links to YouTube and Discord.
 ![Note LinuxTechLab — Node](workflows/Note_Workflow.jpg)
 ![Note LinuxTechLab — Editor](workflows/Note_Workflow_v2.jpg)
 
-### 🏷️ Label
+### Label
 
-Keep your workflows tidy with clean, custom labels.
-![Labels — Node](workflows/Labels_Workflow.jpg)
-![Labels — Editor](workflows/Labels_Workflow_v2.jpg)
+A visual design element used to add annotations and labels directly to the
+ComfyUI canvas.
+
+The Label node allows you to create beautiful, customizable text labels to
+organize your workflows, highlight specific sections, or add descriptive notes.
+It is a purely aesthetic node and does not affect the processing of images or
+latent data.
+
+![Label - Node](workflows/label_workflow_1.webp)
+
+![Label - Editor](workflows/label_workflow_2.webp)
 
 ### 🎬 Save Mp4
 
