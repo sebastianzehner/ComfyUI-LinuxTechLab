@@ -279,7 +279,7 @@ PRESET_OPTIONS = ["ultrafast", "superfast", "fast", "medium", "slow"]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# V3 Node
+# LinuxTechLabCropVideo Node
 # ──────────────────────────────────────────────────────────────────────────────
 
 
@@ -299,7 +299,7 @@ class LinuxTechLabCropVideo(io.ComfyNode):
                 io.Combo.Input(
                     "aspect_ratio",
                     options=list(CROP_PRESETS.keys()),
-                    default="9:16  (Reels / TikTok / Shorts)",
+                    default="9:16",
                 ),
                 io.Int.Input(
                     "crop_x_offset",
@@ -406,8 +406,8 @@ class LinuxTechLabCropVideo(io.ComfyNode):
         crop_x_offset=0,
         crop_y_offset=0,
         video_input=None,
-        custom_width=608,
-        custom_height=1080,
+        custom_width=960,
+        custom_height=1088,
         start_time_sec=0.0,
         end_time_sec=0.0,
     ) -> io.NodeOutput:
