@@ -1,8 +1,8 @@
 {
   "id": "cf363c2c-1b01-41b1-b986-732802dcbdcd",
   "revision": 0,
-  "last_node_id": 6,
-  "last_link_id": 6,
+  "last_node_id": 7,
+  "last_link_id": 8,
   "nodes": [
     {
       "id": 1,
@@ -16,7 +16,7 @@
         590
       ],
       "flags": {},
-      "order": 3,
+      "order": 4,
       "mode": 0,
       "inputs": [
         {
@@ -80,7 +80,7 @@
         18,
         "medium",
         "copy  (no re-encode)",
-        552,
+        546,
         0,
         0,
         0,
@@ -92,11 +92,11 @@
       "type": "LinuxTechLab_Label",
       "pos": [
         1900,
-        2160
+        2120
       ],
       "size": [
-        820,
-        82
+        1116,
+        105
       ],
       "flags": {
         "no_title": true
@@ -109,7 +109,7 @@
         "Node name for S&R": "LinuxTechLab_Label"
       },
       "widgets_values": [
-        "{\"text\":\"Crop Video with FFmpeg\",\"fontSize\":62,\"fontFamily\":\"CaskaydiaCove Nerd Font\",\"fontColor\":\"#cba6f7\",\"textAlign\":\"left\",\"backgroundColor\":\"#1e1e2e\",\"padding\":10,\"borderRadius\":10,\"opacity\":0.85,\"fontWeight\":\"normal\",\"lineHeight\":1}"
+        "{\"text\":\"Crop Video with FFmpeg\",\"fontSize\":85,\"fontFamily\":\"CaskaydiaCove Nerd Font\",\"fontColor\":\"#cba6f7\",\"textAlign\":\"left\",\"backgroundColor\":\"#1e1e2e\",\"padding\":10,\"borderRadius\":10,\"opacity\":0.85,\"fontWeight\":\"normal\",\"lineHeight\":1}"
       ],
       "color": "transparent",
       "bgcolor": "transparent"
@@ -175,7 +175,7 @@
       ],
       "size": [
         240,
-        244.875
+        245
       ],
       "flags": {},
       "order": 2,
@@ -200,15 +200,15 @@
       "id": 5,
       "type": "PreviewAny",
       "pos": [
-        2760,
-        2885
+        3060,
+        2850
       ],
       "size": [
-        440,
+        715,
         170
       ],
       "flags": {},
-      "order": 5,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -237,15 +237,15 @@
       "id": 6,
       "type": "SaveVideo",
       "pos": [
-        2800,
+        2740,
         2310
       ],
       "size": [
-        280,
-        480.921875
+        260,
+        458.265625
       ],
       "flags": {},
-      "order": 4,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
@@ -267,6 +267,32 @@
         "auto",
         "auto"
       ]
+    },
+    {
+      "id": 7,
+      "type": "LinuxTechLab_Note",
+      "pos": [
+        3060,
+        2150
+      ],
+      "size": [
+        720,
+        620
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "LinuxTechLab_Note"
+      },
+      "widgets_values": [
+        "{\"version\":1,\"content\":\"<h1><span data-ic=\\\"workflow-v1\\\" class=\\\"pix-note-ic\\\" style=\\\"color: #89b4fa\\\"></span>&nbsp;<span>Crop Video Workflow</span></h1><h2><span>1. 📁 Setup Video Source</span></h2><p><span>You can provide the source video in two ways:</span></p><p></p><ul><li><span>Directly in the <span style=\\\"color: rgb(203, 166, 247)\\\">Crop Video</span>&nbsp;node by choosing a file from <span style=\\\"color: rgb(203, 166, 247)\\\">video_path</span>.</span></li><li><span>OR, connect a <span style=\\\"color: rgb(203, 166, 247)\\\">Load Video</span>&nbsp;node to the <span style=\\\"color: rgb(203, 166, 247)\\\">video_input</span>&nbsp;socket.</span></li></ul><p></p><p><span data-ic=\\\"warning-v2\\\" class=\\\"pix-note-ic\\\" style=\\\"color: #f9e2af\\\"></span>&nbsp;If connected, the <span style=\\\"color: rgb(203, 166, 247)\\\">video_path</span>&nbsp;selection will be ignored.<span></span></p><hr><h2><span>2. ✂️ Define Crop &amp; Trim</span></h2><p><span>Once the video is loaded, use the interactive preview:</span></p><p></p><ul><li><span><span>Crop:</span> Drag the crop overlay to find the best framing.</span></li><li><span>Trim: Move the scrubber to the desired start/end points and press <span style=\\\"color: rgb(166, 227, 161)\\\">IN Set</span>&nbsp;and <span style=\\\"color: rgb(243, 139, 168)\\\">OUT Set</span>. If skipped, the full video length is used.</span></li></ul><hr><h2><span>3. ⚙️ Configure Encoding</span></h2><p>Adjust the <span>Advanced</span>&nbsp;settings:</p><p></p><ul><li>Use <span>lossless</span>&nbsp;for high-quality archiving.</li><li>Choose a codec suitable for your hardware.</li></ul><p><span data-ic=\\\"warning-v2\\\" class=\\\"pix-note-ic\\\" style=\\\"color: #f9e2af\\\"></span>&nbsp;<span>Recommended for most users:</span> <span style=\\\"color: rgb(203, 166, 247)\\\">libx264</span> (CPU-based, universally compatible)</p><hr><h2><span>4. ▶️ Execution</span></h2><p>Run the workflow. The processed video will be sent to the connected <span>Save Video</span>&nbsp;node.</p><p><span data-ic=\\\"checkmark\\\" class=\\\"pix-note-ic\\\" style=\\\"color: #a6e3a1\\\"></span>&nbsp;Supports virtually any format — powered by&nbsp;<a href=\\\"https://ffmpeg.org/\\\" target=\\\"_blank\\\" rel=\\\"noopener noreferrer\\\">ffmpeg</a>.</p><p></p><p></p>\",\"buttonColor\":\"#89b4fa\",\"lineColor\":\"#89b4fa\",\"width\":720,\"height\":620}",
+        ""
+      ],
+      "color": "#89b4fa",
+      "bgcolor": "#1e1e2e"
     }
   ],
   "links": [
@@ -307,10 +333,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.351305709310408,
+      "scale": 1.015255979947714,
       "offset": [
-        -1762.932838017018,
-        -2012.2580659560772
+        -1756.4696899271091,
+        -1901.666161378333
       ]
     },
     "frontendVersion": "1.45.19",
