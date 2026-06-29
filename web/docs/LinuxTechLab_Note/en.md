@@ -1,15 +1,18 @@
 # Note
 
-A rich-text annotation tool to leave detailed, visually engaging notes directly on your ComfyUI canvas.
+A rich-text annotation tool to leave detailed, visually engaging notes directly
+on your ComfyUI canvas.
 
-The `Note` node goes far beyond simple text. It allows you to create structured, informative, and interactive content to document your workflows, provide instructions, or include quick access to external resources.
+The Note node goes far beyond simple text. It allows you to create structured,
+informative, and well-formatted content to document your workflows, provide
+instructions, or include quick access to external resources.
 
 ![Note Example](LinuxTechLab_Note/note_example.webp)
 
 ## How to Use
 
-1.  **Add the Node:** Place a `Note` node in your workflow.
-2.  **Open the Editor:** You have two ways to edit the content:
+1. **Add the Node:** Place a `Note` node in your workflow.
+2. **Open the Editor:** You have two ways to edit the content:
     - **Right-click** on the `Note` node and select **"Open Note Editor"**.
     - **Hover** over the node and click the **"Edit"** button that appears.
 
@@ -17,8 +20,8 @@ The editor provides a full toolbar for rich-text editing, allowing you to easily
 
 ![Note Editor](LinuxTechLab_Note/note_editor.webp)
 
-3.  **Create Content:** Use the editor's toolbar to add formatting, symbols, buttons, and links.
-4.  **Save:** Your changes are automatically applied to the node on the canvas.
+1. **Create Content:** Use the editor's toolbar to add formatting, symbols, buttons, and links.
+2. **Save:** Your changes are automatically applied to the node on the canvas.
 
 ## Features
 

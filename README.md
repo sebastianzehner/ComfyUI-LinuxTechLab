@@ -77,9 +77,16 @@ No more guessing crop sizes with numbers! Visually draw your crop box. It includ
 
 ### Note
 
-A beautiful, simple text editor to document your workflows right on the canvas. Write normally using bold, italics, lists, and headings. Add custom colored buttons, icons, or links to YouTube and Discord.
-![Note LinuxTechLab — Node](workflows/Note_Workflow.jpg)
-![Note LinuxTechLab — Editor](workflows/Note_Workflow_v2.jpg)
+A rich-text annotation tool to leave detailed, visually engaging notes directly
+on your ComfyUI canvas.
+
+The Note node goes far beyond simple text. It allows you to create structured,
+informative, and well-formatted content to document your workflows, provide
+instructions, or include quick access to external resources.
+
+![Note - Node](workflows/note_workflow_1.webp)
+
+![Note Editor LinuxTechLab](workflows/note_workflow_2.webp)
 
 ### Label
 
@@ -93,25 +100,25 @@ latent data.
 
 ![Label - Node](workflows/label_workflow_1.webp)
 
-![Label - Editor](workflows/label_workflow_2.webp)
+![Label Editor LinuxTechLab](workflows/label_workflow_2.webp)
 
-### 🎬 Save Mp4
+### Save Mp4
 
 Encode video frames + optional audio straight to MP4. Built-in `<video>` preview right on the node so you can watch the result without leaving ComfyUI.
 
-### 🖼️ Preview Image
+### Preview Image
 
 An enhanced preview tool. It gives you two simple buttons: **Save to Disk** (choose any folder on your computer) and **Save to Output** (saves to your ComfyUI output folder). Both options safely embed the workflow into the image.
 
-### 📐 Resolution
+### Resolution
 
 A simple, one-click resolution picker. Choose from standard aspect ratios (like 1:1, 16:9, or 9:16) and instantly get the exact width and height you need. Includes a **Custom mode** for precise control.
 
-### 🔢 Math Operator
+### Math Operator
 
 A lightweight utility node for performing basic arithmetic (Addition, Subtraction, Multiplication, Division) directly within your node graph.
 
-### 🎲 Seed Generator
+### Seed Generator
 
 Take full control over your seeds. Switch between random, incremental, or manual modes, and use the built-in history to reuse seeds from previous runs. Perfect for systematic exploration or locking in a favorite seed.
 ![Seed Generator](web/docs/LinuxTechLab_SeedGenerator/seed_generator.webp)
@@ -161,7 +168,7 @@ Once installed, you can pick from different AI models depending on the quality y
 
 ---
 
-## 📜 Feedback & License
+## Feedback & License
 
 > [!NOTE]
 > This suite is a labor of love and a continuous learning project. We welcome bug reports and feature suggestions from the community!
