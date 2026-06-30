@@ -164,10 +164,7 @@ export function injectFrameworkStyles() {
   max-width: 80%;
   transition: color 0.15s ease;
 }
-/* Editors that never write status text (AudioReact) leave this element
-   empty — its padding + dark background still rendered a small box that
-   overlapped AudioReact's bottom-left transport buttons. :empty hides it
-   until an editor actually writes text via setStatusText(). */
+/* Hide the tool-info element if it is empty to avoid rendering an empty box. */
 .pxf-tool-info:empty { display: none; }
 .pxf-tool-info.warn { color: var(--ltl-blue); }
 .pxf-tool-info.error { color: var(--ltl-red); }

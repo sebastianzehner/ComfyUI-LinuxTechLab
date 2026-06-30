@@ -50,13 +50,6 @@ A full 3D scene editor right inside ComfyUI. Drop in shapes, trees, houses, furn
 ![3D Builder — Node](workflows/3D_Builder_Workflow.jpg)
 ![3D Builder — Editor](workflows/3D_Builder_Workflow_v2.jpg)
 
-### AudioReact
-
-Audio-reactive image-to-video. **No extra models needed**, just an image and an audio track. Open the fullscreen editor, scrub the audio, and watch 15 motion modes react to the beat in real time with a live WebGL preview. Pairs with **Save Mp4 LinuxTechLab** to write the clip directly to MP4 with audio muxed in.
-![AudioReact Node](workflows/AudioReact_Workflow.jpg)
-![AudioReact Editor](workflows/AudioReact_Workflow_v2.jpg)
-📥 [Download example workflow](workflows/AudioReact_Workflow.json)
-
 ### Image Composer
 
 Easily combine and arrange multiple images. Move, scale, and rotate layers using a simple visual editor. Use the eraser to tweak things by hand, or let our AI background removal tool isolate objects for you instantly.
