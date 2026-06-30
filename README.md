@@ -95,10 +95,6 @@ latent data.
 
 ![Label Editor LinuxTechLab](workflows/label_workflow_2.webp)
 
-### Save Mp4
-
-Encode video frames + optional audio straight to MP4. Built-in `<video>` preview right on the node so you can watch the result without leaving ComfyUI.
-
 ### Preview Image
 
 An enhanced preview tool. It gives you two simple buttons: **Save to Disk** (choose any folder on your computer) and **Save to Output** (saves to your ComfyUI output folder). Both options safely embed the workflow into the image.

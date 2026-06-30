@@ -13,7 +13,6 @@ from .nodes.note import LinuxTechLabNote
 from .nodes.paint import LinuxTechLabPaint
 from .nodes.preview import LinuxTechLabPreview
 from .nodes.resolution import LinuxTechLabResolution
-from .nodes.save_mp4 import LinuxTechLabSaveMp4
 from .nodes.seed_generator import LinuxTechLabSeedGenerator
 
 V3_NODES = [
@@ -27,7 +26,6 @@ V3_NODES = [
     LinuxTechLabPaint,
     LinuxTechLabPreview,
     LinuxTechLabResolution,
-    LinuxTechLabSaveMp4,
     LinuxTechLabSeedGenerator,
 ]
 
