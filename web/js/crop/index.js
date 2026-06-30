@@ -85,10 +85,10 @@ function getUpstreamSnapshot(node) {
 }
 
 app.registerExtension({
-  name: "LinuxTechLab.Crop",
+  name: "LinuxTechLab.CropImage",
 
   async beforeRegisterNodeDef(nodeType, nodeData, app) {
-    if (nodeData.name !== "LinuxTechLab_Crop") return;
+    if (nodeData.name !== "LinuxTechLab_CropImage") return;
 
     const originalOnExecuted = nodeType.prototype.onExecuted;
     nodeType.prototype.onExecuted = function (message) {
@@ -96,7 +96,7 @@ app.registerExtension({
       // Re-suppress native ComfyUI preview -- ComfyUI may repopulate node.imgs
       // after execution, which would flash a strip below our custom preview.
       this.imgs = null;
-      if (allow_debug) console.log("LinuxTechLab_Crop executed");
+      if (allow_debug) console.log("LinuxTechLab_CropImage executed");
     };
 
     // Vue Compat #11 — onConfigure fires AFTER the workflow is fully
@@ -121,7 +121,7 @@ app.registerExtension({
   },
 
   async nodeCreated(node) {
-    if (node.comfyClass !== "LinuxTechLab_Crop") return;
+    if (node.comfyClass !== "LinuxTechLab_CropImage") return;
 
     node.size = [300, 300];
     node.imgs = null; // suppress native ComfyUI preview
@@ -133,7 +133,7 @@ app.registerExtension({
     }
 
     // ── Shared preview system ──
-    const parts = createNodePreview("Image Crop", "LinuxTechLab", "Click 'Open Crop' to start");
+    const parts = createNodePreview("Crop Image", "LinuxTechLab", "Click 'Open Crop' to start");
 
     // ── State -- mirrors the hidden crop_json widget ──
     let cropJson = "{}";
@@ -161,7 +161,7 @@ app.registerExtension({
           showNodePreview(parts, url, `${w}×${h}`, node);
           return;
         }
-        // Mirror nodes/node_crop.py::_crop_tensor exactly: scale, then round
+        // Mirror nodes/crop_image.py::_crop_tensor exactly: scale, then round
         // ENDPOINTS (not width). Subtracting rounded endpoints guarantees the
         // mini-preview dims match what Python returns -- otherwise rounding
         // the width separately can drift by 1px under scaling.
@@ -193,7 +193,7 @@ app.registerExtension({
     };
 
     // ── Open button ──
-    node.addWidget("button", "Open Crop", null, () => {
+    node.addWidget("button", "Open Crop Image", null, () => {
       const editor = new CropEditor();
 
       editor.onSave = (jsonStr, dataURL) => {
@@ -210,7 +210,7 @@ app.registerExtension({
         }
       };
 
-      editor.onSaveToDisk = (dataURL) => downloadDataURL(dataURL, "linuxtechlab_crop");
+      editor.onSaveToDisk = (dataURL) => downloadDataURL(dataURL, "linuxtechlab_cropimage");
 
       editor.onClose = () => {
         node.setDirtyCanvas(true, true);

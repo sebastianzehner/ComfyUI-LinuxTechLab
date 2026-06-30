@@ -62,11 +62,11 @@ A fast, easy-to-use painting tool. It features layers, custom brushes, and a smu
 ![Paint — Node](workflows/Paint_Workflow.jpg)
 ![Paint — Editor](workflows/Paint_Workflow_v2.jpg)
 
-### Precision Crop
+### Crop Image
 
 No more guessing crop sizes with numbers! Visually draw your crop box. It includes standard presets (like 1:1 or 16:9) so your image is always framed perfectly for social media or video.
-![Image Crop — Node](workflows/Crop_Workflow.jpg)
-![Image Crop — Editor](workflows/Crop_Workflow_v2.jpg)
+![Crop Image — Node](workflows/Crop_Workflow.jpg)
+![Crop Image — Editor](workflows/Crop_Workflow_v2.jpg)
 
 ### Note
 

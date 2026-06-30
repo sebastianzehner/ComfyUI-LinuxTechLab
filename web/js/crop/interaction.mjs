@@ -1,5 +1,5 @@
 // =====================================================================================
-// LinuxTechLab Image Crop Editor — Interaction (mouse/keyboard events, handle dragging)
+// LinuxTechLab Crop Image Editor — Interaction (mouse/keyboard events, handle dragging)
 // =====================================================================================
 import { CropEditor, SNAPS } from "./core.mjs";
 

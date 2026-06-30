@@ -175,7 +175,7 @@ export class CropEditor {
   // --- Build UI ---
   _buildUI() {
     const layout = createEditorLayout({
-      editorName: "Image Crop",
+      editorName: "Crop Image",
       editorId: "linuxtechlab-crop-editor",
       showUndoRedo: false,
       showStatusBar: true,

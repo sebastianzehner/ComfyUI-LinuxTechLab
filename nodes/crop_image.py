@@ -13,9 +13,10 @@ class LinuxTechLabCrop(io.ComfyNode):
     @classmethod
     def define_schema(cls) -> io.Schema:
         return io.Schema(
-            node_id="LinuxTechLab_Crop",
-            display_name="Image Crop",
+            node_id="LinuxTechLab_CropImage",
+            display_name="Crop Image",
             category="LinuxTechLab",
+            description="Crop images with PyTorch and PIL.",
             is_output_node=True,
             inputs=[
                 io.Custom("CROP_WIDGET").Input("CropWidget", optional=True),

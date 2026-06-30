@@ -1,5 +1,5 @@
 // ==============================================================================
-// LinuxTechLab Image Crop Editor — Render (canvas rendering, aspect ratio, save)
+// LinuxTechLab Crop Image Editor — Render (canvas rendering, aspect ratio, save)
 // ==============================================================================
 import { CropEditor, RATIOS, SNAPS, CropAPI } from "./core.mjs";
 import { getBrand } from "../theme/palette.mjs";

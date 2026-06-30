@@ -105,7 +105,7 @@ js/
 │   ├── layers.mjs      # Layer helper module
 │   └── api.mjs         # LinuxTechLabAPI backend calls
 │
-├── crop/               # Image Crop (CropEditor class, mixin pattern)
+├── crop/               # Crop Image (CropEditor class, mixin pattern)
 │   ├── index.js        # Entry: ComfyUI extension registration
 │   ├── core.mjs        # Class shell, UI building
 │   ├── interaction.mjs # Mouse/keyboard, crop handle dragging
