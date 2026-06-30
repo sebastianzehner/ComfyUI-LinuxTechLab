@@ -1,0 +1,197 @@
+{
+  "id": "63d0e900-70d9-4e09-962d-d9a2f86280cb",
+  "revision": 0,
+  "last_node_id": 7,
+  "last_link_id": 2,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        2840,
+        -170
+      ],
+      "size": [
+        255,
+        385
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "Test_00001_ (1).png",
+        "image"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "LinuxTechLab_Label",
+      "pos": [
+        2840,
+        -320
+      ],
+      "size": [
+        372,
+        80
+      ],
+      "flags": {
+        "no_title": true
+      },
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "LinuxTechLab_Label"
+      },
+      "widgets_values": [
+        "{\"text\":\"Crop Image\",\"fontSize\":60,\"fontFamily\":\"CaskaydiaCove Nerd Font\",\"fontColor\":\"#cba6f7\",\"textAlign\":\"left\",\"backgroundColor\":\"#1e1e2e\",\"padding\":10,\"borderRadius\":10,\"opacity\":0.85,\"fontWeight\":\"normal\",\"lineHeight\":1}"
+      ],
+      "color": "transparent",
+      "bgcolor": "transparent"
+    },
+    {
+      "id": 4,
+      "type": "LinuxTechLab_CropImage",
+      "pos": [
+        3200,
+        -90
+      ],
+      "size": [
+        240,
+        385
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "CropWidget",
+          "shape": 7,
+          "type": "CROP_WIDGET",
+          "link": null
+        },
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LinuxTechLab_CropImage"
+      },
+      "widgets_values": [
+        null,
+        {
+          "crop_json": "{\"doc_w\":512,\"doc_h\":512,\"original_w\":1024,\"original_h\":1024,\"crop_x\":271,\"crop_y\":45,\"crop_w\":512,\"crop_h\":512,\"ratio_idx\":1,\"snap_idx\":0,\"project_id\":\"crop_1782828629885\",\"composite_path\":\"linuxtechlab/crop_composite_crop_1782828629885.png\",\"src_path\":\"\"}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "PreviewImage",
+      "pos": [
+        3540,
+        -170
+      ],
+      "size": [
+        260,
+        310
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      2,
+      4,
+      0,
+      7,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.2284597357367397,
+      "offset": [
+        -2410.754726357987,
+        738.114649521262
+      ]
+    },
+    "frontendVersion": "1.45.20",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": false,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

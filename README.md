@@ -65,8 +65,9 @@ A fast, easy-to-use painting tool. It features layers, custom brushes, and a smu
 ### Crop Image
 
 No more guessing crop sizes with numbers! Visually draw your crop box. It includes standard presets (like 1:1 or 16:9) so your image is always framed perfectly for social media or video.
-![Crop Image — Node](workflows/Crop_Workflow.jpg)
-![Crop Image — Editor](workflows/Crop_Workflow_v2.jpg)
+![Crop Image - Node](workflows/crop_image_workflow_1.webp)
+
+![Crop Image Editor](workflows/crop_image_workflow_2.webp)
 
 ### Note
 
@@ -79,7 +80,7 @@ instructions, or include quick access to external resources.
 
 ![Note - Node](workflows/note_workflow_1.webp)
 
-![Note Editor LinuxTechLab](workflows/note_workflow_2.webp)
+![Note Editor](workflows/note_workflow_2.webp)
 
 ### Label
 
@@ -93,7 +94,7 @@ latent data.
 
 ![Label - Node](workflows/label_workflow_1.webp)
 
-![Label Editor LinuxTechLab](workflows/label_workflow_2.webp)
+![Label Editor](workflows/label_workflow_2.webp)
 
 ### Preview Image
 
