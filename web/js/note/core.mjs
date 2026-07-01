@@ -1120,7 +1120,7 @@ NoteEditor.prototype._normalizeEditArea = function (area) {
   let currentP = null;
   for (const n of nodes) {
     const isTextish =
-      n.nodeType === 3 ||
+      (n.nodeType === 3 && !(n.nodeValue.trim() === "" && n.nodeValue.includes("\n"))) ||
       (n.nodeType === 1 &&
         (n.tagName === "BR" ||
           n.tagName === "SPAN" ||
