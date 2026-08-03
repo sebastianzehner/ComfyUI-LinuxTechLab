@@ -4,7 +4,7 @@ import { hideJsonWidget } from "../shared/index.mjs";
 function injectCSS() {
   if (document.getElementById("linuxtechlab-resolution-css")) return;
   const css = `
-    .pix-res-root {
+    .ltl-res-root {
       width: 100%;
       box-sizing: border-box;
       padding: 8px;
@@ -19,12 +19,12 @@ function injectCSS() {
     }
     /* 6-col grid lets us mix 1/3-width ratio chips (span 2) with 1/2-width
        custom chips (span 3) on the same row. */
-    .pix-res-chips {
+    .ltl-res-chips {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 5px;
     }
-    .pix-res-chip {
+    .ltl-res-chip {
       grid-column: span 2; /* default = 1/3 width (3 chips per row) */
       background: #181825;
       border: 1px solid #45475a;
@@ -37,14 +37,14 @@ function injectCSS() {
       user-select: none;
       transition: background 0.08s, border-color 0.08s;
     }
-    .pix-res-chip:hover { border-color: #6c7086; }
-    .pix-res-chip.active {
+    .ltl-res-chip:hover { border-color: #6c7086; }
+    .ltl-res-chip.active {
       background: var(--ltl-brand);
       color: #1e1e2e;
       border-color: var(--ltl-brand);
     }
-    .pix-res-chip.span-half { grid-column: span 3; } /* 1/2 width — used by Custom Ratio + Custom Resolution */
-    .pix-res-list {
+    .ltl-res-chip.span-half { grid-column: span 3; } /* 1/2 width — used by Custom Ratio + Custom Resolution */
+    .ltl-res-list {
       background: #181825;
       border: 1px solid #45475a;
       border-radius: 4px;
@@ -54,15 +54,15 @@ function injectCSS() {
       display: flex;
       flex-direction: column;
     }
-    .pix-res-list.pix-res-custom {
+    .ltl-res-list.ltl-res-custom {
       flex: 1;
       min-height: 160px;
     }
-    .pix-res-list::-webkit-scrollbar { width: 6px; }
-    .pix-res-list::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
-    .pix-res-list::-webkit-scrollbar-track { background: transparent; }
-    .pix-res-list:focus { outline: none; border-color: var(--ltl-brand); }
-    .pix-res-row {
+    .ltl-res-list::-webkit-scrollbar { width: 6px; }
+    .ltl-res-list::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
+    .ltl-res-list::-webkit-scrollbar-track { background: transparent; }
+    .ltl-res-list:focus { outline: none; border-color: var(--ltl-brand); }
+    .ltl-res-row {
       flex: 0 0 28px;
       box-sizing: border-box;
       padding: 4px 8px;
@@ -76,37 +76,37 @@ function injectCSS() {
       font-family: ui-monospace, monospace;
       color: #bac2de;
     }
-    .pix-res-row:last-child { border-bottom: none; }
-    .pix-res-row.active {
+    .ltl-res-row:last-child { border-bottom: none; }
+    .ltl-res-row.active {
       background: rgba(137, 180, 250, 0.15);
       color: var(--ltl-brand);
       font-weight: 600;
     }
-    .pix-res-row.empty {
+    .ltl-res-row.empty {
       cursor: default;
       color: #313244;
     }
-    .pix-res-custom {
+    .ltl-res-custom {
       padding: 12px 10px;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-    .pix-res-custom-row {
+    .ltl-res-custom-row {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       gap: 6px;
       align-items: end;
     }
-    .pix-res-custom-field { display: flex; flex-direction: column; gap: 3px; }
-    .pix-res-custom-field label {
+    .ltl-res-custom-field { display: flex; flex-direction: column; gap: 3px; }
+    .ltl-res-custom-field label {
       font-size: 9px;
       color: #6c7086;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       text-align: center;
     }
-    .pix-res-custom-field input {
+    .ltl-res-custom-field input {
       background: #1e1e2e;
       border: 1px solid #45475a;
       border-radius: 4px;
@@ -119,11 +119,11 @@ function injectCSS() {
       box-sizing: border-box;
       width: 100%;
     }
-    .pix-res-custom-field input:focus {
+    .ltl-res-custom-field input:focus {
       outline: none;
       border-color: var(--ltl-brand);
     }
-    .pix-res-swap {
+    .ltl-res-swap {
       width: 32px;
       height: 32px;
       background: #1e1e2e;
@@ -135,7 +135,7 @@ function injectCSS() {
       position: relative;
       display: inline-block;
     }
-    .pix-res-swap::before {
+    .ltl-res-swap::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -144,8 +144,8 @@ function injectCSS() {
               mask: url("/linuxtechlab/assets/icons/ui/swap.svg") center / 16px 16px no-repeat;
       pointer-events: none;
     }
-    .pix-res-swap:hover { color: var(--ltl-brand); border-color: var(--ltl-brand); }
-    .pix-res-readout {
+    .ltl-res-swap:hover { color: var(--ltl-brand); border-color: var(--ltl-brand); }
+    .ltl-res-readout {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -154,8 +154,8 @@ function injectCSS() {
       font-size: 10px;
       color: #6c7086;
     }
-    .pix-res-readout .accent { color: var(--ltl-brand); }
-    .pix-res-preview {
+    .ltl-res-readout .accent { color: var(--ltl-brand); }
+    .ltl-res-preview {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -165,24 +165,24 @@ function injectCSS() {
       padding-top: 4px;
       min-height: 0;
     }
-    .pix-res-preview-rect {
+    .ltl-res-preview-rect {
       background: rgba(137, 180, 250, 0.15);
       border: 1px solid var(--ltl-brand);
       border-radius: 2px;
       transition: width 0.15s ease, height 0.15s ease;
     }
-    .pix-res-preview-label {
+    .ltl-res-preview-label {
       font-family: ui-monospace, monospace;
       font-size: 10px;
       color: #6c7086;
     }
-    .pix-res-preview-label .accent { color: var(--ltl-brand); }
-    .pix-res-snap-group {
+    .ltl-res-preview-label .accent { color: var(--ltl-brand); }
+    .ltl-res-snap-group {
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
-    .pix-res-snap-icon {
+    .ltl-res-snap-icon {
       display: inline-block;
       width: 11px;
       height: 11px;
@@ -191,11 +191,11 @@ function injectCSS() {
               mask: url("/linuxtechlab/assets/icons/ui/magnet.svg") center / 11px 11px no-repeat;
       pointer-events: none;
     }
-    .pix-res-snap-btns {
+    .ltl-res-snap-btns {
       display: inline-flex;
       gap: 2px;
     }
-    .pix-res-snap-btn {
+    .ltl-res-snap-btn {
       background: #181825;
       border: 1px solid #45475a;
       border-radius: 3px;
@@ -207,8 +207,8 @@ function injectCSS() {
       font-family: ui-monospace, monospace;
       line-height: 1;
     }
-    .pix-res-snap-btn:hover { color: #cdd6f4; border-color: #6c7086; }
-    .pix-res-snap-btn.active {
+    .ltl-res-snap-btn:hover { color: #cdd6f4; border-color: #6c7086; }
+    .ltl-res-snap-btn.active {
       background: var(--ltl-brand);
       color: #1e1e2e;
       border-color: var(--ltl-brand);
@@ -218,22 +218,22 @@ function injectCSS() {
        bottom: (1) ratio inputs (W:H typed once), (2) quick-pick width chips
        (S/M/L/XL), (3) W and H math-aware inputs side-by-side (edit either,
        counterpart auto-computes from ratio), (4) aspect preview, (5) footer
-       (snap picker + ratio·MP). Reuses .pix-res-custom-* layout for fields —
+       (snap picker + ratio·MP). Reuses .ltl-res-custom-* layout for fields —
        the wrap element gets both classes so it inherits the custom-mode shell
        (padding, gap, flex column) without needing a duplicate rule here. */
-    .pix-res-ratio-input-row {
+    .ltl-res-ratio-input-row {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
     }
-    .pix-res-ratio-input-row .pix-res-ratio-label {
+    .ltl-res-ratio-input-row .ltl-res-ratio-label {
       font-size: 9px;
       color: #888;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .pix-res-ratio-input-row input {
+    .ltl-res-ratio-input-row input {
       width: 42px;
       background: #2a2a2a;
       border: 1px solid #444;
@@ -246,8 +246,8 @@ function injectCSS() {
       font-family: ui-monospace, monospace;
       box-sizing: border-box;
     }
-    .pix-res-ratio-input-row input:focus { outline: none; border-color: var(--ltl-brand); }
-    .pix-res-ratio-swap {
+    .ltl-res-ratio-input-row input:focus { outline: none; border-color: var(--ltl-brand); }
+    .ltl-res-ratio-swap {
       width: 22px;
       height: 22px;
       background: #2a2a2a;
@@ -259,23 +259,23 @@ function injectCSS() {
       padding: 0;
       display: inline-block;
     }
-    .pix-res-ratio-swap::before {
+    .ltl-res-ratio-swap::before {
       content: "";
       position: absolute;
       inset: 0;
       background-color: currentColor;
-      -webkit-mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
-              mask: url("/pixaroma/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
+      -webkit-mask: url("/linuxtechlab/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
+              mask: url("/linuxtechlab/assets/icons/ui/swap.svg") center / 12px 12px no-repeat;
       pointer-events: none;
     }
-    .pix-res-ratio-swap:hover { color: var(--ltl-brand); border-color: var(--ltl-brand); }
+    .ltl-res-ratio-swap:hover { color: var(--ltl-brand); border-color: var(--ltl-brand); }
     /* Quick-pick width chips — 4 evenly-spaced buttons under the ratio row. */
-    .pix-res-quickpicks {
+    .ltl-res-quickpicks {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 4px;
     }
-    .pix-res-quickpick {
+    .ltl-res-quickpick {
       background: #1d1d1d;
       border: 1px solid #444;
       border-radius: 3px;
@@ -286,8 +286,8 @@ function injectCSS() {
       cursor: pointer;
       transition: background 0.08s, border-color 0.08s;
     }
-    .pix-res-quickpick:hover { border-color: #666; color: #fff; }
-    .pix-res-quickpick.active {
+    .ltl-res-quickpick:hover { border-color: #666; color: #fff; }
+    .ltl-res-quickpick.active {
       background: var(--ltl-brand);
       color: #fff;
       border-color: var(--ltl-brand);
@@ -664,10 +664,10 @@ function safeMathEval(str) {
 
 function renderChipGrid(state) {
   const wrap = document.createElement("div");
-  wrap.className = "pix-res-chips";
+  wrap.className = "ltl-res-chips";
   for (const c of CHIPS) {
     const el = document.createElement("div");
-    el.className = "pix-res-chip" + (c.spanHalf ? " span-half" : "");
+    el.className = "ltl-res-chip" + (c.spanHalf ? " span-half" : "");
     el.textContent = c.label;
     el.dataset.chipId = c.id;
     const isActive =
@@ -682,9 +682,9 @@ function renderChipGrid(state) {
 
 function renderSizeList(state) {
   const wrap = document.createElement("div");
-  wrap.className = "pix-res-list";
+  wrap.className = "ltl-res-list";
   // Make the list focusable so ArrowUp/Down/Home/End change the active row.
-  // Custom mode renders its own .pix-res-list (with .pix-res-custom) and
+  // Custom mode renders its own .ltl-res-list (with .ltl-res-custom) and
   // doesn't need this — its W/H inputs own keyboard input.
   wrap.tabIndex = 0;
   if (state.mode !== "preset") return wrap; // Custom mode handled in Task 5
@@ -692,7 +692,7 @@ function renderSizeList(state) {
   // Render 8 rows; pad with .empty rows if the ratio has fewer than 8
   for (let i = 0; i < 8; i++) {
     const row = document.createElement("div");
-    row.className = "pix-res-row";
+    row.className = "ltl-res-row";
     if (i >= sizes.length) {
       row.classList.add("empty");
       row.textContent = "";
@@ -711,10 +711,10 @@ function renderSizeList(state) {
 
 function renderCustomPanel(node, state) {
   const wrap = document.createElement("div");
-  wrap.className = "pix-res-list pix-res-custom";
+  wrap.className = "ltl-res-list ltl-res-custom";
 
   const row = document.createElement("div");
-  row.className = "pix-res-custom-row";
+  row.className = "ltl-res-custom-row";
 
   // Inputs are `type="text"` (not `number`) so users can type math expressions
   // like `1024+128` or `512*2`. We evaluate via safeMathEval on commit and on
@@ -722,7 +722,7 @@ function renderCustomPanel(node, state) {
   // keypads numeric; the visible spinner buttons are gone but Up/Down arrows
   // step by snap (replacing the native HTML5 number-input stepper).
   const wField = document.createElement("div");
-  wField.className = "pix-res-custom-field";
+  wField.className = "ltl-res-custom-field";
   const wLabel = document.createElement("label");
   wLabel.textContent = "Width";
   const wInput = document.createElement("input");
@@ -734,7 +734,7 @@ function renderCustomPanel(node, state) {
   wInput.value = String(state.w);
 
   const hField = document.createElement("div");
-  hField.className = "pix-res-custom-field";
+  hField.className = "ltl-res-custom-field";
   const hLabel = document.createElement("label");
   hLabel.textContent = "Height";
   const hInput = document.createElement("input");
@@ -750,7 +750,7 @@ function renderCustomPanel(node, state) {
 
   const swap = document.createElement("button");
   swap.type = "button";
-  swap.className = "pix-res-swap";
+  swap.className = "ltl-res-swap";
   swap.title = "Swap Width ↔ Height";
   swap.setAttribute("aria-label", "Swap Width and Height");
 
@@ -758,22 +758,22 @@ function renderCustomPanel(node, state) {
   row.append(wField, swap, hField);
 
   const readout = document.createElement("div");
-  readout.className = "pix-res-readout";
+  readout.className = "ltl-res-readout";
 
   // Snap-step picker: magnet icon + 4 small chip buttons (8/16/32/64).
   // Click to set; the active value is highlighted in brand blue.
   const snapGroup = document.createElement("div");
-  snapGroup.className = "pix-res-snap-group";
+  snapGroup.className = "ltl-res-snap-group";
   snapGroup.title = "Snap step (also drives Up/Down arrow nudge)";
   const snapIcon = document.createElement("span");
-  snapIcon.className = "pix-res-snap-icon";
+  snapIcon.className = "ltl-res-snap-icon";
   const snapBtns = document.createElement("div");
-  snapBtns.className = "pix-res-snap-btns";
+  snapBtns.className = "ltl-res-snap-btns";
   const snapBtnEls = [];
   for (const v of SNAP_OPTIONS) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
+    btn.className = "ltl-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
     btn.textContent = String(v);
     btn.dataset.v = String(v);
     btn.addEventListener("click", (e) => {
@@ -804,11 +804,11 @@ function renderCustomPanel(node, state) {
   // Aspect-ratio visual preview — orange-tinted rectangle scaled to the
   // chosen W:H, with the exact W × H labeled below it.
   const preview = document.createElement("div");
-  preview.className = "pix-res-preview";
+  preview.className = "ltl-res-preview";
   const previewRect = document.createElement("div");
-  previewRect.className = "pix-res-preview-rect";
+  previewRect.className = "ltl-res-preview-rect";
   const previewLabel = document.createElement("div");
-  previewLabel.className = "pix-res-preview-label";
+  previewLabel.className = "ltl-res-preview-label";
   preview.append(previewRect, previewLabel);
 
   // Maximum bounding box for the rectangle. Tuned so a 1:1 fits comfortably
@@ -928,14 +928,14 @@ function renderCustomRatioPanel(node, state) {
   // (math expressions allowed). The other dimension auto-computes from the
   // ratio and is snapped to /8/16/32/64 for AI alignment.
   const wrap = document.createElement("div");
-  wrap.className = "pix-res-list pix-res-custom pix-res-ratio";
+  wrap.className = "ltl-res-list ltl-res-custom ltl-res-ratio";
 
   // ── ratio inputs row (W : H, swap between) ──────────────────
   const ratioRow = document.createElement("div");
-  ratioRow.className = "pix-res-ratio-input-row";
+  ratioRow.className = "ltl-res-ratio-input-row";
 
   const lbl = document.createElement("span");
-  lbl.className = "pix-res-ratio-label";
+  lbl.className = "ltl-res-ratio-label";
   lbl.textContent = "Ratio";
 
   const rwInput = document.createElement("input");
@@ -956,7 +956,7 @@ function renderCustomRatioPanel(node, state) {
 
   const ratioSwap = document.createElement("button");
   ratioSwap.type = "button";
-  ratioSwap.className = "pix-res-ratio-swap";
+  ratioSwap.className = "ltl-res-ratio-swap";
   ratioSwap.title = "Swap ratio W ↔ H";
   ratioSwap.setAttribute("aria-label", "Swap ratio width and height");
 
@@ -964,12 +964,12 @@ function renderCustomRatioPanel(node, state) {
 
   // ── quick-pick width chips ──────────────────────────────────
   const quickRow = document.createElement("div");
-  quickRow.className = "pix-res-quickpicks";
+  quickRow.className = "ltl-res-quickpicks";
   const quickBtnEls = [];
   for (const w of QUICK_PICK_WIDTHS) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "pix-res-quickpick";
+    btn.className = "ltl-res-quickpick";
     btn.textContent = String(w);
     btn.dataset.w = String(w);
     quickRow.appendChild(btn);
@@ -979,11 +979,11 @@ function renderCustomRatioPanel(node, state) {
   // ── W and H math-aware inputs (side-by-side, no swap between — ratio swap
   //    above already handles orientation flip) ────────────────────────────
   const fieldsRow = document.createElement("div");
-  fieldsRow.className = "pix-res-custom-row";
+  fieldsRow.className = "ltl-res-custom-row";
   fieldsRow.style.gridTemplateColumns = "1fr 1fr"; // override 1fr auto 1fr (no swap col)
 
   const wField = document.createElement("div");
-  wField.className = "pix-res-custom-field";
+  wField.className = "ltl-res-custom-field";
   const wLabel = document.createElement("label");
   wLabel.textContent = "Width";
   const wInput = document.createElement("input");
@@ -996,7 +996,7 @@ function renderCustomRatioPanel(node, state) {
   wField.append(wLabel, wInput);
 
   const hField = document.createElement("div");
-  hField.className = "pix-res-custom-field";
+  hField.className = "ltl-res-custom-field";
   const hLabel = document.createElement("label");
   hLabel.textContent = "Height";
   const hInput = document.createElement("input");
@@ -1012,20 +1012,20 @@ function renderCustomRatioPanel(node, state) {
 
   // ── readout (snap picker + ratio·MP) + aspect preview ─────────
   const readout = document.createElement("div");
-  readout.className = "pix-res-readout";
+  readout.className = "ltl-res-readout";
 
   const snapGroup = document.createElement("div");
-  snapGroup.className = "pix-res-snap-group";
+  snapGroup.className = "ltl-res-snap-group";
   snapGroup.title = "Snap step (also drives Up/Down arrow nudge)";
   const snapIcon = document.createElement("span");
-  snapIcon.className = "pix-res-snap-icon";
+  snapIcon.className = "ltl-res-snap-icon";
   const snapBtns = document.createElement("div");
-  snapBtns.className = "pix-res-snap-btns";
+  snapBtns.className = "ltl-res-snap-btns";
   const snapBtnEls = [];
   for (const v of SNAP_OPTIONS) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "pix-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
+    btn.className = "ltl-res-snap-btn" + (v === (state.snap || 16) ? " active" : "");
     btn.textContent = String(v);
     btn.dataset.v = String(v);
     btn.addEventListener("click", (e) => {
@@ -1048,11 +1048,11 @@ function renderCustomRatioPanel(node, state) {
   readout.append(snapGroup, ratioMP);
 
   const preview = document.createElement("div");
-  preview.className = "pix-res-preview";
+  preview.className = "ltl-res-preview";
   const previewRect = document.createElement("div");
-  previewRect.className = "pix-res-preview-rect";
+  previewRect.className = "ltl-res-preview-rect";
   const previewLabel = document.createElement("div");
-  previewLabel.className = "pix-res-preview-label";
+  previewLabel.className = "ltl-res-preview-label";
   preview.append(previewRect, previewLabel);
 
   const PREVIEW_MAX_W = 90;
@@ -1179,7 +1179,7 @@ function renderCustomRatioPanel(node, state) {
 
   // ── quick-pick chip clicks set W and recompute H ─────────────────
   quickRow.addEventListener("click", (e) => {
-    const btn = e.target.closest(".pix-res-quickpick");
+    const btn = e.target.closest(".ltl-res-quickpick");
     if (!btn) return;
     e.stopPropagation();
     commitFromW(parseInt(btn.dataset.w, 10));
@@ -1238,14 +1238,14 @@ function renderUI(node) {
     // Vue may have detached the original element. Re-find via the DOM widget.
     const w = (node.widgets || []).find((x) => x.name === "resolution_ui");
     if (w?.element?.isConnected) {
-      const found = w.element.querySelector(".pix-res-root");
+      const found = w.element.querySelector(".ltl-res-root");
       if (found) {
         node._pixResRoot = found;
         root = found;
       } else {
         // Container exists but our root is gone — append a new one.
         root = document.createElement("div");
-        root.className = "pix-res-root";
+        root.className = "ltl-res-root";
         w.element.appendChild(root);
         node._pixResRoot = root;
       }
@@ -1302,7 +1302,7 @@ function setupResolutionNode(node) {
   // the initial render (see queueMicrotask at the bottom) so configure has
   // a chance to land the saved value first.
   const root = document.createElement("div");
-  root.className = "pix-res-root";
+  root.className = "ltl-res-root";
 
   // DOM widget gets a constant slot of space — chrome (titlebar + ports +
   // margins) takes the rest. Both callbacks return the same value so the
@@ -1318,7 +1318,7 @@ function setupResolutionNode(node) {
   });
 
   const _onClick = (e) => {
-    const chip = e.target.closest(".pix-res-chip");
+    const chip = e.target.closest(".ltl-res-chip");
     if (chip) {
       const id = chip.dataset.chipId;
       const cur = readState(node);
@@ -1348,7 +1348,7 @@ function setupResolutionNode(node) {
       renderUI(node);
       return;
     }
-    const row = e.target.closest(".pix-res-row");
+    const row = e.target.closest(".ltl-res-row");
     if (row && !row.classList.contains("empty") && row.dataset.w) {
       const w = parseInt(row.dataset.w, 10);
       const h = parseInt(row.dataset.h, 10);
@@ -1358,9 +1358,9 @@ function setupResolutionNode(node) {
       // Focus the freshly-rendered list so the next ArrowUp/Down keystroke is
       // captured by the list — without this, the click moves focus to the
       // overlay/canvas and arrows don't reach us.
-      const list = root.querySelector(".pix-res-list:not(.pix-res-custom)");
+      const list = root.querySelector(".ltl-res-list:not(.ltl-res-custom)");
       list?.focus();
-      list?.querySelector(".pix-res-row.active")?.scrollIntoView({ block: "nearest" });
+      list?.querySelector(".ltl-res-row.active")?.scrollIntoView({ block: "nearest" });
     }
   };
 
@@ -1371,8 +1371,8 @@ function setupResolutionNode(node) {
   // own per-input arrow handlers (snap-step), not list-row navigation.
   const _onKeydown = (e) => {
     if (e.target instanceof HTMLInputElement) return;
-    const list = e.target.closest(".pix-res-list");
-    if (!list || list.classList.contains("pix-res-custom")) return;
+    const list = e.target.closest(".ltl-res-list");
+    if (!list || list.classList.contains("ltl-res-custom")) return;
     if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
     const cur = readState(node);
     if (cur.mode !== "preset") return;
@@ -1390,9 +1390,9 @@ function setupResolutionNode(node) {
     if (w === cur.w && h === cur.h) return;
     writeState(node, { ...cur, w, h });
     renderUI(node);
-    const newList = root.querySelector(".pix-res-list:not(.pix-res-custom)");
+    const newList = root.querySelector(".ltl-res-list:not(.ltl-res-custom)");
     newList?.focus();
-    newList?.querySelector(".pix-res-row.active")?.scrollIntoView({ block: "nearest" });
+    newList?.querySelector(".ltl-res-row.active")?.scrollIntoView({ block: "nearest" });
   };
 
   // Attach to both root and the widget container so a Vue rebuild still routes events.
