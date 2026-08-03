@@ -3,6 +3,7 @@
 // ╚═══════════════════════════════════════════════════════════════╝
 
 import "../theme/node_colors.mjs";
+import "../theme/color_labels.mjs";
 import "../theme/settings.mjs";
 
 export {
