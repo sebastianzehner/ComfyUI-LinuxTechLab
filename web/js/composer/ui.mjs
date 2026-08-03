@@ -46,13 +46,13 @@ function injectComposerStyles() {
   s.id = COMPOSER_STYLE_ID;
   s.textContent = `
         /* Layer styles now provided by the editor framework (pxf-layer-*) */
-        .pix-canvas-container { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1); transform-origin: center center; box-shadow: 0 10px 50px rgba(0,0,0,0.8); }
-        .pix-canvas { width: 100%; height: 100%; display: block; background-color: #1e1e1e; position: relative; z-index: 1; }
+        .ltl-canvas-container { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1); transform-origin: center center; box-shadow: 0 10px 50px rgba(0,0,0,0.8); }
+        .ltl-canvas { width: 100%; height: 100%; display: block; background-color: #1e1e1e; position: relative; z-index: 1; }
         /* align bar now in titlebar center */
         /* zoom controls now provided by editor framework */
-        .pix-view-btn { background: transparent; border: none; color: white; cursor: pointer; font-size: 16px; padding: 5px 10px; border-radius: 4px; transition: 0.2s; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .pix-view-btn:hover { background: #3a3d40; color: #f66744; }
-        .pix-view-btn:disabled { opacity: 0.3 !important; cursor: not-allowed; }
+        .ltl-view-btn { background: transparent; border: none; color: white; cursor: pointer; font-size: 16px; padding: 5px 10px; border-radius: 4px; transition: 0.2s; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .ltl-view-btn:hover { background: #3a3d40; color: #f66744; }
+        .ltl-view-btn:disabled { opacity: 0.3 !important; cursor: not-allowed; }
         .pxf-workspace.panning, .pxf-workspace.panning * { cursor: grabbing !important; }
     `;
   document.head.appendChild(s);
@@ -772,11 +772,11 @@ export class LinuxTechLabUI {
     // =====================================================================
     core.workspace = layout.workspace;
     core.canvasContainer = document.createElement("div");
-    core.canvasContainer.className = "pix-canvas-container";
+    core.canvasContainer.className = "ltl-canvas-container";
     core.canvasContainer.style.width = core.docWidth + "px";
     core.canvasContainer.style.height = core.docHeight + "px";
     core.canvas = document.createElement("canvas");
-    core.canvas.className = "pix-canvas";
+    core.canvas.className = "ltl-canvas";
     core.canvas.width = core.docWidth;
     core.canvas.height = core.docHeight;
     core.ctx = core.canvas.getContext("2d");
@@ -786,7 +786,7 @@ export class LinuxTechLabUI {
     core.selPad = 500;
     // Hit-area div captures mouse events in the extended area (behind canvas, in front of workspace)
     core.selHitArea = document.createElement("div");
-    core.selHitArea.className = "pix-sel-hitarea";
+    core.selHitArea.className = "ltl-sel-hitarea";
     core.selHitArea.style.cssText = `position:absolute;left:${-core.selPad}px;top:${-core.selPad}px;width:${core.docWidth + 2 * core.selPad}px;height:${core.docHeight + 2 * core.selPad}px;z-index:0;`;
     core.canvasContainer.insertBefore(core.selHitArea, core.canvas);
     // Overlay canvas renders selection UI (no pointer events — clicks go to hitarea/canvas)
