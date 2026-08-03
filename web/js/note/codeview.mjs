@@ -32,7 +32,7 @@ function isTopLevelBlockNode(el) {
 //   "attr-name"   – attribute name
 //   "attr-equals" – literal "="
 //   "attr-value"  – quoted attribute value (quotes included)
-//   "pix-class"   – a single ltl-note-* class token inside a class=""
+//   "ltl-class"   – a single ltl-note-* class token inside a class=""
 //                    value — split out so it can be bold-orange
 //   "text"        – plain text content between tags
 //   "entity"      – "&nbsp;", "&amp;", …
@@ -133,7 +133,7 @@ function emitAttrValue(out, name, raw) {
   let pm;
   while ((pm = partRe.exec(inner)) !== null) {
     if (pm[1]) out.push({ type: "whitespace", text: pm[1] });
-    else if (pm[2]) out.push({ type: "pix-class", text: pm[2] });
+    else if (pm[2]) out.push({ type: "ltl-class", text: pm[2] });
     else if (pm[3]) out.push({ type: "attr-value", text: pm[3] });
   }
   if (quote) out.push({ type: "attr-value", text: quote });

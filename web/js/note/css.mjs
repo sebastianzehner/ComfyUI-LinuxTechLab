@@ -393,7 +393,7 @@ button.ltl-note-editbtn:not(:disabled) {
 .ltl-note-hl .tk-attr-name   { color: #74c7ec; }
 .ltl-note-hl .tk-attr-equals { color: #45475a; }
 .ltl-note-hl .tk-attr-value  { color: var(--ltl-brand); }
-.ltl-note-hl .tk-pix-class   { color: var(--ltl-brand); font-weight: 700; }
+.ltl-note-hl .tk-ltl-class   { color: var(--ltl-brand); font-weight: 700; }
 .ltl-note-hl .tk-text        { color: #cdd6f4; }
 .ltl-note-hl .tk-entity      { color: #6c7086; font-style: italic; }
 .ltl-note-hl .tk-whitespace  { }
