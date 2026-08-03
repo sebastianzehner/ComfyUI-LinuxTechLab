@@ -87,43 +87,43 @@ export class LabelEditor {
       return e;
     };
     const lbl = (text) => {
-      const l = el("div", "pix-lbl-lbl");
+      const l = el("div", "ltl-lbl-lbl");
       l.textContent = text;
       return l;
     };
-    const vsep = () => el("span", "pix-lbl-vsep");
+    const vsep = () => el("span", "ltl-lbl-vsep");
 
-    const overlay = el("div", "pix-lbl-overlay");
+    const overlay = el("div", "ltl-lbl-overlay");
     overlay.addEventListener("mousedown", (e) => {
       if (e.target === overlay) this.close();
     });
-    const panel = el("div", "pix-lbl-panel");
+    const panel = el("div", "ltl-lbl-panel");
     overlay.appendChild(panel);
 
     // ── Header
-    const header = el("div", "pix-lbl-header");
-    const titleSpan = el("span", "pix-lbl-title");
+    const header = el("div", "ltl-lbl-header");
+    const titleSpan = el("span", "ltl-lbl-title");
     const logo = document.createElement("img");
     logo.src = getLogoSVG(getBrand(), getBrandBackground(), 18);
-    logo.className = "pix-lbl-title-logo";
+    logo.className = "ltl-lbl-title-logo";
     titleSpan.appendChild(logo);
     titleSpan.append(" Label Editor ");
-    const brandSpan = el("span", "pix-lbl-title-brand");
+    const brandSpan = el("span", "ltl-lbl-title-brand");
     brandSpan.textContent = "LinuxTechLab";
     titleSpan.appendChild(brandSpan);
     header.appendChild(titleSpan);
-    const closeBtn = el("button", "pix-lbl-close");
+    const closeBtn = el("button", "ltl-lbl-close");
     closeBtn.textContent = "\u00d7";
     closeBtn.onclick = () => this.close();
     header.appendChild(closeBtn);
     panel.appendChild(header);
 
     // ── Body
-    const body = el("div", "pix-lbl-body");
+    const body = el("div", "ltl-lbl-body");
     panel.appendChild(body);
 
     // ── Text
-    const textField = el("div", "pix-lbl-field");
+    const textField = el("div", "ltl-lbl-field");
     textField.appendChild(lbl("Text"));
     const ta = document.createElement("textarea");
     ta.value = c.text;
@@ -138,7 +138,7 @@ export class LabelEditor {
     // ── Preview
     const prevSection = el("div");
     prevSection.appendChild(lbl("Preview"));
-    const prevWrap = el("div", "pix-lbl-preview");
+    const prevWrap = el("div", "ltl-lbl-preview");
     this._previewCanvas = document.createElement("canvas");
     prevWrap.appendChild(this._previewCanvas);
     prevSection.appendChild(prevWrap);
@@ -147,11 +147,11 @@ export class LabelEditor {
     // ── Typography: font buttons + Bold + align in one row, size below
     const typoSection = el("div");
     typoSection.appendChild(lbl("Typography"));
-    const fontBtns = el("div", "pix-lbl-btns");
+    const fontBtns = el("div", "ltl-lbl-btns");
 
     const fontBtnEls = [];
     for (let i = 0; i < FONT_CHOICES.length; i++) {
-      const btn = el("button", "pix-lbl-btn");
+      const btn = el("button", "ltl-lbl-btn");
       btn.textContent = FONT_SHORT[i];
       btn.style.fontFamily = FONT_CHOICES[i];
       if (c.fontFamily === FONT_CHOICES[i]) btn.classList.add("active");
@@ -167,7 +167,7 @@ export class LabelEditor {
     fontBtns.appendChild(vsep());
 
     // Bold
-    const boldBtn = el("button", "pix-lbl-btn pix-lbl-bold");
+    const boldBtn = el("button", "ltl-lbl-btn ltl-lbl-bold");
     boldBtn.textContent = "B";
     if (c.fontWeight === "bold") boldBtn.classList.add("active");
     boldBtn.onclick = () => {
@@ -182,9 +182,9 @@ export class LabelEditor {
     const aligns = ["left", "center", "right"];
     const alignBtnEls = [];
     for (const a of aligns) {
-      const btn = el("button", `pix-lbl-btn pix-lbl-align-${a}`);
+      const btn = el("button", `ltl-lbl-btn ltl-lbl-align-${a}`);
       btn.title = a;
-      const icon = el("div", "pix-lbl-align-icon");
+      const icon = el("div", "ltl-lbl-align-icon");
       icon.innerHTML = "<span></span><span></span><span></span>";
       btn.appendChild(icon);
       if (c.textAlign === a) btn.classList.add("active");
@@ -201,7 +201,7 @@ export class LabelEditor {
     typoSection.appendChild(fontBtns);
 
     // Size on its own row (label + slider + value inline)
-    const sizeRow = el("div", "pix-lbl-range-wrap");
+    const sizeRow = el("div", "ltl-lbl-range-wrap");
     sizeRow.style.marginTop = "8px";
     const sizeLbl = el("span");
     sizeLbl.textContent = "Font Size";
@@ -218,7 +218,7 @@ export class LabelEditor {
     sizeInput.min = 8;
     sizeInput.max = 256;
     sizeInput.value = c.fontSize;
-    sizeInput.className = "pix-lbl-num";
+    sizeInput.className = "ltl-lbl-num";
     sizeRange.addEventListener("input", () => {
       c.fontSize = Number(sizeRange.value);
       sizeInput.value = c.fontSize;
@@ -239,16 +239,16 @@ export class LabelEditor {
     // ── Colors (2-column grid)
     const colorSection = el("div");
     colorSection.appendChild(lbl("Colors"));
-    const colorGrid = el("div", "pix-lbl-color-grid");
+    const colorGrid = el("div", "ltl-lbl-color-grid");
 
     // Background column
-    const bgCol = el("div", "pix-lbl-color-col");
-    const bgColLbl = el("div", "pix-lbl-lbl");
+    const bgCol = el("div", "ltl-lbl-color-col");
+    const bgColLbl = el("div", "ltl-lbl-lbl");
     bgColLbl.textContent = "Background";
     bgColLbl.style.color = "#45475a";
     bgCol.appendChild(bgColLbl);
-    const bgSwatches = el("div", "pix-lbl-swatches");
-    const transpSw = el("div", "pix-lbl-swatch-transp");
+    const bgSwatches = el("div", "ltl-lbl-swatches");
+    const transpSw = el("div", "ltl-lbl-swatch-transp");
     transpSw.title = "Transparent";
     if (c.backgroundColor === "transparent") transpSw.classList.add("active");
     transpSw.onclick = () => {
@@ -256,7 +256,7 @@ export class LabelEditor {
       bgPicker.disabled = true;
       bgHex.disabled = true;
       bgSwatches
-        .querySelectorAll(".pix-lbl-swatch,.pix-lbl-swatch-transp")
+        .querySelectorAll(".ltl-lbl-swatch,.ltl-lbl-swatch-transp")
         .forEach((s) => s.classList.remove("active"));
       transpSw.classList.add("active");
       this._updatePreview();
@@ -273,14 +273,14 @@ export class LabelEditor {
       this._updatePreview();
     });
     bgCol.appendChild(bgSwatches);
-    const bgRow = el("div", "pix-lbl-color-row");
+    const bgRow = el("div", "ltl-lbl-color-row");
     const bgPicker = document.createElement("input");
     bgPicker.type = "color";
     bgPicker.value = c.backgroundColor === "transparent" ? "#313244" : c.backgroundColor;
     bgPicker.disabled = c.backgroundColor === "transparent";
     const bgHex = document.createElement("input");
     bgHex.type = "text";
-    bgHex.className = "pix-lbl-hex";
+    bgHex.className = "ltl-lbl-hex";
     bgHex.value = c.backgroundColor === "transparent" ? "" : c.backgroundColor;
     bgHex.disabled = c.backgroundColor === "transparent";
     bgHex.placeholder = "transparent";
@@ -307,12 +307,12 @@ export class LabelEditor {
     colorGrid.appendChild(bgCol);
 
     // Text Color column
-    const tcCol = el("div", "pix-lbl-color-col");
-    const tcColLbl = el("div", "pix-lbl-lbl");
+    const tcCol = el("div", "ltl-lbl-color-col");
+    const tcColLbl = el("div", "ltl-lbl-lbl");
     tcColLbl.textContent = "Text";
     tcColLbl.style.color = "#45475a";
     tcCol.appendChild(tcColLbl);
-    const tcSwatches = el("div", "pix-lbl-swatches");
+    const tcSwatches = el("div", "ltl-lbl-swatches");
     this._buildSwatches(tcSwatches, TEXT_SWATCHES, c.fontColor, (color, swEls) => {
       c.fontColor = color;
       tcPicker.value = color;
@@ -321,13 +321,13 @@ export class LabelEditor {
       this._updatePreview();
     });
     tcCol.appendChild(tcSwatches);
-    const tcRow = el("div", "pix-lbl-color-row");
+    const tcRow = el("div", "ltl-lbl-color-row");
     const tcPicker = document.createElement("input");
     tcPicker.type = "color";
     tcPicker.value = c.fontColor;
     const tcHex = document.createElement("input");
     tcHex.type = "text";
-    tcHex.className = "pix-lbl-hex";
+    tcHex.className = "ltl-lbl-hex";
     tcHex.value = c.fontColor;
     tcPicker.addEventListener("input", () => {
       c.fontColor = tcPicker.value;
@@ -355,7 +355,7 @@ export class LabelEditor {
     // ── Spacing (2x2 grid)
     const spacingSection = el("div");
     spacingSection.appendChild(lbl("Spacing & Style"));
-    const spacingGrid = el("div", "pix-lbl-spacing-grid");
+    const spacingGrid = el("div", "ltl-lbl-spacing-grid");
     const spacingFields = [
       [
         "Padding",
@@ -400,21 +400,21 @@ export class LabelEditor {
     ];
     for (const [label, val, min, max, step, onChange] of spacingFields) {
       const f = this._rangeField(label, val, min, max, step, onChange);
-      f.className = "pix-lbl-spacing-field";
+      f.className = "ltl-lbl-spacing-field";
       spacingGrid.appendChild(f);
     }
     spacingSection.appendChild(spacingGrid);
     body.appendChild(spacingSection);
 
     // ── Footer
-    const footer = el("div", "pix-lbl-footer");
-    const helpBtn = el("button", "pix-lbl-btn-help");
+    const footer = el("div", "ltl-lbl-footer");
+    const helpBtn = el("button", "ltl-lbl-btn-help");
     helpBtn.textContent = "? Help";
     helpBtn.onclick = () => this._showHelp(panel);
-    const cancelBtn = el("button", "pix-lbl-btn-cancel");
+    const cancelBtn = el("button", "ltl-lbl-btn-cancel");
     cancelBtn.textContent = "Cancel";
     cancelBtn.onclick = () => this.close();
-    const saveBtn = el("button", "pix-lbl-btn-save");
+    const saveBtn = el("button", "ltl-lbl-btn-save");
     saveBtn.textContent = "Save";
     saveBtn.onclick = () => this.save();
     footer.appendChild(helpBtn);
@@ -427,9 +427,9 @@ export class LabelEditor {
 
   // ── Help overlay ─────────────────────────────────────────
   _showHelp(panel) {
-    if (panel.querySelector(".pix-lbl-help-overlay")) return;
+    if (panel.querySelector(".ltl-lbl-help-overlay")) return;
     const help = document.createElement("div");
-    help.className = "pix-lbl-help-overlay";
+    help.className = "ltl-lbl-help-overlay";
     help.innerHTML = `
             <h3>Label LinuxTechLab</h3>
             <p><b>Double-click</b> a label on the canvas to open this editor.</p>
@@ -447,7 +447,7 @@ export class LabelEditor {
             <p style="margin-top:14px;color:#6c7086">LinuxTechLab &mdash; <a href="https://www.youtube.com/@LinuxTechLab" style="color:var(--ltl-brand)">youtube.com/@LinuxTechLab</a></p>
         `;
     const closeBtn = document.createElement("button");
-    closeBtn.className = "pix-lbl-help-close";
+    closeBtn.className = "ltl-lbl-help-close";
     closeBtn.textContent = "\u00d7";
     closeBtn.onclick = () => help.remove();
     help.appendChild(closeBtn);
@@ -459,7 +459,7 @@ export class LabelEditor {
     const swEls = [];
     for (const color of colors) {
       const sw = document.createElement("div");
-      sw.className = "pix-lbl-swatch";
+      sw.className = "ltl-lbl-swatch";
       sw.style.background = color;
       sw.dataset.color = color;
       sw.title = color;
@@ -472,7 +472,7 @@ export class LabelEditor {
   }
 
   _clearSwatchActive(container, activeColor) {
-    container.querySelectorAll(".pix-lbl-swatch,.pix-lbl-swatch-transp").forEach((s) => {
+    container.querySelectorAll(".ltl-lbl-swatch,.ltl-lbl-swatch-transp").forEach((s) => {
       s.classList.toggle("active", s.dataset.color === activeColor);
     });
   }
@@ -480,13 +480,13 @@ export class LabelEditor {
   // ── Range field ──────────────────────────────────────────
   _rangeField(label, val, min, max, step, onChange) {
     const field = document.createElement("div");
-    field.className = "pix-lbl-field";
+    field.className = "ltl-lbl-field";
     const l = document.createElement("div");
-    l.className = "pix-lbl-lbl";
+    l.className = "ltl-lbl-lbl";
     l.textContent = label;
     field.appendChild(l);
     const wrap = document.createElement("div");
-    wrap.className = "pix-lbl-range-wrap";
+    wrap.className = "ltl-lbl-range-wrap";
     const range = document.createElement("input");
     range.type = "range";
     range.min = min;
@@ -494,7 +494,7 @@ export class LabelEditor {
     range.step = step;
     range.value = val;
     const valSpan = document.createElement("span");
-    valSpan.className = "pix-lbl-val";
+    valSpan.className = "ltl-lbl-val";
     valSpan.textContent = Number(val).toFixed(step < 1 ? 2 : 0);
     range.addEventListener("input", () => {
       const v = Number(range.value);
