@@ -8,10 +8,12 @@ from .nodes.crop_video import LinuxTechLabCropVideo
 from .nodes.editor_3d import LinuxTechLab3D
 from .nodes.image_composer import LinuxTechLabImageComposer
 from .nodes.label import LinuxTechLabLabel
+from .nodes.llama_unload import LinuxTechLabLlamaSwapUnload
 from .nodes.math_operator import LinuxTechLabMathOperator
 from .nodes.note import LinuxTechLabNote
 from .nodes.paint import LinuxTechLabPaint
 from .nodes.preview import LinuxTechLabPreview
+from .nodes.prompt_generator import LinuxTechLabPromptGenerator
 from .nodes.resolution import LinuxTechLabResolution
 from .nodes.seed_generator import LinuxTechLabSeedGenerator
 
@@ -21,10 +23,12 @@ V3_NODES = [
     LinuxTechLabCropVideo,
     LinuxTechLabImageComposer,
     LinuxTechLabLabel,
+    LinuxTechLabLlamaSwapUnload,
     LinuxTechLabMathOperator,
     LinuxTechLabNote,
     LinuxTechLabPaint,
     LinuxTechLabPreview,
+    LinuxTechLabPromptGenerator,
     LinuxTechLabResolution,
     LinuxTechLabSeedGenerator,
 ]
