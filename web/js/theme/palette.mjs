@@ -1,8 +1,16 @@
 import { app } from "/scripts/app.js";
 
+// ComfyUI's built-in color-setting widget can persist hex values without
+// a leading "#" — normalize here so callers always get a valid color.
+function normalizeHex(value, fallback) {
+  if (!value) return fallback;
+  return value.startsWith("#") ? value : `#${value}`;
+}
+
 export function getBrand() {
   try {
-    return app.extensionManager?.setting?.get("LinuxTechLab.BrandColor", "#89b4fa") ?? "#89b4fa";
+    const val = app.extensionManager?.setting?.get("LinuxTechLab.BrandColor", "#89b4fa") ?? "#89b4fa";
+    return normalizeHex(val, "#89b4fa");
   } catch {
     return "#89b4fa";
   }
@@ -10,7 +18,8 @@ export function getBrand() {
 
 export function getBrandBackground() {
   try {
-    return app.extensionManager?.setting?.get("LinuxTechLab.BrandBackground", "#1e1e2e") ?? "#1e1e2e";
+    const val = app.extensionManager?.setting?.get("LinuxTechLab.BrandBackground", "#1e1e2e") ?? "#1e1e2e";
+    return normalizeHex(val, "#1e1e2e");
   } catch {
     return "#1e1e2e";
   }
