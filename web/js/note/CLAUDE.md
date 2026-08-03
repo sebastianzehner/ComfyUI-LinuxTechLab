@@ -32,7 +32,7 @@ Detailed patterns for Note LinuxTechLab. Regressing any of these reintroduces sp
 
 7. **Inline errors, not `alert()`** — `alert()` context-switches out of the editor.
 
-8. **Button pill structure** — `renderButtonHTML(v)` wraps pill + folder hint in `<span class="pix-note-btnblock">`. Size hint inside `<a>` as `<span class="pix-note-btnsize">`. Folder hint outside `<a>` as sibling `<span class="pix-note-folderhint">`.
+8. **Button pill structure** — `renderButtonHTML(v)` wraps pill + folder hint in `<span class="ltl-note-btnblock">`. Size hint inside `<a>` as `<span class="ltl-note-btnsize">`. Folder hint outside `<a>` as sibling `<span class="ltl-note-folderhint">`.
 
 9. **Block-insert dialogs: capture the range BEFORE the modal opens** — `saveRange(editArea)` snapshots the cloned range; `insertAtSavedRange` restores it.
 
@@ -52,11 +52,11 @@ Detailed patterns for Note LinuxTechLab. Regressing any of these reintroduces sp
 
 17. **Grid insert bypasses `execCommand("insertHTML")` entirely** — use direct DOM manipulation via `_insertGridBlock` in `blocks.mjs`. Follow this pattern for any new block-level insert.
 
-18. **Block modals live in `document.body`** — overlay close handler must check `hasModal` guard: `document.querySelector(".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop")`.
+18. **Block modals live in `document.body`** — overlay close handler must check `hasModal` guard: `document.querySelector(".ltl-note-blockdlg, .ltl-note-confirm-backdrop, .ltl-note-colorpop")`.
 
 19. **`<a>` clicks inside edit area must be `preventDefault`ed** — install capture-phase click listener in `core.mjs` `open()`.
 
-20. **Inline icons: THREE-file contract** — `server_routes.py` enumerates SVGs, `icons.mjs` injects CSS rules, `sanitize.mjs` allows `pix-note-ic` class + `data-ic` attribute.
+20. **Inline icons: THREE-file contract** — `server_routes.py` enumerates SVGs, `icons.mjs` injects CSS rules, `sanitize.mjs` allows `ltl-note-ic` class + `data-ic` attribute.
 
 21. **Bold uses `queryCommandState("bold")`** — not a B/STRONG tag walk. Handles headings and CSS spans.
 
@@ -68,10 +68,10 @@ Detailed patterns for Note LinuxTechLab. Regressing any of these reintroduces sp
 
 25. **`save()` body lookup must be robust against Vue detachment** — three-step lookup: `_noteBody?.isConnected` → `_noteDOMWrap` → `widgets.find`.
 
-26. **Btn/Ln color split** — two independent pickers: `buttonColor` (drives `--pix-note-btn`) and `lineColor` (drives `--pix-note-line`). Three sync points: `DEFAULT_CFG`, `parseCfg` migration, `node_note.py` widget default.
+26. **Btn/Ln color split** — two independent pickers: `buttonColor` (drives `--ltl-note-btn`) and `lineColor` (drives `--ltl-note-line`). Three sync points: `DEFAULT_CFG`, `parseCfg` migration, `node_note.py` widget default.
 
-27. **Toolbar mask-icons: two classes** — `.pix-note-tbtn-maskicon` (single-layer, `currentColor`) and `.pix-note-tbtn-maskicon-multi` (two-layer: outline=currentColor, drop=tinted). Two-layer icons need `<name>-outline.svg` + `<name>-drop.svg`.
+27. **Toolbar mask-icons: two classes** — `.ltl-note-tbtn-maskicon` (single-layer, `currentColor`) and `.ltl-note-tbtn-maskicon-multi` (two-layer: outline=currentColor, drop=tinted). Two-layer icons need `<name>-outline.svg` + `<name>-drop.svg`.
 
-28. **Color picker icons = last explicit pick, NO selectionchange mirror** — the Clear branch must call `removeProperty("--pix-note-tbtn-tint")`.
+28. **Color picker icons = last explicit pick, NO selectionchange mirror** — the Clear branch must call `removeProperty("--ltl-note-tbtn-tint")`.
 
-29. **Grid table: `pix-note-grid` marker class must be in sanitizer allowlist** — plus five table tags. `codeview.mjs` `TOP_LEVEL_BLOCK_TAGS` must include `"table"`. Tab intercept in `_keyBlock` for cell navigation.
+29. **Grid table: `ltl-note-grid` marker class must be in sanitizer allowlist** — plus five table tags. `codeview.mjs` `TOP_LEVEL_BLOCK_TAGS` must include `"table"`. Tab intercept in `_keyBlock` for cell navigation.

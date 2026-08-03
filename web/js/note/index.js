@@ -91,7 +91,7 @@ function setupNote(node) {
     // both fire on workflow reload), so this is always a fresh install.
     const wrap = createNoteDOMWidget(node);
     node._noteDOMWrap = wrap;
-    node._noteBody = wrap.querySelector(".pix-note-body");
+    node._noteBody = wrap.querySelector(".ltl-note-body");
     attachEditButton(wrap, () => openEditor(node));
     node.addDOMWidget("note_dom", "custom", wrap, {
       serialize: false,
@@ -138,11 +138,11 @@ app.registerExtension({
       this._noteCfg = parseCfg(this);
       let body = this._noteBody?.isConnected ? this._noteBody : null;
       if (!body && this._noteDOMWrap?.isConnected) {
-        body = this._noteDOMWrap.querySelector(".pix-note-body");
+        body = this._noteDOMWrap.querySelector(".ltl-note-body");
       }
       if (!body) {
         const w = this.widgets?.find((x) => x.name === "note_dom");
-        body = w?.element?.querySelector(".pix-note-body");
+        body = w?.element?.querySelector(".ltl-note-body");
       }
       if (body) {
         this._noteBody = body;

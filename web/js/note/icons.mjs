@@ -53,7 +53,7 @@ export async function ensureIcons() {
         // empty folder DOES cache [] (fast path above), which is the
         // right behavior for intentional empties.
         console.warn(
-          "[pix-note/icons] list fetch failed, will retry on next open:",
+          "[ltl-note/icons] list fetch failed, will retry on next open:",
           e,
         );
         _iconsPromise = null;
@@ -70,7 +70,7 @@ export async function ensureIcons() {
 export function buildIconCSS(icons) {
   return (icons || [])
     .map((ic) => {
-      const sel = `.pix-note-ic[data-ic="${CSS.escape(ic.id)}"]`;
+      const sel = `.ltl-note-ic[data-ic="${CSS.escape(ic.id)}"]`;
       return (
         `${sel}{` +
         `-webkit-mask-image:url(${ic.url});` +
@@ -80,7 +80,7 @@ export function buildIconCSS(icons) {
     .join("\n");
 }
 
-// Create the <style id="pix-note-icon-css"> element once and populate
+// Create the <style id="ltl-note-icon-css"> element once and populate
 // it with per-icon rules. Idempotent — subsequent calls no-op. Safe
 // to call on every editor open.
 export function injectIconCSS() {
@@ -88,14 +88,14 @@ export function injectIconCSS() {
   const icons = _iconsCache || [];
   if (icons.length === 0) return; // nothing to inject; retry on next call
   // getElementById branch handles hot-module-reload scenarios where a
-  // previous page evaluation left a <style id="pix-note-icon-css"> in
+  // previous page evaluation left a <style id="ltl-note-icon-css"> in
   // <head> but the module-level _cssInjected guard was reset. Reuse
   // the existing element and overwrite textContent rather than
   // appending a duplicate node.
-  let style = document.getElementById("pix-note-icon-css");
+  let style = document.getElementById("ltl-note-icon-css");
   if (!style) {
     style = document.createElement("style");
-    style.id = "pix-note-icon-css";
+    style.id = "ltl-note-icon-css";
     document.head.appendChild(style);
   }
   style.textContent = buildIconCSS(icons);
@@ -128,7 +128,7 @@ export function renderIconHTML(id, color) {
   const safeId = /^[A-Za-z0-9_-]{1,64}$/.test(id) ? id : "";
   // Optional `color` arg: if a hex is given, the icon carries an
   // inline style="color:..." — rendered via background-color:
-  // currentColor in the .pix-note-ic CSS rule. The caller passes
+  // currentColor in the .ltl-note-ic CSS rule. The caller passes
   // whatever color the A text-color picker currently has staged,
   // so "pick green → insert icon" yields a green icon (matches
   // Notion-like "picked color wins for new content" UX).
@@ -143,7 +143,7 @@ export function renderIconHTML(id, color) {
   // inline-block span. Same trick the Button Design pills use.
   const hasColor = /^#[0-9a-f]{3,8}$/i.test(color || "");
   const style = hasColor ? ` style="color:${color}"` : "";
-  return `<span data-ic="${safeId}" class="pix-note-ic"${style}></span>&nbsp;`;
+  return `<span data-ic="${safeId}" class="ltl-note-ic"${style}></span>&nbsp;`;
 }
 
 // Popup picker. Mirrors openColorPop in toolbar.mjs (positioning,
@@ -152,25 +152,25 @@ export function renderIconHTML(id, color) {
 // uses it.
 function openIconPop(anchorBtn, icons, onPick) {
   const pop = document.createElement("div");
-  pop.className = "pix-note-iconpop";
+  pop.className = "ltl-note-iconpop";
   const rect = anchorBtn.getBoundingClientRect();
   pop.style.left = `${rect.left}px`;
   pop.style.top = `${rect.bottom + 4}px`;
 
   if (!icons || icons.length === 0) {
     const msg = document.createElement("div");
-    msg.className = "pix-note-iconpop-empty";
+    msg.className = "ltl-note-iconpop-empty";
     msg.innerHTML =
       "No icons found. Drop SVG files into " +
       "<code>assets/icons/note/</code> and reload the browser.";
     pop.appendChild(msg);
   } else {
     const grid = document.createElement("div");
-    grid.className = "pix-note-iconswatches";
+    grid.className = "ltl-note-iconswatches";
     for (const ic of icons) {
       const tile = document.createElement("button");
       tile.type = "button";
-      tile.className = "pix-note-iconswatch";
+      tile.className = "ltl-note-iconswatch";
       tile.setAttribute("data-ic", ic.id);
       tile.title = ic.label;
       // mousedown prevents the editArea from losing focus + selection
@@ -182,11 +182,11 @@ function openIconPop(anchorBtn, icons, onPick) {
         close();
       });
       const glyph = document.createElement("span");
-      glyph.className = "pix-note-ic";
+      glyph.className = "ltl-note-ic";
       glyph.setAttribute("data-ic", ic.id);
       // No inline color — the glyph inherits currentColor from the
       // popup, which is set to the editor's default text color (see
-      // .pix-note-iconpop in css.mjs). Matches the insert-time icon
+      // .ltl-note-iconpop in css.mjs). Matches the insert-time icon
       // color so the picker is WYSIWYG for what will actually land.
       tile.appendChild(glyph);
       grid.appendChild(tile);
@@ -249,7 +249,7 @@ NoteEditor.prototype._insertInlineIcon = async function (anchorBtn) {
     // inherits currentColor (default behaviour for unpicked state).
     const pickedColor =
       this._textColorBtn?.style
-        .getPropertyValue("--pix-note-tbtn-tint")
+        .getPropertyValue("--ltl-note-tbtn-tint")
         .trim() || "";
     document.execCommand("insertHTML", false, renderIconHTML(id, pickedColor));
     this._restageColors?.();

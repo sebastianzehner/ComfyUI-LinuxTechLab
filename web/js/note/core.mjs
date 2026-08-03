@@ -192,7 +192,7 @@ export class NoteEditor {
               const off = r.startOffset;
               if (node.nodeType === 3 && off === 1 && node.nodeValue && node.nodeValue[0] === "\u00A0") {
                 const prev = node.previousSibling;
-                if (prev && prev.nodeType === 1 && prev.classList?.contains("pix-note-ic")) {
+                if (prev && prev.nodeType === 1 && prev.classList?.contains("ltl-note-ic")) {
                   e.preventDefault();
                   e.stopImmediatePropagation();
                   this._snapBefore?.();
@@ -231,7 +231,7 @@ export class NoteEditor {
               // leading nbsp.
               if (node.nodeType === 3 && off === 0 && node.nodeValue?.[0] === "\u00A0") {
                 const prev = node.previousSibling;
-                if (prev && prev.nodeType === 1 && prev.classList?.contains("pix-note-ic")) {
+                if (prev && prev.nodeType === 1 && prev.classList?.contains("ltl-note-ic")) {
                   e.preventDefault();
                   e.stopImmediatePropagation();
                   this._snapBefore?.();
@@ -266,11 +266,11 @@ export class NoteEditor {
               // refuses to delete an empty inline-block span, so
               // the icon appears un-deletable. Here we match the
               // element-container shape: caret at (elem, N) where
-              // childNodes[N-1] is a .pix-note-ic span. Same
+              // childNodes[N-1] is a .ltl-note-ic span. Same
               // delete-both semantics.
               if (node.nodeType === 1 && off >= 1) {
                 const prev = node.childNodes[off - 1];
-                if (prev && prev.nodeType === 1 && prev.classList?.contains("pix-note-ic")) {
+                if (prev && prev.nodeType === 1 && prev.classList?.contains("ltl-note-ic")) {
                   e.preventDefault();
                   e.stopImmediatePropagation();
                   this._snapBefore?.();
@@ -310,7 +310,7 @@ export class NoteEditor {
         // Cancel/outside to dismiss.
         if (key === "escape") {
           const hasModal = !!document.querySelector(
-            ".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop, .pix-note-iconpop, .pix-note-help-overlay",
+            ".ltl-note-blockdlg, .ltl-note-confirm-backdrop, .ltl-note-colorpop, .ltl-note-iconpop, .ltl-note-help-overlay",
           );
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -397,14 +397,14 @@ export class NoteEditor {
     if (typeof app.loadGraphData === "function") {
       this._savedLoadGraphData = app.loadGraphData.bind(app);
       app.loadGraphData = () => {
-        console.warn("[pix-note] loadGraphData blocked while note editor is open");
+        console.warn("[ltl-note] loadGraphData blocked while note editor is open");
         return Promise.resolve();
       };
     }
     if (app.graph && typeof app.graph.configure === "function") {
       this._savedGraphConfigure = app.graph.configure.bind(app.graph);
       app.graph.configure = () => {
-        console.warn("[pix-note] graph.configure blocked while note editor is open");
+        console.warn("[ltl-note] graph.configure blocked while note editor is open");
       };
     }
     // Try to intercept the Vue frontend's command dispatch for Undo/Redo.
@@ -437,7 +437,7 @@ export class NoteEditor {
         self._origOnRemoved?.call(this);
       } catch (e) {}
       if (self._el?.isConnected) {
-        console.warn("[pix-note] node removed while editor open — closing editor");
+        console.warn("[ltl-note] node removed while editor open — closing editor");
         self._dirty = false;
         self.close(true);
       }
@@ -464,22 +464,22 @@ export class NoteEditor {
   _confirmDiscard() {
     return new Promise((resolve) => {
       const backdrop = document.createElement("div");
-      backdrop.className = "pix-note-confirm-backdrop";
+      backdrop.className = "ltl-note-confirm-backdrop";
       const box = document.createElement("div");
-      box.className = "pix-note-confirm-box";
+      box.className = "ltl-note-confirm-box";
       const title = document.createElement("div");
-      title.className = "pix-note-confirm-title";
+      title.className = "ltl-note-confirm-title";
       title.textContent = "You have unsaved changes";
       const text = document.createElement("div");
-      text.className = "pix-note-confirm-text";
+      text.className = "ltl-note-confirm-text";
       text.textContent = "If you close now, your edits will be lost. What do you want to do?";
       const actions = document.createElement("div");
-      actions.className = "pix-note-confirm-actions";
+      actions.className = "ltl-note-confirm-actions";
       const cancelBtn = document.createElement("button");
-      cancelBtn.className = "pix-note-btn primary";
+      cancelBtn.className = "ltl-note-btn primary";
       cancelBtn.textContent = "Keep editing";
       const discardBtn = document.createElement("button");
-      discardBtn.className = "pix-note-btn";
+      discardBtn.className = "ltl-note-btn";
       discardBtn.textContent = "Close without saving";
       actions.appendChild(cancelBtn);
       actions.appendChild(discardBtn);
@@ -579,7 +579,7 @@ export class NoteEditor {
     try {
       html = sanitize(raw);
     } catch (e) {
-      console.error("[pix-note] sanitize threw during save; keeping raw HTML", e, { raw });
+      console.error("[ltl-note] sanitize threw during save; keeping raw HTML", e, { raw });
       html = raw;
     }
     this.cfg.content = html;
@@ -612,11 +612,11 @@ export class NoteEditor {
     if (this.node._noteBody?.isConnected) {
       body = this.node._noteBody;
     } else if (this.node._noteDOMWrap?.isConnected) {
-      body = this.node._noteDOMWrap.querySelector(".pix-note-body");
+      body = this.node._noteDOMWrap.querySelector(".ltl-note-body");
     } else {
       // Both stale — ask ComfyUI for the current widget element.
       const w = this.node.widgets?.find((x) => x.name === "note_dom");
-      body = w?.element?.querySelector?.(".pix-note-body");
+      body = w?.element?.querySelector?.(".ltl-note-body");
     }
     if (body) {
       // Refresh the cached reference so subsequent reads point to the
@@ -641,7 +641,7 @@ export class NoteEditor {
       return e;
     };
 
-    const overlay = el("div", "pix-note-overlay");
+    const overlay = el("div", "ltl-note-overlay");
     overlay.addEventListener("mousedown", (e) => {
       if (e.target !== overlay) return;
       // Block-insert dialogs (grid / button / YT / Discord), color popups,
@@ -652,44 +652,44 @@ export class NoteEditor {
       // unsaved-changes prompt ON TOP of the still-open modal. Mirrors
       // the same hasModal check the Escape-key handler already uses above.
       const hasModal = !!document.querySelector(
-        ".pix-note-blockdlg, .pix-note-confirm-backdrop, .pix-note-colorpop, .pix-note-iconpop, .pix-note-help-overlay",
+        ".ltl-note-blockdlg, .ltl-note-confirm-backdrop, .ltl-note-colorpop, .ltl-note-iconpop, .ltl-note-help-overlay",
       );
       if (hasModal) return;
       this.close();
     });
 
-    const panel = el("div", "pix-note-panel");
+    const panel = el("div", "ltl-note-panel");
     overlay.appendChild(panel);
 
     // Header
-    const header = el("div", "pix-note-header");
-    const titleSpan = el("div", "pix-note-title");
+    const header = el("div", "ltl-note-header");
+    const titleSpan = el("div", "ltl-note-title");
     const logo = document.createElement("img");
     logo.src = getLogoSVG(getBrand(), getBrandBackground(), 18);
-    logo.className = "pix-note-title-logo";
+    logo.className = "ltl-note-title-logo";
     titleSpan.appendChild(logo);
     titleSpan.append(" Note Editor ");
-    const brandSpan = el("span", "pix-note-title-brand");
+    const brandSpan = el("span", "ltl-note-title-brand");
     brandSpan.textContent = "LinuxTechLab";
     titleSpan.appendChild(brandSpan);
     header.appendChild(titleSpan);
 
-    const closeBtn = el("button", "pix-note-close");
+    const closeBtn = el("button", "ltl-note-close");
     closeBtn.innerHTML = "\u00d7";
     closeBtn.onclick = () => this.close();
     header.appendChild(closeBtn);
     panel.appendChild(header);
 
-    const main = el("div", "pix-note-main");
+    const main = el("div", "ltl-note-main");
     panel.appendChild(main);
 
     // Toolbar placeholder — filled in by toolbar.mjs mixin
-    this._toolbarEl = el("div", "pix-note-toolbar");
+    this._toolbarEl = el("div", "ltl-note-toolbar");
     main.appendChild(this._toolbarEl);
     this._buildToolbar();
 
     // Edit area
-    const editArea = el("div", "pix-note-editarea");
+    const editArea = el("div", "ltl-note-editarea");
     editArea.contentEditable = "true";
     editArea.innerHTML = sanitize(this.cfg.content || "");
     // Apply the per-note background colour so the editor interior matches
@@ -785,21 +785,21 @@ export class NoteEditor {
     this._mode = "preview";
 
     // Footer
-    const footer = el("div", "pix-note-footer");
-    const helpBtn = el("button", "pix-note-btn ghost");
+    const footer = el("div", "ltl-note-footer");
+    const helpBtn = el("button", "ltl-note-btn ghost");
     helpBtn.textContent = "? Help";
     helpBtn.onclick = () => this._showHelp();
     // Code Reference — secondary help modal focused on what HTML
     // tags / styles / classes the sanitizer allows in Code view.
     // Split off from the main Help so neither dialog needs a
     // scroll bar.
-    const codeRefBtn = el("button", "pix-note-btn ghost");
+    const codeRefBtn = el("button", "ltl-note-btn ghost");
     codeRefBtn.textContent = "? Code";
     codeRefBtn.onclick = () => this._showCodeRef();
-    const cancelBtn = el("button", "pix-note-btn");
+    const cancelBtn = el("button", "ltl-note-btn");
     cancelBtn.textContent = "Cancel";
     cancelBtn.onclick = () => this.close();
-    const saveBtn = el("button", "pix-note-btn primary");
+    const saveBtn = el("button", "ltl-note-btn primary");
     saveBtn.textContent = "Save";
     saveBtn.onclick = () => this.save();
     footer.appendChild(helpBtn);
@@ -821,116 +821,116 @@ export class NoteEditor {
     // on the actual viewport so the whole modal is always visible.
     const host = this._el;
     if (!host) return;
-    if (host.querySelector(".pix-note-help-overlay")) return;
+    if (host.querySelector(".ltl-note-help-overlay")) return;
     const h = document.createElement("div");
-    h.className = "pix-note-help-overlay";
+    h.className = "ltl-note-help-overlay";
     h.innerHTML = `
-      <div class="pix-note-help-header">
+      <div class="ltl-note-help-header">
         <h3>Note LinuxTechLab — Shortcuts &amp; Features</h3>
-        <button type="button" class="pix-note-help-close" title="Close">\u2715</button>
+        <button type="button" class="ltl-note-help-close" title="Close">\u2715</button>
       </div>
-      <div class="pix-note-help-content">
-        <div class="pix-note-help-section">
+      <div class="ltl-note-help-content">
+        <div class="ltl-note-help-section">
           <h4>Overview</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>Purpose</b><span>Rich-text annotation node — models to download, nodes used, tutorials. Purely visual; not wired into processing.</span>
             <b>Save</b><span>Ctrl+S or the Save button. Esc prompts if unsaved.</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Text Formatting</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b><b>B</b></b><span>Bold (Ctrl+B)</span>
             <b><i>I</i></b><span>Italic (Ctrl+I)</span>
             <b><u>U</u></b><span>Underline (Ctrl+U)</span>
             <b><s>S</s></b><span>Strikethrough</span>
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/clear-format.svg">Broom</b><span>Clear all formatting on selection; demotes headings to paragraph; unwraps code / lists</span>
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/clear-format.svg">Broom</b><span>Clear all formatting on selection; demotes headings to paragraph; unwraps code / lists</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Headings</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>H1 / H2 / H3</b><span>Apply to the current line. Use Broom to demote back to &lt;p&gt;</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Colors</h4>
-          <div class="pix-note-help-grid">
-            <b><span class="pix-note-tbtn-maskicon-multi pix-note-icon-text-color"></span>A</b><span>Text color (also used for inline icons)</span>
-            <b><span class="pix-note-tbtn-maskicon-multi pix-note-icon-highlight-color"></span>Highlight</b><span>Colored background behind the selected text</span>
-            <b><span class="pix-note-tbtn-maskicon-multi pix-note-icon-bg-color"></span>Bg</b><span>Per-note background; drives both editor AND the canvas node. Clear reverts to the dark default</span>
-            <b><span class="pix-note-tbtn-maskicon-multi pix-note-icon-button-color"></span>Btn</b><span>Button-pill color (Download / View Page / Read More)</span>
-            <b><span class="pix-note-tbtn-maskicon-multi pix-note-icon-line-color"></span>Ln</b><span>Line color (grid borders, HR, grid header underline, folder hint)</span>
+          <div class="ltl-note-help-grid">
+            <b><span class="ltl-note-tbtn-maskicon-multi ltl-note-icon-text-color"></span>A</b><span>Text color (also used for inline icons)</span>
+            <b><span class="ltl-note-tbtn-maskicon-multi ltl-note-icon-highlight-color"></span>Highlight</b><span>Colored background behind the selected text</span>
+            <b><span class="ltl-note-tbtn-maskicon-multi ltl-note-icon-bg-color"></span>Bg</b><span>Per-note background; drives both editor AND the canvas node. Clear reverts to the dark default</span>
+            <b><span class="ltl-note-tbtn-maskicon-multi ltl-note-icon-button-color"></span>Btn</b><span>Button-pill color (Download / View Page / Read More)</span>
+            <b><span class="ltl-note-tbtn-maskicon-multi ltl-note-icon-line-color"></span>Ln</b><span>Line color (grid borders, HR, grid header underline, folder hint)</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Lists</h4>
-          <div class="pix-note-help-grid">
-            <b><span class="pix-note-tbtn-maskicon pix-note-icon-list-dot"></span>Bulleted</b><span>Click again to toggle off</span>
-            <b><span class="pix-note-tbtn-maskicon pix-note-icon-list-number"></span>Numbered</b><span>Click again to toggle off</span>
+          <div class="ltl-note-help-grid">
+            <b><span class="ltl-note-tbtn-maskicon ltl-note-icon-list-dot"></span>Bulleted</b><span>Click again to toggle off</span>
+            <b><span class="ltl-note-tbtn-maskicon ltl-note-icon-list-number"></span>Numbered</b><span>Click again to toggle off</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Inserts</h4>
-          <div class="pix-note-help-grid">
-            <b><span class="pix-note-tbtn-maskicon pix-note-icon-link"></span>Link</b><span>http, https, or mailto URLs only. Opens in new tab.</span>
-            <b><span class="pix-note-tbtn-maskicon pix-note-icon-code"></span>Code</b><span>Code block (&lt;pre&gt;&lt;code&gt;). Multi-line via the themed dialog</span>
-            <b><span class="pix-note-tbtn-maskicon pix-note-icon-separator"></span>Separator</b><span>&lt;hr&gt; horizontal rule</span>
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/grid.svg">Grid</b><span>Table: 2–4 columns × 1–10 rows. Tab navigates cells</span>
-            <b><span class="pix-note-tbtn-maskicon pix-note-icon-icon-insert"></span>Icon</b><span>SVG from assets/icons/note/. Takes current A color on insert</span>
+          <div class="ltl-note-help-grid">
+            <b><span class="ltl-note-tbtn-maskicon ltl-note-icon-link"></span>Link</b><span>http, https, or mailto URLs only. Opens in new tab.</span>
+            <b><span class="ltl-note-tbtn-maskicon ltl-note-icon-code"></span>Code</b><span>Code block (&lt;pre&gt;&lt;code&gt;). Multi-line via the themed dialog</span>
+            <b><span class="ltl-note-tbtn-maskicon ltl-note-icon-separator"></span>Separator</b><span>&lt;hr&gt; horizontal rule</span>
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/grid.svg">Grid</b><span>Table: 2–4 columns × 1–10 rows. Tab navigates cells</span>
+            <b><span class="ltl-note-tbtn-maskicon ltl-note-icon-icon-insert"></span>Icon</b><span>SVG from assets/icons/note/. Takes current A color on insert</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>LinuxTechLab Blocks</h4>
-          <div class="pix-note-help-grid">
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/button-design.svg">Button Design</b><span>Rich dialog — Download / View Page / Read More pill with icon + optional folder hint + size tag</span>
+          <div class="ltl-note-help-grid">
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/button-design.svg">Button Design</b><span>Rich dialog — Download / View Page / Read More pill with icon + optional folder hint + size tag</span>
             <b>Download pill</b><span>On canvas: click opens the URL in a new tab. The folder hint below is informational — save the file manually into that path.</span>
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/youtube.svg">YouTube</b><span>Preset LinuxTechLab YouTube link (override freely)</span>
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/discord.svg">Discord</b><span>Preset LinuxTechLab Discord link (override freely)</span>
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/youtube.svg">YouTube</b><span>Preset LinuxTechLab YouTube link (override freely)</span>
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/discord.svg">Discord</b><span>Preset LinuxTechLab Discord link (override freely)</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Editing Blocks In Place</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>Pencil</b><span>Hover a link, pill, code block, or grid-free block — pencil appears, reopens its dialog pre-filled</span>
             <b>Recolor Icon</b><span>Drag-select over the icon, pick a new color in A</span>
             <b>Delete Icon</b><span>Backspace once from right of icon (removes icon + trailing space in one step)</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Views</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>Preview</b><span>WYSIWYG (default)</span>
             <b>Code</b><span>Raw sanitized HTML with syntax highlight. Edit freely; switching back runs the sanitizer.</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Keyboard</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>Ctrl+B / I / U</b><span>Bold / Italic / Underline</span>
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/undo.svg">Ctrl+Z</b><span>Undo</span>
-            <b><img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/redo.svg">Ctrl+Y / Ctrl+Shift+Z</b><span>Redo</span>
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/undo.svg">Ctrl+Z</b><span>Undo</span>
+            <b><img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/redo.svg">Ctrl+Y / Ctrl+Shift+Z</b><span>Redo</span>
             <b>Ctrl+S</b><span>Save</span>
             <b>Tab / Shift+Tab</b><span>Move between grid cells (when inside one)</span>
             <b>Esc</b><span>Close editor (prompts if unsaved)</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Paste &amp; Links</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>Paste</b><span>Clipboard content comes in as plain text — images and rich formatting are dropped to keep notes clean</span>
             <b>Link URLs</b><span>Only http, https, and mailto links are accepted</span>
           </div>
         </div>
       </div>
-      <div class="pix-note-help-footer">
+      <div class="ltl-note-help-footer">
         For the list of HTML tags / styles / classes allowed in Code
         view, click <b>? Code</b> in the footer.<br>
         Designed by <a href="https://www.youtube.com/@linuxtechlab" target="_blank" rel="noopener noreferrer">LinuxTechLab</a>
         &middot; <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     `;
-    const close = h.querySelector(".pix-note-help-close");
+    const close = h.querySelector(".ltl-note-help-close");
     if (close) close.addEventListener("click", () => h.remove());
     host.appendChild(h);
   }
@@ -938,26 +938,26 @@ export class NoteEditor {
   _showCodeRef() {
     const host = this._el;
     if (!host) return;
-    if (host.querySelector(".pix-note-help-overlay")) return;
+    if (host.querySelector(".ltl-note-help-overlay")) return;
     const h = document.createElement("div");
-    h.className = "pix-note-help-overlay";
+    h.className = "ltl-note-help-overlay";
     h.innerHTML = `
-      <div class="pix-note-help-header">
+      <div class="ltl-note-help-header">
         <h3>Note LinuxTechLab — Code View Reference</h3>
-        <button type="button" class="pix-note-help-close" title="Close">\u2715</button>
+        <button type="button" class="ltl-note-help-close" title="Close">\u2715</button>
       </div>
-      <div class="pix-note-help-content">
-        <div class="pix-note-help-section">
+      <div class="ltl-note-help-content">
+        <div class="ltl-note-help-section">
           <h4>About Code View</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>Purpose</b><span>Edit the note's raw HTML directly. Useful for hand-crafting structure the toolbar doesn't expose (nested lists, custom combinations, bulk changes).</span>
             <b>On switch</b><span>Code shows pretty-printed sanitized HTML. Preview re-runs the sanitizer, so anything disallowed is stripped.</span>
             <b>Safety</b><span>The sanitizer is the same on save, paste, AND view-switch. Writing &lt;script&gt; in Code view and switching to Preview removes it.</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Block Tags</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>&lt;p&gt;</b><span>Paragraph (the default block)</span>
             <b>&lt;h1&gt; / &lt;h2&gt; / &lt;h3&gt;</b><span>Headings</span>
             <b>&lt;blockquote&gt;</b><span>Quoted paragraph (no dedicated toolbar button; hand-write it)</span>
@@ -966,9 +966,9 @@ export class NoteEditor {
             <b>&lt;div&gt;</b><span>Generic block (allowed but discouraged — prefer &lt;p&gt;)</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Inline Tags</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>&lt;b&gt; / &lt;strong&gt;</b><span>Bold</span>
             <b>&lt;i&gt; / &lt;em&gt;</b><span>Italic</span>
             <b>&lt;u&gt;</b><span>Underline</span>
@@ -979,48 +979,48 @@ export class NoteEditor {
             <b>&lt;span&gt;</b><span>Generic inline; carries color / highlight / alignment styles AND data-ic for inline icons</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Lists</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>&lt;ul&gt;</b><span>Bulleted list</span>
             <b>&lt;ol&gt;</b><span>Numbered list</span>
             <b>&lt;li&gt;</b><span>List item (child of ul / ol)</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Tables (Grid)</h4>
-          <div class="pix-note-help-grid">
-            <b>&lt;table class="pix-note-grid"&gt;</b><span>The pix-note-grid class is required; without it styling doesn't apply.</span>
+          <div class="ltl-note-help-grid">
+            <b>&lt;table class="ltl-note-grid"&gt;</b><span>The ltl-note-grid class is required; without it styling doesn't apply.</span>
             <b>&lt;thead&gt; / &lt;tbody&gt;</b><span>Optional head / body wrappers</span>
             <b>&lt;tr&gt;</b><span>Row</span>
             <b>&lt;th&gt; / &lt;td&gt;</b><span>Header cell / data cell. colspan / rowspan NOT allowed.</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Allowed Inline Styles</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b><code>color</code></b><span>Text foreground. Hex only (#rgb or #rrggbb). Other formats stripped.</span>
             <b><code>background-color</code></b><span>Text highlight. Hex only.</span>
             <b><code>text-align</code></b><span>left / right / center / justify</span>
           </div>
           <p style="margin:6px 0 0 0;color:#888;">Any other style (font-size, margin, display, …) is removed on save / paste / view-switch.</p>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Allowed Classes</h4>
-          <div class="pix-note-help-grid">
-            <b>pix-note-dl / vp / rm</b><span>Button Design pills (Download / View Page / Read More)</span>
-            <b>pix-note-btnblock</b><span>Button pill wrapper with folder hint</span>
-            <b>pix-note-btnsize</b><span>Size tag inside a pill</span>
-            <b>pix-note-folderhint</b><span>"Place in: …" line under a Download pill</span>
-            <b>pix-note-yt / discord</b><span>YouTube / Discord pills</span>
-            <b>pix-note-grid</b><span>Tables — required on &lt;table&gt;</span>
-            <b>pix-note-ic</b><span>Inline icon span — with data-ic="&lt;slug&gt;" (slug = filename in assets/icons/note/, no .svg)</span>
+          <div class="ltl-note-help-grid">
+            <b>ltl-note-dl / vp / rm</b><span>Button Design pills (Download / View Page / Read More)</span>
+            <b>ltl-note-btnblock</b><span>Button pill wrapper with folder hint</span>
+            <b>ltl-note-btnsize</b><span>Size tag inside a pill</span>
+            <b>ltl-note-folderhint</b><span>"Place in: …" line under a Download pill</span>
+            <b>ltl-note-yt / discord</b><span>YouTube / Discord pills</span>
+            <b>ltl-note-grid</b><span>Tables — required on &lt;table&gt;</span>
+            <b>ltl-note-ic</b><span>Inline icon span — with data-ic="&lt;slug&gt;" (slug = filename in assets/icons/note/, no .svg)</span>
           </div>
           <p style="margin:6px 0 0 0;color:#888;">Any other class is stripped silently.</p>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Stripped on Sight</h4>
-          <div class="pix-note-help-grid">
+          <div class="ltl-note-help-grid">
             <b>&lt;script&gt;</b><span>Always removed</span>
             <b>&lt;iframe&gt; / &lt;img&gt;</b><span>Always removed</span>
             <b>on*=</b><span>All event handlers (onclick, onerror, onmouseover, …) stripped from every tag</span>
@@ -1028,23 +1028,23 @@ export class NoteEditor {
             <b>data-*</b><span>Only data-ic is kept (on span). Other data-attrs removed.</span>
           </div>
         </div>
-        <div class="pix-note-help-section">
+        <div class="ltl-note-help-section">
           <h4>Example</h4>
           <pre style="background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;padding:8px;color:#ddd;font-size:10px;line-height:1.5;overflow-x:auto;margin:0;">&lt;h2&gt;Workflow overview&lt;/h2&gt;
-&lt;p&gt;Install &lt;span data-ic="CLIP" class="pix-note-ic"&gt;&lt;/span&gt;&amp;nbsp;then&lt;/p&gt;
-&lt;span class="pix-note-btnblock"&gt;
-  &lt;a class="pix-note-dl" href="https://example.com/model.safetensors"
+&lt;p&gt;Install &lt;span data-ic="CLIP" class="ltl-note-ic"&gt;&lt;/span&gt;&amp;nbsp;then&lt;/p&gt;
+&lt;span class="ltl-note-btnblock"&gt;
+  &lt;a class="ltl-note-dl" href="https://example.com/model.safetensors"
      target="_blank" rel="noopener noreferrer"&gt;Model 2 GB&lt;/a&gt;
-  &lt;span class="pix-note-folderhint"&gt;Place in: ComfyUI/models/loras&lt;/span&gt;
+  &lt;span class="ltl-note-folderhint"&gt;Place in: ComfyUI/models/loras&lt;/span&gt;
 &lt;/span&gt;</pre>
         </div>
       </div>
-      <div class="pix-note-help-footer">
+      <div class="ltl-note-help-footer">
         Designed by <a href="https://www.youtube.com/@LinuxTechLab" target="_blank" rel="noopener noreferrer">LinuxTechLab</a>
         &middot; <a href="https://github.com/sebastianzehner/ComfyUI-LinuxTechLab" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     `;
-    const close = h.querySelector(".pix-note-help-close");
+    const close = h.querySelector(".ltl-note-help-close");
     if (close) close.addEventListener("click", () => h.remove());
     host.appendChild(h);
   }
@@ -1239,8 +1239,8 @@ NoteEditor.prototype._applyEditAreaBg = function (area) {
 NoteEditor.prototype._applyCfgColorsToEditArea = function () {
   const a = this._editArea;
   if (!a) return;
-  a.style.setProperty("--pix-note-btn", this.cfg.buttonColor || "#89b4fa");
-  a.style.setProperty("--pix-note-line", this.cfg.lineColor || "#89b4fa");
+  a.style.setProperty("--ltl-note-btn", this.cfg.buttonColor || "#89b4fa");
+  a.style.setProperty("--ltl-note-line", this.cfg.lineColor || "#89b4fa");
 };
 
 NoteEditor.prototype._placeCursorAtEnd = function () {
@@ -1265,18 +1265,18 @@ NoteEditor.prototype._placeCursorAtEnd = function () {
 // (_dispatchBlockEdit). Any new editable block type needs to be added
 // in both places.
 const PENCIL_BLOCK_SELECTORS = [
-  "span.pix-note-btnblock",
-  "a.pix-note-yt",
-  "a.pix-note-discord",
+  "span.ltl-note-btnblock",
+  "a.ltl-note-yt",
+  "a.ltl-note-discord",
   "pre",
   // Plain anchors last so a LinuxTechLab-classed <a> matches above first.
-  "a:not([class*='pix-note-'])",
+  "a:not([class*='ltl-note-'])",
 ].join(",");
 
 NoteEditor.prototype._installPencil = function (main, editArea) {
   const pencil = document.createElement("button");
   pencil.type = "button";
-  pencil.className = "pix-note-pencil";
+  pencil.className = "ltl-note-pencil";
   pencil.contentEditable = "false";
   pencil.setAttribute("aria-label", "Edit block");
   const icon = document.createElement("img");

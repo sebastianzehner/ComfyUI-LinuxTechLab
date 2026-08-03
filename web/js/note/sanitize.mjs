@@ -62,19 +62,19 @@ const DANGEROUS_TAGS = new Set([
 
 // LinuxTechLab block classes are the ONLY allowed class values.
 const ALLOWED_CLASS_VALUES = new Set([
-  "pix-note-dl",
-  "pix-note-yt",
-  "pix-note-discord",
-  "pix-note-vp",
-  "pix-note-rm",
+  "ltl-note-dl",
+  "ltl-note-yt",
+  "ltl-note-discord",
+  "ltl-note-vp",
+  "ltl-note-rm",
   // Wrapper + decoration pieces for the Button Design output
-  "pix-note-btnblock",
-  "pix-note-folderhint",
-  "pix-note-btnsize",
+  "ltl-note-btnblock",
+  "ltl-note-folderhint",
+  "ltl-note-btnsize",
   // Grid (table) marker class
-  "pix-note-grid",
+  "ltl-note-grid",
   // Inline-icon span marker (data-ic slug on <span>)
-  "pix-note-ic",
+  "ltl-note-ic",
 ]);
 
 // Inline-style properties we allow. Values are validated separately.

@@ -2,9 +2,9 @@ import { NoteEditor } from "./core.mjs";
 
 // Icon → pill class (must match css.mjs / sanitize.mjs allowlist).
 const ICON_TO_CLASS = {
-  dl: "pix-note-dl",
-  vp: "pix-note-vp",
-  rm: "pix-note-rm",
+  dl: "ltl-note-dl",
+  vp: "ltl-note-vp",
+  rm: "ltl-note-rm",
 };
 
 // Icon → default label used when the user leaves the label field blank.
@@ -91,7 +91,7 @@ function validateUrl(url) {
 
 function makeDialog(anchorBtn, title, fields, onSubmit, initialValues) {
   const dlg = document.createElement("div");
-  dlg.className = "pix-note-blockdlg";
+  dlg.className = "ltl-note-blockdlg";
 
   const rect = anchorBtn.getBoundingClientRect();
   dlg.style.left = `${Math.max(8, rect.left)}px`;
@@ -129,16 +129,16 @@ function makeDialog(anchorBtn, title, fields, onSubmit, initialValues) {
   // etc.) so the user doesn't get bounced to a native alert() that
   // steals focus and can lose their typing.
   const err = document.createElement("div");
-  err.className = "pix-note-linkerr";
+  err.className = "ltl-note-linkerr";
   dlg.appendChild(err);
 
   const footer = document.createElement("div");
   footer.className = "dlgfooter";
   const cancel = document.createElement("button");
-  cancel.className = "pix-note-btn";
+  cancel.className = "ltl-note-btn";
   cancel.textContent = "Cancel";
   const ok = document.createElement("button");
-  ok.className = "pix-note-btn primary";
+  ok.className = "ltl-note-btn primary";
   // Button label reads "Update" when editing an existing block,
   // "Insert" when inserting a new one. Visual reminder that the
   // action replaces the block vs. appends a new one.
@@ -227,24 +227,24 @@ NoteEditor.prototype._insertButtonBlock = function (anchorBtn) {
 // line; if the size hint is enabled, a subtle middle-dot separator + muted
 // size appears inside the pill. If the folder hint is enabled, a second
 // line underneath reads "Place in: ComfyUI/<folder>" with a folder icon.
-// The whole thing is wrapped in a <span class="pix-note-btnblock"> so the
+// The whole thing is wrapped in a <span class="ltl-note-btnblock"> so the
 // pair can be deleted in a single backspace and laid out as one unit.
 function renderButtonHTML(v) {
-  const cls = ICON_TO_CLASS[v.icon] || "pix-note-dl";
+  const cls = ICON_TO_CLASS[v.icon] || "ltl-note-dl";
   const labelFallback = ICON_TO_FALLBACK_LABEL[v.icon] || "Download";
   const labelText = escapeHtml(v.label || labelFallback);
   const sizeInner =
     v.sizeOn && v.size
-      ? `<span class="pix-note-btnsize">${escapeHtml(v.size)}</span>`
+      ? `<span class="ltl-note-btnsize">${escapeHtml(v.size)}</span>`
       : "";
   const pill =
     `<a class="${cls}" href="${escapeHtml(v.url)}"` +
     ` target="_blank" rel="noopener noreferrer">${labelText}${sizeInner}</a>`;
   const hint =
     v.folderOn && v.folder
-      ? `<span class="pix-note-folderhint">Place in: ComfyUI/${escapeHtml(v.folder)}</span>`
+      ? `<span class="ltl-note-folderhint">Place in: ComfyUI/${escapeHtml(v.folder)}</span>`
       : "";
-  return `<span class="pix-note-btnblock">${pill}${hint}</span>&nbsp;`;
+  return `<span class="ltl-note-btnblock">${pill}${hint}</span>&nbsp;`;
 }
 
 // Kept as backwards-compatible alias so nothing that still calls the
@@ -268,7 +268,7 @@ NoteEditor.prototype._insertYouTubeBlock = function (anchorBtn) {
         return false;
       }
       const html =
-        `<a class="pix-note-yt" href="${escapeHtml(v.url)}"` +
+        `<a class="ltl-note-yt" href="${escapeHtml(v.url)}"` +
         ` target="_blank" rel="noopener noreferrer">${escapeHtml(v.label || "YouTube")}</a>&nbsp;`;
       insertAtSavedRange(this, savedRange, html);
     },
@@ -291,7 +291,7 @@ NoteEditor.prototype._insertDiscordBlock = function (anchorBtn) {
         return false;
       }
       const html =
-        `<a class="pix-note-discord" href="${escapeHtml(v.url)}"` +
+        `<a class="ltl-note-discord" href="${escapeHtml(v.url)}"` +
         ` target="_blank" rel="noopener noreferrer">${escapeHtml(v.label || "Join Discord")}</a>&nbsp;`;
       insertAtSavedRange(this, savedRange, html);
     },
@@ -330,7 +330,7 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   }
 
   const dlg = document.createElement("div");
-  dlg.className = "pix-note-blockdlg pix-note-btndesign";
+  dlg.className = "ltl-note-blockdlg ltl-note-btndesign";
   const rect = anchorBtn.getBoundingClientRect();
   dlg.style.left = `${Math.max(8, rect.left)}px`;
   dlg.style.top = `${rect.bottom + 6}px`;
@@ -342,25 +342,25 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
 
   // --- Live preview pill --------------------------------------------------
   // Mirrors the HTML shape produced by renderButtonHTML() — same
-  // .pix-note-btnblock wrapper, .pix-note-{dl,vp,rm} pill, optional
-  // .pix-note-btnsize inside the pill, and optional .pix-note-folderhint
-  // line below. The preview container (.pix-note-prevwrap) is included as
+  // .ltl-note-btnblock wrapper, .ltl-note-{dl,vp,rm} pill, optional
+  // .ltl-note-btnsize inside the pill, and optional .ltl-note-folderhint
+  // line below. The preview container (.ltl-note-prevwrap) is included as
   // an ancestor in the pill CSS selectors so the styling matches on-canvas.
   const previewWrap = document.createElement("div");
-  previewWrap.className = "pix-note-prevwrap";
+  previewWrap.className = "ltl-note-prevwrap";
   const previewBlock = document.createElement("span");
-  previewBlock.className = "pix-note-btnblock";
+  previewBlock.className = "ltl-note-btnblock";
   const preview = document.createElement("a");
-  preview.className = "pix-note-dl";
+  preview.className = "ltl-note-dl";
   preview.href = "#";
   const previewLabel = document.createTextNode("Model Name");
   const previewSize = document.createElement("span");
-  previewSize.className = "pix-note-btnsize";
+  previewSize.className = "ltl-note-btnsize";
   preview.appendChild(previewLabel);
   preview.appendChild(previewSize);
   preview.addEventListener("click", (e) => e.preventDefault());
   const previewHint = document.createElement("span");
-  previewHint.className = "pix-note-folderhint";
+  previewHint.className = "ltl-note-folderhint";
   previewBlock.appendChild(preview);
   previewBlock.appendChild(previewHint);
   previewWrap.appendChild(previewBlock);
@@ -368,7 +368,7 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
 
   // --- Icon segmented control ---------------------------------------------
   const iconRow = document.createElement("div");
-  iconRow.className = "pix-note-iconpick";
+  iconRow.className = "ltl-note-iconpick";
   const ICON_OPTS = [
     { id: "dl", label: "Download", svg: "download-model.svg" },
     { id: "vp", label: "View Page", svg: "view-model-page.svg" },
@@ -428,7 +428,7 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   dlg.appendChild(folderHead.row);
 
   const folderInputRow = document.createElement("div");
-  folderInputRow.className = "pix-note-optinput";
+  folderInputRow.className = "ltl-note-optinput";
   const folderIco = document.createElement("span");
   folderIco.className = "folderico";
   folderInputRow.appendChild(folderIco);
@@ -455,7 +455,7 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   dlg.appendChild(sizeHead.row);
 
   const sizeInputRow = document.createElement("div");
-  sizeInputRow.className = "pix-note-optinput";
+  sizeInputRow.className = "ltl-note-optinput";
   const sizeInput = document.createElement("input");
   sizeInput.type = "text";
   sizeInput.placeholder = "e.g. 9.4 GB";
@@ -471,17 +471,17 @@ function makeButtonDesignDialog(anchorBtn, onSubmit, initialValues) {
   // dialog open so typing isn't lost — unlike the old alert() which was
   // also blocked by some browsers when fired from inside an overlay.
   const errEl = document.createElement("div");
-  errEl.className = "pix-note-linkerr";
+  errEl.className = "ltl-note-linkerr";
   dlg.appendChild(errEl);
 
   // --- Footer -------------------------------------------------------------
   const footer = document.createElement("div");
   footer.className = "dlgfooter";
   const cancel = document.createElement("button");
-  cancel.className = "pix-note-btn";
+  cancel.className = "ltl-note-btn";
   cancel.textContent = "Cancel";
   const ok = document.createElement("button");
-  ok.className = "pix-note-btn primary";
+  ok.className = "ltl-note-btn primary";
   ok.textContent = initialValues ? "Update" : "Insert";
   footer.appendChild(cancel);
   footer.appendChild(ok);
@@ -612,12 +612,12 @@ function makeField(labelText) {
 // just return the switch element so `.on` can be toggled.
 function makeToggleHead(labelText) {
   const row = document.createElement("div");
-  row.className = "pix-note-optrow";
+  row.className = "ltl-note-optrow";
   const lbl = document.createElement("div");
   lbl.className = "lbl";
   lbl.textContent = labelText;
   const toggle = document.createElement("div");
-  toggle.className = "pix-note-toggle";
+  toggle.className = "ltl-note-toggle";
   row.appendChild(lbl);
   row.appendChild(toggle);
   return { row, toggle };
@@ -649,7 +649,7 @@ const CLASS_TO_ICON = Object.fromEntries(
 
 export function extractButtonValues(el) {
   if (!el || el.nodeType !== 1) return null;
-  if (!el.classList || !el.classList.contains("pix-note-btnblock")) return null;
+  if (!el.classList || !el.classList.contains("ltl-note-btnblock")) return null;
   const a = el.querySelector(":scope > a");
   if (!a) return null;
   let icon = "dl";
@@ -659,15 +659,15 @@ export function extractButtonValues(el) {
       break;
     }
   }
-  // Size lives in a nested <span class="pix-note-btnsize">. Pull it
+  // Size lives in a nested <span class="ltl-note-btnsize">. Pull it
   // out (text only) before reading the pill label, then remove the
   // span from a temporary clone so label extraction sees only the
   // user's label text.
-  const sizeSpan = a.querySelector(":scope > .pix-note-btnsize");
+  const sizeSpan = a.querySelector(":scope > .ltl-note-btnsize");
   const size = sizeSpan ? (sizeSpan.textContent || "").trim() : "";
   const sizeOn = !!(sizeSpan && size);
   const clone = a.cloneNode(true);
-  const innerSize = clone.querySelector(":scope > .pix-note-btnsize");
+  const innerSize = clone.querySelector(":scope > .ltl-note-btnsize");
   if (innerSize) innerSize.remove();
   let label = (clone.textContent || "").trim();
   // If the label exactly matches the icon's fallback (e.g. "Download"
@@ -683,7 +683,7 @@ export function extractButtonValues(el) {
   // Folder hint is a sibling of the <a> inside the block wrapper. The
   // rendered text always has the "Place in: ComfyUI/" prefix; strip it
   // so we return the raw folder the user typed.
-  const hint = el.querySelector(":scope > .pix-note-folderhint");
+  const hint = el.querySelector(":scope > .ltl-note-folderhint");
   const hintText = hint ? (hint.textContent || "").trim() : "";
   const prefix = "Place in: ComfyUI/";
   let folder = "";
@@ -708,7 +708,7 @@ export function extractButtonValues(el) {
 }
 
 // Dialog-shape for the generic makeDialog link fields. Also used for
-// plain <a> (no pix-note-* class) and YT / Discord pencils.
+// plain <a> (no ltl-note-* class) and YT / Discord pencils.
 export function extractLinkValues(el) {
   if (!el || el.nodeType !== 1 || el.tagName !== "A") return null;
   return {
@@ -740,10 +740,10 @@ export function extractCodeValues(el) {
 NoteEditor.prototype._dispatchBlockEdit = function (target, anchorBtn) {
   if (!target || !this._editArea || !this._editArea.contains(target)) return;
 
-  // Button Design block: span.pix-note-btnblock
+  // Button Design block: span.ltl-note-btnblock
   if (
     target.tagName === "SPAN" &&
-    target.classList.contains("pix-note-btnblock")
+    target.classList.contains("ltl-note-btnblock")
   ) {
     const values = extractButtonValues(target);
     if (!values) return;
@@ -761,7 +761,7 @@ NoteEditor.prototype._dispatchBlockEdit = function (target, anchorBtn) {
         // consecutive pencil-edits would keep appending nbsp chars.
         const wrapper = document.createElement("div");
         wrapper.innerHTML = renderButtonHTML(v);
-        const newBlock = wrapper.querySelector(".pix-note-btnblock");
+        const newBlock = wrapper.querySelector(".ltl-note-btnblock");
         if (newBlock) target.replaceWith(newBlock);
         this._snapAfter?.();
         this._dirty = true;
@@ -772,27 +772,27 @@ NoteEditor.prototype._dispatchBlockEdit = function (target, anchorBtn) {
     return;
   }
 
-  // YouTube / Discord: a.pix-note-yt / a.pix-note-discord
-  if (target.tagName === "A" && target.classList.contains("pix-note-yt")) {
+  // YouTube / Discord: a.ltl-note-yt / a.ltl-note-discord
+  if (target.tagName === "A" && target.classList.contains("ltl-note-yt")) {
     return openLinkEditor(
       this,
       target,
       "Edit YouTube link",
-      "pix-note-yt",
+      "ltl-note-yt",
       anchorBtn,
     );
   }
-  if (target.tagName === "A" && target.classList.contains("pix-note-discord")) {
+  if (target.tagName === "A" && target.classList.contains("ltl-note-discord")) {
     return openLinkEditor(
       this,
       target,
       "Edit Discord link",
-      "pix-note-discord",
+      "ltl-note-discord",
       anchorBtn,
     );
   }
 
-  // Plain link: <a> without any pix-note-* class. Reuse _promptLinkUrl
+  // Plain link: <a> without any ltl-note-* class. Reuse _promptLinkUrl
   // which already has the themed URL-validation UX.
   if (target.tagName === "A") {
     const current = extractLinkValues(target);
@@ -879,14 +879,14 @@ function renderGridHTML(cols, rows, header) {
   // the table — otherwise the user has to click BELOW the table in the
   // padding area to keep typing, which Chrome sometimes routes into the
   // last table cell instead.
-  return `<table class="pix-note-grid">${thead}${tbody}</table><p><br></p>`;
+  return `<table class="ltl-note-grid">${thead}${tbody}</table><p><br></p>`;
 }
 
 function makeGridDialog(anchorBtn, onSubmit) {
   const state = { cols: 3, rows: 3, header: false };
 
   const dlg = document.createElement("div");
-  dlg.className = "pix-note-blockdlg pix-note-griddlg";
+  dlg.className = "ltl-note-blockdlg ltl-note-griddlg";
   const rect = anchorBtn.getBoundingClientRect();
   dlg.style.left = `${Math.max(8, rect.left)}px`;
   dlg.style.top = `${rect.bottom + 6}px`;
@@ -897,9 +897,9 @@ function makeGridDialog(anchorBtn, onSubmit) {
 
   // Preview — CSS grid of div cells mirroring current cols/rows.
   const previewWrap = document.createElement("div");
-  previewWrap.className = "pix-note-prevwrap";
+  previewWrap.className = "ltl-note-prevwrap";
   const preview = document.createElement("div");
-  preview.className = "pix-note-gridprev";
+  preview.className = "ltl-note-gridprev";
   previewWrap.appendChild(preview);
   dlg.appendChild(previewWrap);
 
@@ -908,12 +908,12 @@ function makeGridDialog(anchorBtn, onSubmit) {
   // `headToggle` without hitting the TDZ. Visual order stays "preview,
   // steppers, header toggle" because appendChild happens further below.
   const headRow = document.createElement("div");
-  headRow.className = "pix-note-optrow";
+  headRow.className = "ltl-note-optrow";
   const headLbl = document.createElement("div");
   headLbl.className = "lbl";
   headLbl.textContent = "First row as header";
   const headToggle = document.createElement("div");
-  headToggle.className = "pix-note-toggle";
+  headToggle.className = "ltl-note-toggle";
   headRow.appendChild(headLbl);
   headRow.appendChild(headToggle);
   headRow.addEventListener("click", (e) => {
@@ -930,17 +930,17 @@ function makeGridDialog(anchorBtn, onSubmit) {
     lbl.className = "lbl";
     lbl.textContent = labelText;
     const stepper = document.createElement("div");
-    stepper.className = "pix-note-stepper";
+    stepper.className = "ltl-note-stepper";
     const minus = document.createElement("button");
     minus.type = "button";
-    minus.className = "pix-note-step";
+    minus.className = "ltl-note-step";
     minus.textContent = "\u2212"; // en-minus, more visually balanced than "-"
     const num = document.createElement("span");
-    num.className = "pix-note-stepnum";
+    num.className = "ltl-note-stepnum";
     num.textContent = String(state[key]);
     const plus = document.createElement("button");
     plus.type = "button";
-    plus.className = "pix-note-step";
+    plus.className = "ltl-note-step";
     plus.textContent = "+";
     stepper.appendChild(minus);
     stepper.appendChild(num);
@@ -969,16 +969,16 @@ function makeGridDialog(anchorBtn, onSubmit) {
   // Inline error row kept for consistency with other dialogs; no URL
   // validation here, so it stays empty.
   const errEl = document.createElement("div");
-  errEl.className = "pix-note-linkerr";
+  errEl.className = "ltl-note-linkerr";
   dlg.appendChild(errEl);
 
   const footer = document.createElement("div");
   footer.className = "dlgfooter";
   const cancel = document.createElement("button");
-  cancel.className = "pix-note-btn";
+  cancel.className = "ltl-note-btn";
   cancel.textContent = "Cancel";
   const ok = document.createElement("button");
-  ok.className = "pix-note-btn primary";
+  ok.className = "ltl-note-btn primary";
   ok.textContent = "Insert";
   footer.appendChild(cancel);
   footer.appendChild(ok);
@@ -995,7 +995,7 @@ function makeGridDialog(anchorBtn, onSubmit) {
     for (let r = 0; r < totalRows; r++) {
       for (let c = 0; c < state.cols; c++) {
         const cell = document.createElement("div");
-        cell.className = "pix-note-gridprevcell";
+        cell.className = "ltl-note-gridprevcell";
         if (state.header && r === 0) cell.classList.add("head");
         preview.appendChild(cell);
       }

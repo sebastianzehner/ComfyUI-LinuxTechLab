@@ -11,14 +11,14 @@ const TOP_LEVEL_BLOCK_TAGS = new Set([
   "p","h1","h2","h3","ul","ol","pre","blockquote","hr","div","table",
 ]);
 
-// <span class="pix-note-btnblock"> is also treated as a top-level block
+// <span class="ltl-note-btnblock"> is also treated as a top-level block
 // because renderButtonHTML() emits it as a standalone unit — pretty-
 // printing it on its own line keeps button blocks visually grouped.
 function isTopLevelBlockNode(el) {
   if (el.nodeType !== 1) return false;
   const tag = el.tagName.toLowerCase();
   if (TOP_LEVEL_BLOCK_TAGS.has(tag)) return true;
-  if (tag === "span" && el.classList.contains("pix-note-btnblock")) return true;
+  if (tag === "span" && el.classList.contains("ltl-note-btnblock")) return true;
   return false;
 }
 
@@ -32,7 +32,7 @@ function isTopLevelBlockNode(el) {
 //   "attr-name"   – attribute name
 //   "attr-equals" – literal "="
 //   "attr-value"  – quoted attribute value (quotes included)
-//   "pix-class"   – a single pix-note-* class token inside a class=""
+//   "pix-class"   – a single ltl-note-* class token inside a class=""
 //                    value — split out so it can be bold-orange
 //   "text"        – plain text content between tags
 //   "entity"      – "&nbsp;", "&amp;", …
@@ -116,9 +116,9 @@ function emitOpenTag(out, raw) {
 }
 
 function emitAttrValue(out, name, raw) {
-  // Only class="…" gets the pix-note-* class split; everything else is
+  // Only class="…" gets the ltl-note-* class split; everything else is
   // one "attr-value" token so URLs etc. highlight as a unit.
-  if (name !== "class" || !/pix-note-/.test(raw)) {
+  if (name !== "class" || !/ltl-note-/.test(raw)) {
     out.push({ type: "attr-value", text: raw });
     return;
   }
@@ -129,7 +129,7 @@ function emitAttrValue(out, name, raw) {
   const quote = hasQuotes ? firstChar : "";
   const inner = hasQuotes ? raw.slice(1, -1) : raw;
   if (quote) out.push({ type: "attr-value", text: quote });
-  const partRe = /(\s+)|(pix-note-[a-zA-Z0-9-]+)|([^\s]+)/g;
+  const partRe = /(\s+)|(ltl-note-[a-zA-Z0-9-]+)|([^\s]+)/g;
   let pm;
   while ((pm = partRe.exec(inner)) !== null) {
     if (pm[1]) out.push({ type: "whitespace", text: pm[1] });
@@ -199,15 +199,15 @@ function escapeText(s) {
 // replaces it with renderTokensColored.
 export function buildCodeViewDOM(initialHtml, opts) {
   const root = document.createElement("div");
-  root.className = "pix-note-codewrap";
+  root.className = "ltl-note-codewrap";
 
   const overlay = document.createElement("pre");
-  overlay.className = "pix-note-hl";
+  overlay.className = "ltl-note-hl";
   overlay.setAttribute("aria-hidden", "true");
   root.appendChild(overlay);
 
   const textarea = document.createElement("textarea");
-  textarea.className = "pix-note-raw";
+  textarea.className = "ltl-note-raw";
   textarea.spellcheck = false;
   textarea.autocapitalize = "off";
   textarea.autocomplete = "off";

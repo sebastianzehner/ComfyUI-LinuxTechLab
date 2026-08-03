@@ -69,16 +69,16 @@ const SWATCHES = [
 
 function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
   const pop = document.createElement("div");
-  pop.className = "pix-note-colorpop";
+  pop.className = "ltl-note-colorpop";
   const rect = anchorBtn.getBoundingClientRect();
   pop.style.left = `${rect.left}px`;
   pop.style.top = `${rect.bottom + 4}px`;
 
   const sw = document.createElement("div");
-  sw.className = "pix-note-swatches";
+  sw.className = "ltl-note-swatches";
   SWATCHES.forEach((c) => {
     const s = document.createElement("div");
-    s.className = "pix-note-swatch";
+    s.className = "ltl-note-swatch";
     s.style.background = c;
     if (c.toLowerCase() === (currentColor || "").toLowerCase())
       s.classList.add("active");
@@ -93,7 +93,7 @@ function openColorPop(anchorBtn, currentColor, onPick, allowClear = false) {
   pop.appendChild(sw);
 
   const row = document.createElement("div");
-  row.className = "pix-note-colorrow";
+  row.className = "ltl-note-colorrow";
   const picker = document.createElement("input");
   picker.type = "color";
   picker.value = /^#[0-9a-f]{6}$/i.test(currentColor || "")
@@ -159,29 +159,29 @@ NoteEditor.prototype._buildToolbar = function () {
   };
 
   // Build a tintable SVG mask-icon span for a toolbar button. The
-  // icon's fill color comes from CSS custom property --pix-note-tbtn-
+  // icon's fill color comes from CSS custom property --ltl-note-tbtn-
   // tint on the button element (set inline by color pickers to reflect
   // the current selection) or falls back to currentColor for plain
   // action buttons. `name` must match a CSS class suffix declared in
-  // css.mjs — e.g. "text-color" → ".pix-note-icon-text-color".
+  // css.mjs — e.g. "text-color" → ".ltl-note-icon-text-color".
   const makeMaskIcon = (name) => {
     const span = document.createElement("span");
-    span.className = `pix-note-tbtn-maskicon pix-note-icon-${name}`;
+    span.className = `ltl-note-tbtn-maskicon ltl-note-icon-${name}`;
     return span;
   };
 
   // Two-layer sibling of makeMaskIcon for color pickers. Outline stays
-  // currentColor; drop takes --pix-note-tbtn-tint. Uses CSS ::before +
+  // currentColor; drop takes --ltl-note-tbtn-tint. Uses CSS ::before +
   // ::after so no extra inner DOM nodes are needed. See css.mjs
-  // .pix-note-tbtn-maskicon-multi for the layered rendering.
+  // .ltl-note-tbtn-maskicon-multi for the layered rendering.
   const makeMaskIconMulti = (name) => {
     const span = document.createElement("span");
-    span.className = `pix-note-tbtn-maskicon-multi pix-note-icon-${name}`;
+    span.className = `ltl-note-tbtn-maskicon-multi ltl-note-icon-${name}`;
     return span;
   };
 
   const makeBtn = (label, title, cls, onClick, queryCmd) => {
-    const b = el("button", `pix-note-tbtn ${cls || ""}`.trim());
+    const b = el("button", `ltl-note-tbtn ${cls || ""}`.trim());
     b.type = "button";
     b.innerHTML = label;
     b.title = title;
@@ -211,7 +211,7 @@ NoteEditor.prototype._buildToolbar = function () {
   };
 
   // Group 1 — text style
-  const g1 = el("div", "pix-note-tgroup");
+  const g1 = el("div", "ltl-note-tgroup");
   // Bold uses queryCommandState like italic/underline/strikethrough. It
   // correctly reflects both cases the user expects to see lit up:
   //   1. Explicit <b>/<strong> wrappers
@@ -262,12 +262,12 @@ NoteEditor.prototype._buildToolbar = function () {
   // (execCommand leaves those alone), and demotes the current block
   // (heading) back to a paragraph. List items are left alone — removing a
   // bullet/numbered wrapper requires toggling the list button itself.
-  const clearFmtLabel = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/clear-format.svg" draggable="false">`;
+  const clearFmtLabel = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/clear-format.svg" draggable="false">`;
   g1.appendChild(
     makeBtn(
       clearFmtLabel,
       "Clear all formatting on selection",
-      "pix-note-tbtn-accent",
+      "ltl-note-tbtn-accent",
       () => {
         const sel = window.getSelection();
         if (sel?.rangeCount > 0) {
@@ -383,14 +383,14 @@ NoteEditor.prototype._buildToolbar = function () {
     ),
   );
   tb.appendChild(g1);
-  tb.appendChild(el("div", "pix-note-tsep"));
+  tb.appendChild(el("div", "ltl-note-tsep"));
 
   // Group 2 — headings
   const mkHeading = (tag, label) =>
     makeBtn(label, `Heading ${tag.toUpperCase()}`, "", () =>
       document.execCommand("formatBlock", false, tag),
     );
-  const g2 = el("div", "pix-note-tgroup");
+  const g2 = el("div", "ltl-note-tgroup");
   const h1Btn = mkHeading("h1", "H1");
   const h2Btn = mkHeading("h2", "H2");
   const h3Btn = mkHeading("h3", "H3");
@@ -400,7 +400,7 @@ NoteEditor.prototype._buildToolbar = function () {
   // No paragraph-reset button — the Tx clear-format button in Group 1
   // already demotes headings back to paragraphs via its manual DOM unwrap.
   tb.appendChild(g2);
-  tb.appendChild(el("div", "pix-note-tsep"));
+  tb.appendChild(el("div", "ltl-note-tsep"));
 
   // Heading active-state: queryCommandValue returns the current block tag
   // (e.g. "h1", "p"). Some browsers wrap it in angle brackets ("<h1>").
@@ -417,9 +417,9 @@ NoteEditor.prototype._buildToolbar = function () {
   });
 
   // Group 3 — colors
-  const g3 = el("div", "pix-note-tgroup");
+  const g3 = el("div", "ltl-note-tgroup");
 
-  const textColorBtn = el("button", "pix-note-tbtn");
+  const textColorBtn = el("button", "ltl-note-tbtn");
   textColorBtn.type = "button";
   textColorBtn.title = "Text color";
   textColorBtn.appendChild(makeMaskIconMulti("text-color"));
@@ -449,10 +449,10 @@ NoteEditor.prototype._buildToolbar = function () {
           // "Clear" means reset to the body's default text color rather than
           // execCommand("removeFormat") which would strip bold/italic/etc too.
           document.execCommand("foreColor", false, "#e4e4e4");
-          textColorBtn.style.removeProperty("--pix-note-tbtn-tint");
+          textColorBtn.style.removeProperty("--ltl-note-tbtn-tint");
         } else {
           document.execCommand("foreColor", false, c);
-          textColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
+          textColorBtn.style.setProperty("--ltl-note-tbtn-tint", c);
         }
         this._dirty = true;
         this._refreshActiveStates();
@@ -473,7 +473,7 @@ NoteEditor.prototype._buildToolbar = function () {
   // (same pattern as Notion / Google Docs). Clear via the popup's
   // Clear button resets the tint to currentColor (toolbar default).
 
-  const hiColorBtn = el("button", "pix-note-tbtn");
+  const hiColorBtn = el("button", "ltl-note-tbtn");
   hiColorBtn.type = "button";
   hiColorBtn.title = "Highlight color";
   hiColorBtn.appendChild(makeMaskIconMulti("highlight-color"));
@@ -512,7 +512,7 @@ NoteEditor.prototype._buildToolbar = function () {
               }
             }
           }
-          hiColorBtn.style.removeProperty("--pix-note-tbtn-tint");
+          hiColorBtn.style.removeProperty("--ltl-note-tbtn-tint");
         } else {
           document.execCommand("hiliteColor", false, c);
           // Chrome quirk: execCommand("hiliteColor", ...) on a collapsed
@@ -526,14 +526,14 @@ NoteEditor.prototype._buildToolbar = function () {
           // icon's inline tint so we pick up the most recent A-button
           // choice.
           const stagedFg = textColorBtn.style
-            .getPropertyValue("--pix-note-tbtn-tint")
+            .getPropertyValue("--ltl-note-tbtn-tint")
             .trim();
           if (stagedFg) {
             try {
               document.execCommand("foreColor", false, stagedFg);
             } catch (e) {}
           }
-          hiColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
+          hiColorBtn.style.setProperty("--ltl-note-tbtn-tint", c);
         }
         this._dirty = true;
         this._refreshActiveStates();
@@ -549,9 +549,9 @@ NoteEditor.prototype._buildToolbar = function () {
 
   // Page background colour — affects the whole editor interior AND the
   // on-canvas node body after save (WYSIWYG). Default is the editor's
-  // dark-gray (#111111, matches .pix-note-editarea CSS); Clear resets
+  // dark-gray (#111111, matches .ltl-note-editarea CSS); Clear resets
   // to that.
-  const bgColorBtn = el("button", "pix-note-tbtn");
+  const bgColorBtn = el("button", "ltl-note-tbtn");
   bgColorBtn.type = "button";
   bgColorBtn.title = "Page background color";
   bgColorBtn.appendChild(makeMaskIconMulti("bg-color"));
@@ -562,9 +562,9 @@ NoteEditor.prototype._buildToolbar = function () {
     // leave the icon at the toolbar's default currentColor so it
     // reads as "no override active".
     if (typeof c === "string" && c && c !== "transparent") {
-      bgColorBtn.style.setProperty("--pix-note-tbtn-tint", c);
+      bgColorBtn.style.setProperty("--ltl-note-tbtn-tint", c);
     } else {
-      bgColorBtn.style.removeProperty("--pix-note-tbtn-tint");
+      bgColorBtn.style.removeProperty("--ltl-note-tbtn-tint");
     }
   };
   refreshBgSwatch();
@@ -592,7 +592,7 @@ NoteEditor.prototype._buildToolbar = function () {
   g3.appendChild(bgColorBtn);
 
   tb.appendChild(g3);
-  tb.appendChild(el("div", "pix-note-tsep"));
+  tb.appendChild(el("div", "ltl-note-tsep"));
 
   // Shared color-picker factory for Btn + Ln (and Bg/Ac before them).
   // Returns a configured button that: reads cfg[cfgKey], sets the named
@@ -601,7 +601,7 @@ NoteEditor.prototype._buildToolbar = function () {
   // onChange. Factory moves construction logic out of G5/G6 wiring so
   // the two new pickers don't duplicate the Ac pattern five ways.
   const makeColorPicker = (iconName, title, cfgKey, cssVar, fallback) => {
-    const btn = el("button", "pix-note-tbtn");
+    const btn = el("button", "ltl-note-tbtn");
     btn.type = "button";
     btn.title = title;
     // Two-layer icon: factory pickers are always color pickers, so the
@@ -611,7 +611,7 @@ NoteEditor.prototype._buildToolbar = function () {
     btn.appendChild(makeMaskIconMulti(iconName));
     const refreshSwatch = () => {
       const c = this.cfg[cfgKey] || fallback;
-      btn.style.setProperty("--pix-note-tbtn-tint", c);
+      btn.style.setProperty("--ltl-note-tbtn-tint", c);
     };
     const apply = () => {
       const c = this.cfg[cfgKey] || fallback;
@@ -638,10 +638,10 @@ NoteEditor.prototype._buildToolbar = function () {
   };
 
   // Group 4 — lists
-  const g4 = el("div", "pix-note-tgroup");
+  const g4 = el("div", "ltl-note-tgroup");
   g4.appendChild(
     makeBtn(
-      '<span class="pix-note-tbtn-maskicon pix-note-icon-list-dot"></span>',
+      '<span class="ltl-note-tbtn-maskicon ltl-note-icon-list-dot"></span>',
       "Bulleted list",
       "",
       () => document.execCommand("insertUnorderedList"),
@@ -650,7 +650,7 @@ NoteEditor.prototype._buildToolbar = function () {
   );
   g4.appendChild(
     makeBtn(
-      '<span class="pix-note-tbtn-maskicon pix-note-icon-list-number"></span>',
+      '<span class="ltl-note-tbtn-maskicon ltl-note-icon-list-number"></span>',
       "Numbered list",
       "",
       () => document.execCommand("insertOrderedList"),
@@ -658,13 +658,13 @@ NoteEditor.prototype._buildToolbar = function () {
     ),
   );
   tb.appendChild(g4);
-  tb.appendChild(el("div", "pix-note-tsep"));
+  tb.appendChild(el("div", "ltl-note-tsep"));
 
   // Group 5 — inserts
-  const g5 = el("div", "pix-note-tgroup");
+  const g5 = el("div", "ltl-note-tgroup");
 
   const linkBtn = makeBtn(
-    '<span class="pix-note-tbtn-maskicon pix-note-icon-link"></span>',
+    '<span class="ltl-note-tbtn-maskicon ltl-note-icon-link"></span>',
     "Insert link",
     "",
     () => {
@@ -704,7 +704,7 @@ NoteEditor.prototype._buildToolbar = function () {
   // the placeholder pre-selected. Inline <code> was removed — one
   // code style keeps the allowed HTML shapes simple and predictable.
   const codeBlockBtn = makeBtn(
-    '<span class="pix-note-tbtn-maskicon pix-note-icon-code"></span>',
+    '<span class="ltl-note-tbtn-maskicon ltl-note-icon-code"></span>',
     "Code block",
     "",
     () => {
@@ -863,7 +863,7 @@ NoteEditor.prototype._buildToolbar = function () {
 
   g5.appendChild(
     makeBtn(
-      '<span class="pix-note-tbtn-maskicon pix-note-icon-separator"></span>',
+      '<span class="ltl-note-tbtn-maskicon ltl-note-icon-separator"></span>',
       "Horizontal separator",
       "",
       () => {
@@ -872,7 +872,7 @@ NoteEditor.prototype._buildToolbar = function () {
     ),
   );
 
-  const gridIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/grid.svg" draggable="false">`;
+  const gridIcon = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/grid.svg" draggable="false">`;
   const gridBtn = makeBtn(gridIcon, "Insert grid (table)", "", () => {});
   gridBtn.onclick = (e) => {
     e.preventDefault();
@@ -881,7 +881,7 @@ NoteEditor.prototype._buildToolbar = function () {
   g5.appendChild(gridBtn);
 
   const iconInsertBtn = makeBtn(
-    '<span class="pix-note-tbtn-maskicon pix-note-icon-icon-insert"></span>',
+    '<span class="ltl-note-tbtn-maskicon ltl-note-icon-icon-insert"></span>',
     "Insert icon",
     "",
     () => {},
@@ -896,7 +896,7 @@ NoteEditor.prototype._buildToolbar = function () {
     "line-color",
     "Line color (grid borders, grid header underline, HR separator)",
     "lineColor",
-    "--pix-note-line",
+    "--ltl-note-line",
     "#89b4fa",
   );
   g5.appendChild(lnColorBtn);
@@ -923,16 +923,16 @@ NoteEditor.prototype._buildToolbar = function () {
   });
 
   tb.appendChild(g5);
-  tb.appendChild(el("div", "pix-note-tsep"));
+  tb.appendChild(el("div", "ltl-note-tsep"));
 
   // Group 6 — LinuxTechLab blocks
-  const g6 = el("div", "pix-note-tgroup");
+  const g6 = el("div", "ltl-note-tgroup");
 
   // Unified "Button Design" entry — opens a rich dialog where the user
   // picks an icon (Download / View Page / Read More) and toggles whether
   // to attach a folder suggestion and a size hint. The 3 pill types still
   // exist as CSS classes so old notes keep rendering.
-  const bdIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/button-design.svg" draggable="false">`;
+  const bdIcon = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/button-design.svg" draggable="false">`;
   const bdBtn = makeBtn(
     bdIcon,
     "Insert button (Download / View Page / Read More)",
@@ -949,12 +949,12 @@ NoteEditor.prototype._buildToolbar = function () {
     "button-color",
     "Button color (Download / View Page / Read More pills)",
     "buttonColor",
-    "--pix-note-btn",
+    "--ltl-note-btn",
     "#89b4fa",
   );
   g6.appendChild(btnColorBtn);
 
-  const ytIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/youtube.svg" draggable="false">`;
+  const ytIcon = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/youtube.svg" draggable="false">`;
   const ytBtn = makeBtn(ytIcon, "Insert YouTube link", "", () => {});
   ytBtn.onclick = (e) => {
     e.preventDefault();
@@ -962,7 +962,7 @@ NoteEditor.prototype._buildToolbar = function () {
   };
   g6.appendChild(ytBtn);
 
-  const dcIcon = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/discord.svg" draggable="false">`;
+  const dcIcon = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/discord.svg" draggable="false">`;
   const dcBtn = makeBtn(dcIcon, "Insert Discord link", "", () => {});
   dcBtn.onclick = (e) => {
     e.preventDefault();
@@ -971,22 +971,22 @@ NoteEditor.prototype._buildToolbar = function () {
   g6.appendChild(dcBtn);
 
   tb.appendChild(g6);
-  tb.appendChild(el("div", "pix-note-tsep"));
+  tb.appendChild(el("div", "ltl-note-tsep"));
 
   // Right-aligned undo / redo. Flex spacer pushes this group to the end
   // of the toolbar so it sits opposite the editing controls on the left.
-  const spacer = el("div", "pix-note-tspacer");
+  const spacer = el("div", "ltl-note-tspacer");
   tb.appendChild(spacer);
-  const gURight = el("div", "pix-note-tgroup");
-  const undoLabel = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/undo.svg" draggable="false">`;
-  const redoLabel = `<img class="pix-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/redo.svg" draggable="false">`;
+  const gURight = el("div", "ltl-note-tgroup");
+  const undoLabel = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/undo.svg" draggable="false">`;
+  const redoLabel = `<img class="ltl-note-tbtn-icon" src="/linuxtechlab/assets/icons/ui/redo.svg" draggable="false">`;
   gURight.appendChild(
-    makeBtn(undoLabel, "Undo (Ctrl+Z)", "pix-note-tbtn-accent", () => {
+    makeBtn(undoLabel, "Undo (Ctrl+Z)", "ltl-note-tbtn-accent", () => {
       this.doUndo?.();
     }),
   );
   gURight.appendChild(
-    makeBtn(redoLabel, "Redo (Ctrl+Shift+Z)", "pix-note-tbtn-accent", () => {
+    makeBtn(redoLabel, "Redo (Ctrl+Shift+Z)", "ltl-note-tbtn-accent", () => {
       this.doRedo?.();
     }),
   );
@@ -994,7 +994,7 @@ NoteEditor.prototype._buildToolbar = function () {
 
   // View toggle: WYSIWYG vs raw-HTML. Sits on the far right so users
   // can flip views without hunting for the button.
-  const tog = el("div", "pix-note-viewtoggle");
+  const tog = el("div", "ltl-note-viewtoggle");
   const codeBtn = document.createElement("button");
   codeBtn.type = "button";
   codeBtn.textContent = "Code";
@@ -1069,10 +1069,10 @@ NoteEditor.prototype._refreshActiveStates = function () {
 // SECOND, leaving foreColor as the last-staged command.
 NoteEditor.prototype._restageColors = function () {
   const fg = this._textColorBtn?.style
-    .getPropertyValue("--pix-note-tbtn-tint")
+    .getPropertyValue("--ltl-note-tbtn-tint")
     .trim();
   const bg = this._hiColorBtn?.style
-    .getPropertyValue("--pix-note-tbtn-tint")
+    .getPropertyValue("--ltl-note-tbtn-tint")
     .trim();
   if (!fg && !bg) return;
   const sel = window.getSelection();
@@ -1098,40 +1098,40 @@ NoteEditor.prototype._restageColors = function () {
 NoteEditor.prototype._promptLinkUrl = function (presetLabel, presetUrl) {
   return new Promise((resolve) => {
     const backdrop = document.createElement("div");
-    backdrop.className = "pix-note-confirm-backdrop";
+    backdrop.className = "ltl-note-confirm-backdrop";
     const box = document.createElement("div");
-    box.className = "pix-note-confirm-box";
+    box.className = "ltl-note-confirm-box";
     const title = document.createElement("div");
-    title.className = "pix-note-confirm-title";
+    title.className = "ltl-note-confirm-title";
     title.textContent = "Insert link";
 
     const urlLbl = document.createElement("div");
-    urlLbl.className = "pix-note-linklbl";
+    urlLbl.className = "ltl-note-linklbl";
     urlLbl.textContent = "URL";
     const urlInput = document.createElement("input");
     urlInput.type = "text";
-    urlInput.className = "pix-note-linkinput";
+    urlInput.className = "ltl-note-linkinput";
     urlInput.value = presetUrl || "https://";
 
     const labelLbl = document.createElement("div");
-    labelLbl.className = "pix-note-linklbl";
+    labelLbl.className = "ltl-note-linklbl";
     labelLbl.textContent = "Label (what you'll see in the note)";
     const labelInput = document.createElement("input");
     labelInput.type = "text";
-    labelInput.className = "pix-note-linkinput";
+    labelInput.className = "ltl-note-linkinput";
     labelInput.value = presetLabel || "";
     labelInput.placeholder = "Leave empty to show the URL";
 
     const err = document.createElement("div");
-    err.className = "pix-note-linkerr";
+    err.className = "ltl-note-linkerr";
 
     const actions = document.createElement("div");
-    actions.className = "pix-note-confirm-actions";
+    actions.className = "ltl-note-confirm-actions";
     const cancelBtn = document.createElement("button");
-    cancelBtn.className = "pix-note-btn";
+    cancelBtn.className = "ltl-note-btn";
     cancelBtn.textContent = "Cancel";
     const okBtn = document.createElement("button");
-    okBtn.className = "pix-note-btn primary";
+    okBtn.className = "ltl-note-btn primary";
     okBtn.textContent = "Insert";
     actions.appendChild(cancelBtn);
     actions.appendChild(okBtn);
@@ -1204,27 +1204,27 @@ NoteEditor.prototype._promptLinkUrl = function (presetLabel, presetUrl) {
 NoteEditor.prototype._promptCodeBlock = function (presetCode) {
   return new Promise((resolve) => {
     const backdrop = document.createElement("div");
-    backdrop.className = "pix-note-confirm-backdrop";
+    backdrop.className = "ltl-note-confirm-backdrop";
     const box = document.createElement("div");
-    box.className = "pix-note-confirm-box wide";
+    box.className = "ltl-note-confirm-box wide";
     const title = document.createElement("div");
-    title.className = "pix-note-confirm-title";
+    title.className = "ltl-note-confirm-title";
     title.textContent = "Insert code block";
     const lbl = document.createElement("div");
-    lbl.className = "pix-note-linklbl";
+    lbl.className = "ltl-note-linklbl";
     lbl.textContent = "Paste or type your code (plain text, no formatting)";
     const ta = document.createElement("textarea");
-    ta.className = "pix-note-codeinput";
+    ta.className = "ltl-note-codeinput";
     ta.rows = 10;
     ta.placeholder = "// your code here";
     ta.value = presetCode || "";
     const actions = document.createElement("div");
-    actions.className = "pix-note-confirm-actions";
+    actions.className = "ltl-note-confirm-actions";
     const cancelBtn = document.createElement("button");
-    cancelBtn.className = "pix-note-btn";
+    cancelBtn.className = "ltl-note-btn";
     cancelBtn.textContent = "Cancel";
     const okBtn = document.createElement("button");
-    okBtn.className = "pix-note-btn primary";
+    okBtn.className = "ltl-note-btn primary";
     okBtn.textContent = "Insert";
     actions.appendChild(cancelBtn);
     actions.appendChild(okBtn);

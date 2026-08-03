@@ -26,12 +26,12 @@ function darken(hex, amount) {
 
 export function attachEditButton(wrap, onClick) {
   const btn = document.createElement("button");
-  btn.className = "pix-note-editbtn";
+  btn.className = "ltl-note-editbtn";
   btn.type = "button";
   const icon = document.createElement("img");
   icon.src = "/linuxtechlab/assets/icons/layers/edit.svg";
   icon.draggable = false;
-  icon.className = "pix-note-editbtn-icon";
+  icon.className = "ltl-note-editbtn-icon";
   btn.appendChild(icon);
   btn.appendChild(document.createTextNode(" Edit"));
   btn.addEventListener("mousedown", (e) => {
@@ -50,10 +50,10 @@ export function attachEditButton(wrap, onClick) {
 export function createNoteDOMWidget(node) {
   injectCSS();
   const wrap = document.createElement("div");
-  wrap.className = "pix-note-wrap";
+  wrap.className = "ltl-note-wrap";
 
   const body = document.createElement("div");
-  body.className = "pix-note-body";
+  body.className = "ltl-note-body";
   wrap.appendChild(body);
 
   renderContent(node, body);
@@ -65,8 +65,8 @@ export function renderContent(node, bodyEl) {
   const cfg = node._noteCfg || {};
   // Two independent pickers after the Btn/Ln split. Both CSS vars are
   // written up-front so on-canvas rendering matches the editor view.
-  bodyEl.style.setProperty("--pix-note-btn", cfg.buttonColor || "#89b4fa");
-  bodyEl.style.setProperty("--pix-note-line", cfg.lineColor || "#89b4fa");
+  bodyEl.style.setProperty("--ltl-note-btn", cfg.buttonColor || "#89b4fa");
+  bodyEl.style.setProperty("--ltl-note-line", cfg.lineColor || "#89b4fa");
 
   // Bg picker drives the node's visual background. Three-state logic
   // designed to (a) give fresh notes our Catppuccin Mocha Base #1e1e2e
@@ -123,7 +123,7 @@ export function renderContent(node, bodyEl) {
 
   const html = (cfg.content || "").trim();
   if (!html) {
-    bodyEl.innerHTML = `<div class="pix-note-placeholder">${PLACEHOLDER_TEXT}</div>`;
+    bodyEl.innerHTML = `<div class="ltl-note-placeholder">${PLACEHOLDER_TEXT}</div>`;
     return;
   }
   try {
@@ -132,8 +132,8 @@ export function renderContent(node, bodyEl) {
     // Malformed content (e.g. nested <pre><code>) could trip sanitize or the
     // parser. Fall back to a readable error message rather than leaving the
     // body blank — blank content can make the on-canvas node visually vanish.
-    console.error("[pix-note] renderContent failed, falling back", e);
-    bodyEl.innerHTML = `<div class="pix-note-placeholder">Note content could not be rendered. Click Edit to fix.</div>`;
+    console.error("[ltl-note] renderContent failed, falling back", e);
+    bodyEl.innerHTML = `<div class="ltl-note-placeholder">Note content could not be rendered. Click Edit to fix.</div>`;
     return;
   }
   injectCopyButtons(bodyEl);
@@ -141,10 +141,10 @@ export function renderContent(node, bodyEl) {
 
 function injectCopyButtons(bodyEl) {
   bodyEl.querySelectorAll("pre").forEach((pre) => {
-    if (pre.querySelector(":scope > .pix-note-copybtn")) return;
+    if (pre.querySelector(":scope > .ltl-note-copybtn")) return;
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "pix-note-copybtn";
+    btn.className = "ltl-note-copybtn";
     btn.title = "Copy code";
     btn.contentEditable = "false";
     const icon = document.createElement("img");
@@ -156,7 +156,7 @@ function injectCopyButtons(bodyEl) {
   if (bodyEl._pixCopyBound) return;
   bodyEl._pixCopyBound = true;
   bodyEl.addEventListener("click", (e) => {
-    const cb = e.target.closest?.(".pix-note-copybtn");
+    const cb = e.target.closest?.(".ltl-note-copybtn");
     if (!cb || !bodyEl.contains(cb)) return;
     e.stopPropagation();
     e.preventDefault();
